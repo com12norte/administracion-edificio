@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administración — Edificio Calle 12 Norte</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#F0F2F5;--surface:#fff;--surface2:#F7F8FA;--border:#E2E5EA;
+  --text:#1A1D23;--muted:#6B7280;--accent:#1E3A5F;--accent2:#2E5490;--accent-bg:#EBF0F8;
+  --success:#059669;--warning:#D97706;--danger:#DC2626;--info:#0284C7;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.07);--shadow-md:0 4px 24px rgba(0,0,0,.10);
+}
+
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── HEADER ── */
+header{
+  background:var(--accent);color:#fff;
+  padding:0 28px;display:flex;align-items:center;justify-content:space-between;
+  height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.18);
+}
+.hbrand{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.hicon{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.hbrand h1{font-family:'Playfair Display',serif;font-size:17px;font-weight:600}
+.hbrand span{font-size:11px;opacity:.6;display:block;margin-top:-2px}
+.hnav{display:flex;gap:3px;flex-wrap:wrap}
+.hnav button{
+  background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.75);
+  padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+  transition:all .15s;font-family:'Inter',sans-serif;white-space:nowrap;
+}
+.hnav button.active,.hnav button:hover{background:rgba(255,255,255,.22);color:#fff}
+.hnav .sep{width:1px;background:rgba(255,255,255,.2);margin:8px 4px}
+
+/* ── LAYOUT ── */
+.container{max-width:900px;margin:0 auto;padding:28px 16px}
+.view{display:none}.view.active{display:block}
+
+/* ── CARD ── */
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.card-hd{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-hd-icon{width:40px;height:40px;background:var(--accent-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.card-hd h2{font-size:15px;font-weight:600}
+.card-hd p{font-size:12px;color:var(--muted);margin-top:2px}
+.card-body{padding:24px}
+
+/* ── DIVIDER ── */
+.divider{display:flex;align-items:center;gap:10px;margin:22px 0 18px}
+.divider span{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── FORM ── */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.f{display:flex;flex-direction:column;gap:5px}
+.f.full{grid-column:1/-1}
+label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+input,select,textarea{
+  border:1.5px solid var(--border);border-radius:7px;padding:10px 13px;font-size:14px;
+  font-family:'Inter',sans-serif;color:var(--text);background:var(--surface);
+  transition:border-color .15s;outline:none;width:100%;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+input.err,select.err,textarea.err{border-color:var(--danger)}
+textarea{resize:vertical;min-height:76px}
+
+/* ── TYPE SELECTOR (recibos) ── */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.type-opt{border:2px solid var(--border);border-radius:var(--radius);padding:18px;cursor:pointer;text-align:center;background:var(--surface2);transition:all .15s}
+.type-opt:hover{border-color:var(--accent2);background:var(--accent-bg)}
+.type-opt.selected{border-color:var(--accent);background:var(--accent-bg)}
+.type-opt .ticon{font-size:30px;margin-bottom:8px}
+.type-opt h3{font-size:13px;font-weight:600}
+.type-opt p{font-size:11px;color:var(--muted);margin-top:3px}
+.ctrl-row{display:none;flex-direction:column;gap:5px;grid-column:1/-1}
+.ctrl-row.show{display:flex}
+.llave-row{display:none;flex-direction:column;gap:5px;grid-column:1/-1}
+.llave-row.show{display:flex}
+
+/* ── FALLA GRID (citofonía) ── */
+.falla-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.falla-opt{border:1.5px solid var(--border);border-radius:8px;padding:11px 8px;cursor:pointer;text-align:center;background:var(--surface2);transition:all .15s;user-select:none}
+.falla-opt:hover{border-color:var(--accent2);background:var(--accent-bg)}
+.falla-opt.selected{border-color:var(--accent);background:var(--accent-bg)}
+.falla-opt .fi{font-size:20px;margin-bottom:5px}
+.falla-opt span{font-size:11px;font-weight:600;display:block;line-height:1.3}
+
+/* ── ESTADO ── */
+.estado-row{display:flex;gap:8px;flex-wrap:wrap}
+.estado-opt{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;background:var(--surface2);transition:all .15s;white-space:nowrap}
+.estado-opt:hover,.estado-opt.selected{color:#fff;border-color:transparent}
+.estado-opt[data-e="ingresado"]:hover,.estado-opt[data-e="ingresado"].selected{background:var(--info)}
+.estado-opt[data-e="revision"]:hover,.estado-opt[data-e="revision"].selected{background:var(--warning)}
+.estado-opt[data-e="reparacion"]:hover,.estado-opt[data-e="reparacion"].selected{background:#7C3AED}
+.estado-opt[data-e="cerrado"]:hover,.estado-opt[data-e="cerrado"].selected{background:var(--success)}
+
+/* ── SIGNATURE ── */
+.sig-wrap{border:2px dashed var(--border);border-radius:var(--radius);overflow:hidden;background:#FAFBFC;position:relative}
+.sig-wrap canvas{display:block;width:100%;touch-action:none;cursor:crosshair}
+.sig-hint{position:absolute;top:11px;left:14px;font-size:11px;color:#CBD0D8;font-weight:500;pointer-events:none;transition:opacity .2s}
+.sig-hint.hidden{opacity:0}
+.sig-foot{display:flex;justify-content:flex-end;padding:7px 11px;border-top:1px solid var(--border);background:var(--surface2)}
+.btn-clr{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 11px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-clr:hover{border-color:var(--danger);color:var(--danger)}
+.sig-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.sig-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+
+/* ── FOTO ── */
+.foto-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface2)}
+.foto-zone:hover{border-color:var(--accent);background:var(--accent-bg)}
+.foto-zone p{font-size:13px;color:var(--muted);margin-top:7px}
+.foto-zone small{font-size:11px;color:#9CA3AF}
+.foto-preview{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.foto-thumb{width:68px;height:68px;border-radius:6px;object-fit:cover;border:1px solid var(--border)}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:10px;margin-top:24px;justify-content:flex-end}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;gap:7px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{filter:brightness(1.08)}
+
+/* ── NOTICE ── */
+.notice{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px 15px;font-size:12px;color:#1E40AF;margin-bottom:16px;display:flex;gap:9px;align-items:flex-start}
+
+/* ── HISTORIAL ── */
+.hist-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.hist-top h2{font-size:17px;font-weight:700}
+.hcount{background:var(--accent);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
+.filter-row{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.fbtn{padding:6px 13px;border-radius:20px;border:1px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;background:var(--surface);transition:all .15s;font-family:'Inter',sans-serif;color:var(--muted)}
+.fbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.item-list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:border-color .15s}
+.item:hover{border-color:var(--accent)}
+.item-badge{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.badge-llaves{background:#FEF3C7}.badge-control{background:#DBEAFE}.badge-ot{background:#EDE9FE}
+.item-info{flex:1;min-width:0}
+.item-info strong{font-size:14px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.item-num{font-size:11px;font-weight:700;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;white-space:nowrap;flex-shrink:0}
+.badge-e{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700;margin-left:5px}
+.be-ingresado{background:#DBEAFE;color:#1D4ED8}.be-revision{background:#FEF3C7;color:#92400E}
+.be-reparacion{background:#EDE9FE;color:#5B21B6}.be-cerrado{background:#D1FAE5;color:#065F46}
+.item-actions{display:flex;gap:7px;flex-shrink:0}
+.bicon{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;color:var(--muted)}
+.bicon:hover{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.bicon.danger:hover{background:#FEE2E2;border-color:var(--danger);color:var(--danger)}
+.empty{text-align:center;padding:56px 32px;color:var(--muted)}
+.empty .ei{font-size:44px;margin-bottom:14px}
+.empty p{font-size:13px}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-md);max-width:660px;width:100%;max-height:92vh;overflow-y:auto}
+.modal-hd{padding:17px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-hd h3{font-size:15px;font-weight:600}
+.mclose{width:30px;height:30px;border-radius:6px;border:none;background:var(--surface2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:22px}
+.modal-ft{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end}
+
+/* ── DOC PREVIEW ── */
+.doc{font-family:'Times New Roman',serif;font-size:12.5px;line-height:1.8;color:#111;padding:26px;border:1px solid var(--border);border-radius:8px;background:#fff}
+.doc .dt{text-align:center;font-size:13.5px;text-decoration:underline;margin-bottom:5px;font-weight:700}
+.doc .ds{text-align:center;font-size:12px;color:#555;margin-bottom:18px}
+.doc table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
+.doc td{padding:5px 9px;border:1px solid #ccc;vertical-align:top}
+.doc td:first-child{font-weight:700;width:38%;background:#f5f5f5}
+.doc .sh{font-weight:700;margin:14px 0 5px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #999;padding-bottom:3px}
+.doc .sig-row{display:flex;gap:28px;margin-top:22px}
+.doc .sig-col{flex:1;text-align:center}
+.doc .sig-col img{max-height:50px;margin:0 auto 4px;display:block}
+.doc .sig-line{border-top:1px solid #333;padding-top:5px;font-size:11px}
+.doc .firma-line{border-top:1px solid #333;padding-top:5px;display:inline-block;min-width:180px;text-align:center;font-size:11px}
+.doc .sig-img{max-height:56px;display:block;margin-bottom:4px}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:7px;z-index:9999}
+.toast{background:var(--text);color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:9px;animation:tin .3s ease;max-width:300px}
+.toast.success{background:var(--success)}.toast.error{background:var(--danger)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:620px){
+  header{padding:0 14px;flex-wrap:wrap;height:auto;padding-top:10px;padding-bottom:10px;gap:10px}
+  .hnav{width:100%;justify-content:center}
+  .hnav .sep{display:none}
+  .fg,.type-grid,.sig-cols{grid-template-columns:1fr}
+  .f.full{grid-column:1}
+  .falla-grid{grid-template-columns:repeat(2,1fr)}
+  .card-body{padding:16px}
+  .btn-row{flex-direction:column-reverse}
+  .btn{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbrand">
+    <div class="hicon">🏢</div>
+    <div>
+      <h1>Administración</h1>
+      <span>Calle 12 Norte</span>
+    </div>
+  </div>
+  <nav class="hnav">
+    <button onclick="nav('recibo-nuevo')" id="tab-recibo-nuevo">＋ Recibo</button>
+    <button onclick="nav('recibo-hist')" id="tab-recibo-hist">📋 Recibos</button>
+    <div class="sep"></div>
+    <button onclick="nav('ot-nuevo')" id="tab-ot-nuevo">🔧 Nueva OT</button>
+    <button onclick="nav('ot-hist')" id="tab-ot-hist">📋 OT Citofonía</button>
+  </nav>
+</header>
+
+<div class="container">
+
+<!-- ══════════════════════════════════
+     RECIBO — NUEVO
+══════════════════════════════════ -->
+<div id="view-recibo-nuevo" class="view active">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-icon">📄</div>
+      <div><h2>Nuevo Recibo Conforme</h2><p>Llaves de acceso o control remoto vehicular</p></div>
+    </div>
+    <div class="card-body">
+
+      <div class="divider"><span>Tipo de Recibo</span></div>
+      <div class="type-grid">
+        <div class="type-opt" id="opt-llaves" onclick="selTipo('llaves')">
+          <div class="ticon">🔑</div><h3>Entrega de Llaves</h3><p>Llave de acceso hacia la calle</p>
+        </div>
+        <div class="type-opt" id="opt-control" onclick="selTipo('control')">
+          <div class="ticon">📡</div><h3>Control Remoto</h3><p>Control para acceso vehicular</p>
+        </div>
+      </div>
+
+      <div class="divider"><span>Datos del Residente</span></div>
+      <div class="fg">
+        <div class="f"><label>Nombre Completo</label><input type="text" id="r-nombre" placeholder="Ej: Juan Pérez González"></div>
+        <div class="f"><label>RUT / Cédula</label><input type="text" id="r-rut" placeholder="Ej: 12.345.678-9"></div>
+        <div class="f full"><label>Dirección / Calle</label><select id="r-dir" onchange="actualizarDeptos('r')"><option value="">— Selecciona dirección —</option></select></div>
+        <div class="f"><label>N° Departamento</label><select id="r-depto"><option value="">— Selecciona depto —</option></select></div>
+        <div class="f"><label>Fecha</label><input type="date" id="r-fecha"></div>
+        <div class="ctrl-row f" id="ctrl-row">
+          <label>Número de Control</label>
+          <select id="r-num-ctrl"><option value="un">un (1)</option><option value="dos">dos (2)</option><option value="tres">tres (3)</option></select>
+        </div>
+        <div class="llave-row f" id="llave-row">
+          <label>Tipo de Llave</label>
+          <select id="r-tipo-llave">
+            <option value="">— Selecciona tipo —</option>
+            <option value="Bodega">Bodega</option>
+            <option value="Puerta acceso patio">Puerta acceso patio</option>
+            <option value="Mampara">Mampara</option>
+            <option value="Puerta acceso calle">Puerta acceso calle</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"><span>Email del Residente</span></div>
+      <div class="notice">✉️&nbsp; <div><strong>Gmail:</strong> Al guardar se abrirá Gmail con el correo listo. <strong>com12norte@gmail.com</strong> quedará en copia automáticamente.</div></div>
+      <div class="f"><label>Email (opcional)</label><input type="email" id="r-email" placeholder="residente@email.com"></div>
+
+      <div class="divider"><span>Firma del Residente</span></div>
+      <div class="sig-wrap">
+        <canvas id="sig-r" height="160"></canvas>
+        <div class="sig-hint" id="hint-r">Firme aquí con el dedo o mouse</div>
+        <div class="sig-foot"><button class="btn-clr" onclick="clrSig('r')">🗑 Borrar firma</button></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="resetRecibo()">Limpiar</button>
+        <button class="btn btn-primary" id="btn-r" onclick="guardarRecibo()"><span>💾</span> Guardar Recibo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     RECIBO — HISTORIAL
+══════════════════════════════════ -->
+<div id="view-recibo-hist" class="view">
+  <div class="hist-top">
+    <h2>📋 Historial de Recibos</h2>
+    <span class="hcount" id="rcount">0</span>
+  </div>
+  <div id="rlist"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     OT — NUEVO
+══════════════════════════════════ -->
+<div id="view-ot-nuevo" class="view">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-icon">🔧</div>
+      <div><h2>Nueva OT — Reparación de Citofonía</h2><p>Registro de reporte, diagnóstico y cierre</p></div>
+    </div>
+    <div class="card-body">
+
+      <div class="divider"><span>1 · Datos del Residente</span></div>
+      <div class="fg">
+        <div class="f"><label>Nombre Completo</label><input type="text" id="o-nombre" placeholder="Ej: María González Rojas"></div>
+        <div class="f"><label>RUT / Cédula</label><input type="text" id="o-rut" placeholder="Ej: 15.678.901-2"></div>
+        <div class="f full"><label>Dirección / Calle</label><select id="o-dir" onchange="actualizarDeptos('o')"><option value="">— Selecciona dirección —</option></select></div>
+        <div class="f"><label>N° Departamento</label><select id="o-depto"><option value="">— Selecciona depto —</option></select></div>
+        <div class="f"><label>Teléfono</label><input type="tel" id="o-tel" placeholder="+56 9 1234 5678"></div>
+        <div class="f full"><label>Email (para envío del informe)</label><input type="email" id="o-email" placeholder="residente@email.com"></div>
+      </div>
+
+      <div class="divider"><span>2 · Reporte del Problema</span></div>
+      <div class="fg">
+        <div class="f"><label>Fecha de Reporte</label><input type="date" id="o-fecha-rep"></div>
+        <div class="f"><label>Hora aprox.</label><input type="time" id="o-hora"></div>
+      </div>
+      <div style="margin-top:14px">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:9px">Tipo de Falla</label>
+        <div class="falla-grid">
+          <div class="falla-opt" data-f="sin-audio" onclick="selFalla(this)"><div class="fi">🔇</div><span>Sin audio</span></div>
+          <div class="falla-opt" data-f="sin-video" onclick="selFalla(this)"><div class="fi">📷</div><span>Sin video</span></div>
+          <div class="falla-opt" data-f="no-abre" onclick="selFalla(this)"><div class="fi">🚪</div><span>No abre puerta</span></div>
+          <div class="falla-opt" data-f="no-llama" onclick="selFalla(this)"><div class="fi">📵</div><span>No recibe llamadas</span></div>
+          <div class="falla-opt" data-f="danio" onclick="selFalla(this)"><div class="fi">💥</div><span>Daño físico</span></div>
+          <div class="falla-opt" data-f="otro" onclick="selFalla(this)"><div class="fi">❓</div><span>Otro</span></div>
+        </div>
+      </div>
+      <div class="f full" style="margin-top:14px"><label>Descripción Detallada</label><textarea id="o-desc" rows="3" placeholder="Describe con detalle lo que ocurre..."></textarea></div>
+
+      <div style="margin-top:14px">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:7px">Fotos del Problema (opcional)</label>
+        <div class="foto-zone" onclick="document.getElementById('foto-input').click()">
+          <div style="font-size:26px">📸</div><p>Toca para adjuntar fotos</p><small>PNG, JPG — máx. 3 fotos</small>
+        </div>
+        <input type="file" id="foto-input" accept="image/*" multiple style="display:none" onchange="handleFotos(this)">
+        <div class="foto-preview" id="foto-preview"></div>
+      </div>
+
+      <div class="divider"><span>3 · Atención Técnica</span></div>
+      <div class="fg">
+        <div class="f"><label>Fecha de Visita</label><input type="date" id="o-fecha-vis"></div>
+        <div class="f"><label>Técnico Responsable</label><input type="text" id="o-tecnico" placeholder="Nombre del técnico"></div>
+        <div class="f full"><label>Diagnóstico</label><textarea id="o-diag" rows="2" placeholder="¿Qué se encontró al revisar?"></textarea></div>
+        <div class="f full"><label>Trabajo Realizado</label><textarea id="o-trabajo" rows="2" placeholder="¿Qué se hizo para solucionarlo?"></textarea></div>
+        <div class="f full"><label>Repuestos / Materiales</label><input type="text" id="o-rep" placeholder="Ej: Placa controladora, cable UTP (opcional)"></div>
+      </div>
+
+      <div style="margin-top:16px">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:9px">Estado de la Orden</label>
+        <div class="estado-row">
+          <div class="estado-opt selected" data-e="ingresado" onclick="selEstado(this)">⬤ Ingresado</div>
+          <div class="estado-opt" data-e="revision" onclick="selEstado(this)">⬤ En Revisión</div>
+          <div class="estado-opt" data-e="reparacion" onclick="selEstado(this)">⬤ En Reparación</div>
+          <div class="estado-opt" data-e="cerrado" onclick="selEstado(this)">⬤ Cerrado</div>
+        </div>
+      </div>
+
+      <div class="divider"><span>4 · Firmas</span></div>
+      <div class="notice">✉️&nbsp; <div><strong>Gmail:</strong> Al guardar se abrirá Gmail con el informe listo. <strong>com12norte@gmail.com</strong> quedará en copia automáticamente.</div></div>
+      <div class="sig-cols">
+        <div>
+          <div class="sig-title">Firma del Residente</div>
+          <div class="sig-wrap"><canvas id="sig-or" height="130"></canvas><div class="sig-hint" id="hint-or">Firme aquí</div><div class="sig-foot"><button class="btn-clr" onclick="clrSig('or')">🗑 Borrar</button></div></div>
+        </div>
+        <div>
+          <div class="sig-title">Firma del Técnico</div>
+          <div class="sig-wrap"><canvas id="sig-ot" height="130"></canvas><div class="sig-hint" id="hint-ot">Firme aquí</div><div class="sig-foot"><button class="btn-clr" onclick="clrSig('ot')">🗑 Borrar</button></div></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="resetOT()">Limpiar</button>
+        <button class="btn btn-primary" id="btn-ot" onclick="guardarOT()"><span>💾</span> Guardar Orden de Trabajo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     OT — HISTORIAL
+══════════════════════════════════ -->
+<div id="view-ot-hist" class="view">
+  <div class="hist-top">
+    <h2>🔧 Historial OT Citofonía</h2>
+    <span class="hcount" id="ocount">0</span>
+  </div>
+  <div class="filter-row">
+    <button class="fbtn active" data-fil="todas" onclick="setFil(this)">Todas</button>
+    <button class="fbtn" data-fil="ingresado" onclick="setFil(this)">Ingresado</button>
+    <button class="fbtn" data-fil="revision" onclick="setFil(this)">En Revisión</button>
+    <button class="fbtn" data-fil="reparacion" onclick="setFil(this)">En Reparación</button>
+    <button class="fbtn" data-fil="cerrado" onclick="setFil(this)">Cerrado</button>
+  </div>
+  <div id="olist"></div>
+</div>
+
+</div><!-- /container -->
+
+<!-- MODAL RECIBO -->
+<div class="overlay" id="modal-r" onclick="closeOverlay('modal-r',event)">
+  <div class="modal">
+    <div class="modal-hd"><h3>Vista Previa — Recibo</h3><button class="mclose" onclick="closeOverlay('modal-r')">✕</button></div>
+    <div class="modal-body"><div class="doc" id="rdoc"></div></div>
+    <div class="modal-ft">
+      <button class="btn btn-secondary" onclick="closeOverlay('modal-r')">Cerrar</button>
+      <button class="btn btn-success" onclick="rPDF()">⬇ PDF</button>
+      <button class="btn btn-primary" onclick="rEmail()">✉ Gmail</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL OT -->
+<div class="overlay" id="modal-o" onclick="closeOverlay('modal-o',event)">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="modal-o-title">Vista Previa — OT</h3><button class="mclose" onclick="closeOverlay('modal-o')">✕</button></div>
+    <div class="modal-body"><div class="doc" id="odoc"></div></div>
+    <div class="modal-ft">
+      <button class="btn btn-secondary" onclick="closeOverlay('modal-o')">Cerrar</button>
+      <button class="btn btn-success" onclick="oPDF()">⬇ PDF</button>
+      <button class="btn btn-primary" onclick="oEmail()">✉ Gmail</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════
+const ADMIN_EMAIL = 'com12norte@gmail.com';
+
+// ════════════════════════════════════════
+// DATOS PARKADMIN
+// ════════════════════════════════════════
+const DIRECCIONES = [
+  '3 Oriente 1080',
+  '3 Oriente 1060',
+  '12 Norte 1054',
+  '12 Norte 1052',
+  '12 Norte 1036',
+  '12 Norte 1038',
+  '4 Oriente 1061',
+  '4 Oriente 1081'
+];
+
+const DEPTOS = ['A1','B2','2C3','D4','E6','E5','F5','F6','G7','H8'];
+
+function poblarDirecciones() {
+  ['r-dir','o-dir'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    DIRECCIONES.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d;
+      sel.appendChild(opt);
+    });
+  });
+  // poblar deptos inicialmente
+  ['r','o'].forEach(p => actualizarDeptos(p));
+}
+
+function actualizarDeptos(prefix) {
+  const sel = document.getElementById(prefix + '-depto');
+  if (!sel) return;
+  const val = sel.value; // conservar selección si existe
+  sel.innerHTML = '<option value="">— Selecciona depto —</option>';
+  DEPTOS.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = 'Depto. ' + d;
+    sel.appendChild(opt);
+  });
+  if (val) sel.value = val;
+}
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let recibos = JSON.parse(localStorage.getItem('recibos_v2') || '[]');
+let ordenes = JSON.parse(localStorage.getItem('ot_citofonia_v2') || '[]');
+let tipoRecibo = null;
+let tipoFalla = null;
+let estadoOT = 'ingresado';
+let fotosData = [];
+let sigStates = {};
+let sigCtx = {};
+let currentR = null;
+let currentO = null;
+let otFil = 'todas';
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('r-fecha').value = hoy;
+  document.getElementById('o-fecha-rep').value = hoy;
+  document.getElementById('o-fecha-vis').value = hoy;
+  document.getElementById('o-hora').value = new Date().toTimeString().slice(0,5);
+  poblarDirecciones();
+  ['r','or','ot'].forEach(initCanvas);
+});
+
+// ════════════════════════════════════════
+// NAVEGACIÓN
+// ════════════════════════════════════════
+function nav(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.hnav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'recibo-hist') renderRecibos();
+  if (name === 'ot-hist') renderOTs();
+}
+
+// ════════════════════════════════════════
+// CANVAS
+// ════════════════════════════════════════
+function initCanvas(key) {
+  const canvas = document.getElementById('sig-' + key);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  sigCtx[key] = ctx;
+  sigStates[key] = false;
+
+  function resize() {
+    const w = canvas.parentElement.getBoundingClientRect().width;
+    if (!w) return;
+    canvas.width = w; canvas.height = parseInt(canvas.getAttribute('height')) || 140;
+    ctx.strokeStyle = '#1A1D23'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  let drawing = false, lx = 0, ly = 0;
+  function pos(e) {
+    const rc = canvas.getBoundingClientRect();
+    const sx = canvas.width / rc.width, sy = canvas.height / rc.height;
+    if (e.touches) return [(e.touches[0].clientX - rc.left)*sx, (e.touches[0].clientY - rc.top)*sy];
+    return [(e.clientX - rc.left)*sx, (e.clientY - rc.top)*sy];
+  }
+  const hint = document.getElementById('hint-' + key);
+  canvas.addEventListener('mousedown', e => { e.preventDefault(); drawing=true; [lx,ly]=pos(e); if(hint) hint.classList.add('hidden'); });
+  canvas.addEventListener('mousemove', e => { if(!drawing) return; const [x,y]=pos(e); ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke(); [lx,ly]=[x,y]; sigStates[key]=true; });
+  canvas.addEventListener('mouseup', () => drawing=false);
+  canvas.addEventListener('mouseleave', () => drawing=false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; [lx,ly]=pos(e); if(hint) hint.classList.add('hidden'); }, {passive:false});
+  canvas.addEventListener('touchmove', e => { if(!drawing) return; e.preventDefault(); const [x,y]=pos(e); ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke(); [lx,ly]=[x,y]; sigStates[key]=true; }, {passive:false});
+  canvas.addEventListener('touchend', () => drawing=false);
+}
+
+function clrSig(key) {
+  const canvas = document.getElementById('sig-' + key);
+  sigCtx[key].clearRect(0, 0, canvas.width, canvas.height);
+  sigStates[key] = false;
+  const hint = document.getElementById('hint-' + key);
+  if (hint) hint.classList.remove('hidden');
+}
+
+function getSig(key) {
+  if (!sigStates[key]) return null;
+  return document.getElementById('sig-' + key).toDataURL('image/png');
+}
+
+// ════════════════════════════════════════
+// SELECTORES
+// ════════════════════════════════════════
+function selTipo(t) {
+  tipoRecibo = t;
+  document.getElementById('opt-llaves').classList.toggle('selected', t === 'llaves');
+  document.getElementById('opt-control').classList.toggle('selected', t === 'control');
+  document.getElementById('ctrl-row').classList.toggle('show', t === 'control');
+  document.getElementById('llave-row').classList.toggle('show', t === 'llaves');
+}
+
+function selFalla(el) {
+  document.querySelectorAll('.falla-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  tipoFalla = el.dataset.f;
+}
+
+function selEstado(el) {
+  document.querySelectorAll('.estado-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  estadoOT = el.dataset.e;
+}
+
+// ════════════════════════════════════════
+// FOTOS
+// ════════════════════════════════════════
+function handleFotos(input) {
+  fotosData = [];
+  document.getElementById('foto-preview').innerHTML = '';
+  Array.from(input.files).slice(0,3).forEach(f => {
+    const rd = new FileReader();
+    rd.onload = e => {
+      fotosData.push(e.target.result);
+      const img = document.createElement('img');
+      img.className = 'foto-thumb'; img.src = e.target.result;
+      document.getElementById('foto-preview').appendChild(img);
+    };
+    rd.readAsDataURL(f);
+  });
+}
+
+// ════════════════════════════════════════
+// FECHA FORMATO
+// ════════════════════════════════════════
+function fmtFecha(iso) {
+  if (!iso) return '—';
+  const [yr, mo, dy] = iso.split('-');
+  const m = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${parseInt(dy)} de ${m[parseInt(mo)-1]} de ${yr}`;
+}
+
+// ════════════════════════════════════════
+// RECIBOS
+// ════════════════════════════════════════
+function validarRecibo() {
+  if (!tipoRecibo) { toast('Selecciona el tipo de recibo', 'error'); return false; }
+  let ok = true;
+  ['r-nombre','r-rut','r-dir','r-depto'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.classList.add('err'); ok = false; }
+    else el.classList.remove('err');
+  });
+  if (!ok) { toast('Completa todos los campos obligatorios', 'error'); return false; }
+  if (!sigStates['r']) { toast('Se requiere la firma del residente', 'error'); return false; }
+  return true;
+}
+
+function guardarRecibo() {
+  if (!validarRecibo()) return;
+  const btn = document.getElementById('btn-r');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
+  const recibo = {
+    id: Date.now(),
+    tipo: tipoRecibo,
+    nombre: document.getElementById('r-nombre').value.trim(),
+    rut: document.getElementById('r-rut').value.trim(),
+    dir: document.getElementById('r-dir').value.trim(),
+    depto: document.getElementById('r-depto').value.trim(),
+    email: document.getElementById('r-email').value.trim(),
+    fecha: fmtFecha(document.getElementById('r-fecha').value),
+    numControl: tipoRecibo === 'control' ? document.getElementById('r-num-ctrl').value : null,
+    tipoLlave: tipoRecibo === 'llaves' ? document.getElementById('r-tipo-llave').value : null,
+    firma: getSig('r'),
+    creado: new Date().toLocaleString('es-CL')
+  };
+
+  recibos.unshift(recibo);
+  localStorage.setItem('recibos_v2', JSON.stringify(recibos));
+
+  setTimeout(() => {
+    btn.disabled = false; btn.innerHTML = '<span>💾</span> Guardar Recibo';
+    toast('Recibo guardado ✓', 'success');
+    if (recibo.email) emailRecibo(recibo);
+    resetRecibo();
+    nav('recibo-hist');
+  }, 500);
+}
+
+function resetRecibo() {
+  tipoRecibo = null;
+  ['opt-llaves','opt-control'].forEach(id => document.getElementById(id).classList.remove('selected'));
+  document.getElementById('ctrl-row').classList.remove('show');
+  document.getElementById('llave-row').classList.remove('show');
+  document.getElementById('r-tipo-llave').value = '';
+  ['r-nombre','r-rut','r-email'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).classList.remove('err'); });
+  ['r-dir','r-depto'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).classList.remove('err'); });
+  document.getElementById('r-fecha').value = new Date().toISOString().split('T')[0];
+  clrSig('r');
+}
+
+function renderRecibos() {
+  const el = document.getElementById('rlist');
+  const cnt = document.getElementById('rcount');
+  cnt.textContent = `${recibos.length} recibo${recibos.length !== 1 ? 's' : ''}`;
+  if (!recibos.length) { el.innerHTML = `<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay recibos. Crea el primero.</p></div></div>`; return; }
+  el.innerHTML = `<div class="item-list">${recibos.map(r => `
+    <div class="item">
+      <div class="item-badge badge-${r.tipo}">${r.tipo === 'llaves' ? '🔑' : '📡'}</div>
+      <div class="item-info">
+        <strong>${r.nombre}</strong>
+        <div class="item-meta">Depto. ${r.depto} · ${r.tipo === 'llaves' ? 'Llave de acceso' : `Control (${r.numControl})`} · ${r.fecha}</div>
+      </div>
+      <div class="item-actions">
+        <button class="bicon" title="Ver" onclick="verRecibo(${r.id})">👁</button>
+        <button class="bicon" title="PDF" onclick="pdfReciboById(${r.id})">⬇</button>
+        ${r.email ? `<button class="bicon" title="Gmail" onclick="emailRecibo(getRById(${r.id}))">✉</button>` : ''}
+        <button class="bicon danger" title="Eliminar" onclick="delRecibo(${r.id})">🗑</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function getRById(id) { return recibos.find(r => r.id === id); }
+
+function delRecibo(id) {
+  if (!confirm('¿Eliminar este recibo?')) return;
+  recibos = recibos.filter(r => r.id !== id);
+  localStorage.setItem('recibos_v2', JSON.stringify(recibos));
+  renderRecibos(); toast('Recibo eliminado', '');
+}
+
+function verRecibo(id) {
+  const r = getRById(id);
+  if (!r) return;
+  currentR = r;
+  document.getElementById('rdoc').innerHTML = buildReciboHTML(r);
+  document.getElementById('modal-r').classList.add('open');
+}
+
+function buildReciboHTML(r) {
+  const titulo = r.tipo === 'llaves' ? 'RECIBO CONFORME DE ENTREGA DE LLAVES' : 'RECIBO CONFORME DE ENTREGA DE SEGUNDO CONTROL REMOTO';
+  const tipoLlaveStr = r.tipoLlave ? ` correspondiente a <strong>${r.tipoLlave}</strong>` : '';
+  const cuerpo = r.tipo === 'llaves'
+    ? `Por medio del presente documento, yo, <strong>${r.nombre}</strong>, RUT/Cédula de Identidad N° <strong>${r.rut}</strong> residente del domicilio <strong>${r.dir}</strong>, departamento N° <strong>${r.depto}</strong>, declaro haber recibido de parte de la Administración una llave de acceso${tipoLlaveStr}.<br><br>La llave que se entrega ha sido probada en mi presencia, confirmando su correcto funcionamiento.`
+    : `Por medio del presente documento, yo, <strong>${r.nombre}</strong>, RUT/Cédula de Identidad N° <strong>${r.rut}</strong> residente del domicilio <strong>${r.dir}</strong>, departamento N° <strong>${r.depto}</strong>, declaro haber recibido de parte de la Administración <strong>${r.numControl} control remoto</strong> para el acceso vehicular.<br><br>El dispositivo se entrega nuevo, en perfectas condiciones y ha sido probado en mi presencia, confirmando su correcto funcionamiento.`;
+  return `
+    <div class="dt">${titulo}</div>
+    <p><strong>Fecha:</strong> ${r.fecha}</p><br>
+    <p>${cuerpo}</p><br>
+    <p>Firmo en señal de total conformidad con lo aquí estipulado.</p>
+    <br><br>
+    <div><strong>Recibe Conforme:</strong><br><br>
+      ${r.firma ? `<img class="sig-img" src="${r.firma}" alt="Firma">` : ''}
+      <div class="firma-line">Firma</div>
+    </div>`;
+}
+
+function rPDF() { if (currentR) pdfReciboById(currentR.id); }
+function rEmail() { if (currentR) emailRecibo(currentR); }
+
+function pdfReciboById(id) {
+  const r = getRById(id);
+  if (!r) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+  const M = 25, W = doc.internal.pageSize.getWidth() - M*2;
+  doc.setFont('times','bold'); doc.setFontSize(13);
+  const tit = r.tipo === 'llaves' ? 'RECIBO CONFORME DE ENTREGA DE LLAVES' : 'RECIBO CONFORME DE ENTREGA DE SEGUNDO CONTROL REMOTO';
+  const st = doc.splitTextToSize(tit, W);
+  doc.text(st, doc.internal.pageSize.getWidth()/2, 28, {align:'center'});
+  let y = 28 + st.length*7 + 8;
+  doc.setFont('times','normal'); doc.setFontSize(12);
+  doc.text(`Fecha: ${r.fecha}`, M, y); y += 10;
+  const tipoLlaveStr = r.tipoLlave ? ` correspondiente a ${r.tipoLlave}` : '';
+  const tx = r.tipo === 'llaves'
+    ? `Por medio del presente documento, yo, ${r.nombre}, RUT/Cédula de Identidad N° ${r.rut} residente del domicilio ${r.dir}, departamento N° ${r.depto}, declaro haber recibido de parte de la Administración una llave de acceso${tipoLlaveStr}.\n\nLa llave que se entrega ha sido probada en mi presencia, confirmando su correcto funcionamiento.\n\nFirmo en señal de total conformidad con lo aquí estipulado.`
+    : `Por medio del presente documento, yo, ${r.nombre}, RUT/Cédula de Identidad N° ${r.rut} residente del domicilio ${r.dir}, departamento N° ${r.depto}, declaro haber recibido de parte de la Administración ${r.numControl} control remoto para el acceso vehicular.\n\nEl dispositivo se entrega nuevo, en perfectas condiciones y ha sido probado en mi presencia, confirmando su correcto funcionamiento.\n\nFirmo en señal de total conformidad con lo aquí estipulado.`;
+  const sb = doc.splitTextToSize(tx, W);
+  doc.text(sb, M, y); y += sb.length*7 + 14;
+  doc.setFont('times','bold'); doc.text('Recibe Conforme:', M, y); y += 8; doc.setFont('times','normal');
+  if (r.firma) { doc.addImage(r.firma,'PNG',M,y,50,20); y+=24; } else y+=18;
+  doc.line(M, y, M+70, y); y+=5; doc.text('Firma', M, y);
+  doc.save(`Recibo_${r.tipo}_Depto${r.depto}_${r.nombre.replace(/ /g,'_')}.pdf`);
+  toast('PDF descargado ✓', 'success');
+}
+
+function emailRecibo(r) {
+  if (!r.email) { toast('No hay email registrado', 'error'); return; }
+  const tipoStr = r.tipo === 'llaves' ? 'llave de acceso hacia la calle' : `${r.numControl} control remoto para acceso vehicular`;
+  const su = encodeURIComponent(`Recibo Conforme — Depto. ${r.depto} — ${r.tipo === 'llaves' ? 'Llave' : 'Control Remoto'}`);
+  const body = encodeURIComponent(`Estimado/a ${r.nombre},\n\nPor medio de este correo le informamos que el día ${r.fecha} se realizó la entrega de ${tipoStr} correspondiente al departamento N° ${r.depto}, ubicado en ${r.dir}.\n\nEl recibo conforme fue firmado en señal de conformidad en la fecha indicada.\n\nAnte cualquier consulta, no dude en contactarnos.\n\nSaludos,\nAdministración del Edificio`);
+  window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(r.email)}&cc=${encodeURIComponent(ADMIN_EMAIL)}&su=${su}&body=${body}`, '_blank');
+  toast('Abriendo Gmail ✓', 'success');
+}
+
+// ════════════════════════════════════════
+// ÓRDENES DE TRABAJO
+// ════════════════════════════════════════
+function validarOT() {
+  let ok = true;
+  ['o-nombre','o-rut','o-depto','o-desc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.classList.add('err'); ok = false; }
+    else el.classList.remove('err');
+  });
+  if (!ok) { toast('Completa los campos obligatorios', 'error'); return false; }
+  if (!tipoFalla) { toast('Selecciona el tipo de falla', 'error'); return false; }
+  if (!sigStates['or']) { toast('Se requiere la firma del residente', 'error'); return false; }
+  return true;
+}
+
+function guardarOT() {
+  if (!validarOT()) return;
+  const btn = document.getElementById('btn-ot');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
+  const num = 'OT-' + String(ordenes.length + 1).padStart(4, '0');
+  const fallaLabel = document.querySelector(`.falla-opt[data-f="${tipoFalla}"] span`)?.textContent || tipoFalla;
+
+  const ot = {
+    id: Date.now(), numero: num,
+    nombre: document.getElementById('o-nombre').value.trim(),
+    rut: document.getElementById('o-rut').value.trim(),
+    dir: document.getElementById('o-dir').value.trim(),
+    depto: document.getElementById('o-depto').value.trim(),
+    tel: document.getElementById('o-tel').value.trim(),
+    email: document.getElementById('o-email').value.trim(),
+    fechaRep: fmtFecha(document.getElementById('o-fecha-rep').value),
+    hora: document.getElementById('o-hora').value || '—',
+    falla: tipoFalla, fallaLabel,
+    desc: document.getElementById('o-desc').value.trim(),
+    fotos: [...fotosData],
+    fechaVis: fmtFecha(document.getElementById('o-fecha-vis').value),
+    tecnico: document.getElementById('o-tecnico').value.trim(),
+    diag: document.getElementById('o-diag').value.trim(),
+    trabajo: document.getElementById('o-trabajo').value.trim(),
+    repuestos: document.getElementById('o-rep').value.trim(),
+    estado: estadoOT,
+    firmaRes: getSig('or'),
+    firmaTec: getSig('ot'),
+    creado: new Date().toLocaleString('es-CL')
+  };
+
+  ordenes.unshift(ot);
+  localStorage.setItem('ot_citofonia_v2', JSON.stringify(ordenes));
+
+  setTimeout(() => {
+    btn.disabled = false; btn.innerHTML = '<span>💾</span> Guardar Orden de Trabajo';
+    toast(`${num} guardada ✓`, 'success');
+    if (ot.email) emailOT(ot);
+    resetOT();
+    nav('ot-hist');
+  }, 500);
+}
+
+function resetOT() {
+  tipoFalla = null; estadoOT = 'ingresado'; fotosData = [];
+  document.querySelectorAll('.falla-opt').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.estado-opt').forEach(o => o.classList.remove('selected'));
+  document.querySelector('.estado-opt[data-e="ingresado"]').classList.add('selected');
+  ['o-nombre','o-rut','o-tel','o-email','o-desc','o-tecnico','o-diag','o-trabajo','o-rep'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('err'); }
+  });
+  ['o-dir','o-depto'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).classList.remove('err'); });
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('o-fecha-rep').value = hoy;
+  document.getElementById('o-fecha-vis').value = hoy;
+  document.getElementById('o-hora').value = new Date().toTimeString().slice(0,5);
+  document.getElementById('foto-preview').innerHTML = '';
+  document.getElementById('foto-input').value = '';
+  clrSig('or'); clrSig('ot');
+}
+
+function setFil(btn) {
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  otFil = btn.dataset.fil;
+  renderOTs();
+}
+
+function renderOTs() {
+  const el = document.getElementById('olist');
+  const cnt = document.getElementById('ocount');
+  const fil = otFil === 'todas' ? ordenes : ordenes.filter(o => o.estado === otFil);
+  cnt.textContent = `${ordenes.length} OT`;
+  if (!fil.length) { el.innerHTML = `<div class="card"><div class="empty"><div class="ei">📭</div><p>${!ordenes.length ? 'Aún no hay órdenes.' : 'No hay OT con este estado.'}</p></div></div>`; return; }
+  const eMap = { ingresado:'Ingresado', revision:'En Revisión', reparacion:'En Reparación', cerrado:'Cerrado' };
+  el.innerHTML = `<div class="item-list">${fil.map(o => `
+    <div class="item">
+      <div class="item-num">${o.numero}</div>
+      <div class="item-info">
+        <strong>${o.nombre} <span class="badge-e be-${o.estado}">${eMap[o.estado]}</span></strong>
+        <div class="item-meta">Depto. ${o.depto} · ${o.fallaLabel} · ${o.fechaRep}${o.tecnico ? ' · 🔧 ' + o.tecnico : ''}</div>
+      </div>
+      <div class="item-actions">
+        <button class="bicon" title="Ver" onclick="verOT(${o.id})">👁</button>
+        <button class="bicon" title="PDF" onclick="pdfOTById(${o.id})">⬇</button>
+        ${o.email ? `<button class="bicon" title="Gmail" onclick="emailOT(getOById(${o.id}))">✉</button>` : ''}
+        <button class="bicon danger" title="Eliminar" onclick="delOT(${o.id})">🗑</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function getOById(id) { return ordenes.find(o => o.id === id); }
+
+function delOT(id) {
+  if (!confirm('¿Eliminar esta orden?')) return;
+  ordenes = ordenes.filter(o => o.id !== id);
+  localStorage.setItem('ot_citofonia_v2', JSON.stringify(ordenes));
+  renderOTs(); toast('Orden eliminada', '');
+}
+
+function verOT(id) {
+  const o = getOById(id);
+  if (!o) return;
+  currentO = o;
+  document.getElementById('modal-o-title').textContent = `Vista Previa — ${o.numero}`;
+  document.getElementById('odoc').innerHTML = buildOTHTML(o);
+  document.getElementById('modal-o').classList.add('open');
+}
+
+function buildOTHTML(o) {
+  const eMap = { ingresado:'INGRESADO', revision:'EN REVISIÓN', reparacion:'EN REPARACIÓN', cerrado:'CERRADO' };
+  return `
+    <div class="dt">ORDEN DE TRABAJO — REPARACIÓN DE CITOFONÍA</div>
+    <div class="ds">${o.numero} · ${o.creado}</div>
+    <div class="sh">1. Datos del Residente</div>
+    <table>
+      <tr><td>Nombre</td><td>${o.nombre}</td></tr>
+      <tr><td>RUT / Cédula</td><td>${o.rut}</td></tr>
+      <tr><td>Dirección</td><td>${o.dir}</td></tr>
+      <tr><td>Departamento</td><td>${o.depto}</td></tr>
+      ${o.tel ? `<tr><td>Teléfono</td><td>${o.tel}</td></tr>` : ''}
+      ${o.email ? `<tr><td>Email</td><td>${o.email}</td></tr>` : ''}
+    </table>
+    <div class="sh">2. Reporte del Problema</div>
+    <table>
+      <tr><td>Fecha de Reporte</td><td>${o.fechaRep}</td></tr>
+      <tr><td>Hora aprox.</td><td>${o.hora}</td></tr>
+      <tr><td>Tipo de Falla</td><td>${o.fallaLabel}</td></tr>
+      <tr><td>Descripción</td><td>${o.desc}</td></tr>
+    </table>
+    <div class="sh">3. Atención Técnica</div>
+    <table>
+      <tr><td>Fecha de Visita</td><td>${o.fechaVis}</td></tr>
+      <tr><td>Técnico</td><td>${o.tecnico || '—'}</td></tr>
+      <tr><td>Diagnóstico</td><td>${o.diag || '—'}</td></tr>
+      <tr><td>Trabajo Realizado</td><td>${o.trabajo || '—'}</td></tr>
+      <tr><td>Repuestos</td><td>${o.repuestos || '—'}</td></tr>
+      <tr><td>Estado Final</td><td><strong>${eMap[o.estado]}</strong></td></tr>
+    </table>
+    <div class="sh">4. Firmas</div>
+    <div class="sig-row">
+      <div class="sig-col">
+        ${o.firmaRes ? `<img src="${o.firmaRes}" alt="Firma Residente">` : '<div style="height:50px"></div>'}
+        <div class="sig-line">Firma del Residente<br><small>${o.nombre}</small></div>
+      </div>
+      <div class="sig-col">
+        ${o.firmaTec ? `<img src="${o.firmaTec}" alt="Firma Técnico">` : '<div style="height:50px"></div>'}
+        <div class="sig-line">Firma del Técnico<br><small>${o.tecnico || '—'}</small></div>
+      </div>
+    </div>`;
+}
+
+function oPDF() { if (currentO) pdfOTById(currentO.id); }
+function oEmail() { if (currentO) emailOT(currentO); }
+
+function pdfOTById(id) {
+  const o = getOById(id);
+  if (!o) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'letter' });
+  const M = 22, W = doc.internal.pageSize.getWidth() - M*2;
+  doc.setFont('times','bold'); doc.setFontSize(14);
+  doc.text('ORDEN DE TRABAJO — REPARACIÓN DE CITOFONÍA', doc.internal.pageSize.getWidth()/2, 25, {align:'center'});
+  doc.setFont('times','normal'); doc.setFontSize(10);
+  doc.text(`${o.numero} · ${o.creado}`, doc.internal.pageSize.getWidth()/2, 31, {align:'center'});
+  let y = 42;
+  const sec = t => { doc.setFont('times','bold'); doc.setFontSize(11); doc.text(t,M,y); doc.line(M,y+1.5,M+W,y+1.5); y+=8; doc.setFont('times','normal'); doc.setFontSize(10.5); };
+  const row = (l,v) => { if(!v) return; const ls=doc.splitTextToSize(`${l}: ${v}`,W); doc.text(ls,M,y); y+=ls.length*6; };
+  sec('1. Datos del Residente');
+  row('Nombre',o.nombre); row('RUT',o.rut); row('Dirección',o.dir); row('Departamento',o.depto);
+  if(o.tel) row('Teléfono',o.tel); if(o.email) row('Email',o.email); y+=4;
+  sec('2. Reporte del Problema');
+  row('Fecha de Reporte',o.fechaRep); row('Hora',o.hora); row('Tipo de Falla',o.fallaLabel);
+  const dl=doc.splitTextToSize(`Descripción: ${o.desc}`,W); doc.text(dl,M,y); y+=dl.length*6+4;
+  sec('3. Atención Técnica');
+  row('Fecha de Visita',o.fechaVis); row('Técnico',o.tecnico||'—');
+  if(o.diag){const l=doc.splitTextToSize(`Diagnóstico: ${o.diag}`,W);doc.text(l,M,y);y+=l.length*6;}
+  if(o.trabajo){const l=doc.splitTextToSize(`Trabajo: ${o.trabajo}`,W);doc.text(l,M,y);y+=l.length*6;}
+  if(o.repuestos) row('Repuestos',o.repuestos);
+  const em={ingresado:'INGRESADO',revision:'EN REVISIÓN',reparacion:'EN REPARACIÓN',cerrado:'CERRADO'};
+  row('Estado',em[o.estado]); y+=4;
+  sec('4. Firmas');
+  if(o.firmaRes) doc.addImage(o.firmaRes,'PNG',M,y,55,22);
+  if(o.firmaTec) doc.addImage(o.firmaTec,'PNG',M+80,y,55,22);
+  y+=26; doc.line(M,y,M+55,y); doc.line(M+80,y,M+80+55,y); y+=5;
+  doc.setFontSize(9.5);
+  doc.text(`Firma del Residente\n${o.nombre}`,M,y);
+  doc.text(`Firma del Técnico\n${o.tecnico||'—'}`,M+80,y);
+  doc.save(`${o.numero}_${o.nombre.replace(/ /g,'_')}.pdf`);
+  toast('PDF descargado ✓', 'success');
+}
+
+function emailOT(o) {
+  if (!o.email) { toast('No hay email registrado', 'error'); return; }
+  const eMap = { ingresado:'Ingresado', revision:'En Revisión', reparacion:'En Reparación', cerrado:'Cerrado' };
+  const su = encodeURIComponent(`${o.numero} — Reparación de Citofonía — Depto. ${o.depto}`);
+  const body = encodeURIComponent(`Estimado/a ${o.nombre},\n\nLe informamos que se ha registrado una orden de trabajo por falla de citofonía en el departamento N° ${o.depto}.\n\nDetalle:\n• Número de Orden: ${o.numero}\n• Tipo de Falla: ${o.fallaLabel}\n• Fecha de Reporte: ${o.fechaRep}\n• Técnico Responsable: ${o.tecnico || 'Por asignar'}\n• Estado Actual: ${eMap[o.estado]}${o.diag ? '\n• Diagnóstico: ' + o.diag : ''}${o.trabajo ? '\n• Trabajo Realizado: ' + o.trabajo : ''}\n\nAnte cualquier consulta, no dude en contactarnos.\n\nSaludos,\nAdministración del Edificio`);
+  window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(o.email)}&cc=${encodeURIComponent(ADMIN_EMAIL)}&su=${su}&body=${body}`, '_blank');
+  toast('Abriendo Gmail ✓', 'success');
+}
+
+// ════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════
+function closeOverlay(id, e) {
+  if (e && e.target !== document.getElementById(id)) return;
+  document.getElementById(id).classList.remove('open');
+  if (id === 'modal-r') currentR = null;
+  if (id === 'modal-o') currentO = null;
+}
+
+// ════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════
+function toast(msg, type='') {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`; t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+</script>
+</body>
+</html>
