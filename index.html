@@ -212,8 +212,8 @@ textarea{resize:vertical;min-height:76px}
   <div class="hbrand">
     <div class="hicon">🏢</div>
     <div>
-      <h1>Administración</h1>
-      <span>Calle 12 Norte</span>
+      <h1>Comunidad Edificio 12 Norte de Viña del Mar</h1>
+      <span>RUT: 56.028.260-5</span>
     </div>
   </div>
   <nav class="hnav">
@@ -222,6 +222,9 @@ textarea{resize:vertical;min-height:76px}
     <div class="sep"></div>
     <button onclick="nav('ot-nuevo')" id="tab-ot-nuevo">🔧 Nueva OT</button>
     <button onclick="nav('ot-hist')" id="tab-ot-hist">📋 OT Citofonía</button>
+    <div class="sep"></div>
+    <button onclick="nav('pago-nuevo')" id="tab-pago-nuevo">💳 Pago Proveedor</button>
+    <button onclick="nav('pago-hist')" id="tab-pago-hist">📋 Pagos</button>
   </nav>
 </header>
 
@@ -407,6 +410,100 @@ textarea{resize:vertical;min-height:76px}
   <div id="olist"></div>
 </div>
 
+
+<!-- ══════════════════════════════════
+     PAGO PROVEEDOR — NUEVO
+══════════════════════════════════ -->
+<div id="view-pago-nuevo" class="view">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-icon">💳</div>
+      <div><h2>Comprobante de Pago a Proveedor</h2><p>Registro de pagos con comprobante PDF y envío automático</p></div>
+    </div>
+    <div class="card-body">
+
+      <div class="divider"><span>Datos del Proveedor</span></div>
+      <div class="fg">
+        <div class="f full"><label>Razón Social / Nombre</label><input type="text" id="p-nombre" placeholder="Ej: Servicios Técnicos Ltda."></div>
+        <div class="f"><label>RUT Proveedor</label><input type="text" id="p-rut" placeholder="Ej: 76.123.456-7"></div>
+        <div class="f"><label>Giro</label><input type="text" id="p-giro" placeholder="Ej: Servicios de mantención"></div>
+        <div class="f full"><label>Email Proveedor</label><input type="email" id="p-email" placeholder="proveedor@email.com"></div>
+        <div class="f full"><label>Cuenta Bancaria (opcional)</label><input type="text" id="p-banco" placeholder="Ej: Banco Estado — Cta Cte 12345678"></div>
+      </div>
+
+      <div class="divider"><span>Detalle del Pago</span></div>
+      <div class="fg">
+        <div class="f"><label>Fecha de Pago</label><input type="date" id="p-fecha"></div>
+        <div class="f"><label>Período</label><input type="text" id="p-periodo" placeholder="Ej: Julio 2026"></div>
+        <div class="f full"><label>Concepto del Servicio</label>
+          <select id="p-concepto">
+            <option value="">— Selecciona concepto —</option>
+            <option>Mantención</option>
+            <option>Reparación</option>
+            <option>Aseo</option>
+            <option>Jardinería</option>
+            <option>Seguridad</option>
+            <option>Citofonía</option>
+            <option>Electricidad</option>
+            <option>Gasfitería</option>
+            <option>Pintura</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="f full"><label>Descripción del Servicio</label><textarea id="p-desc" rows="2" placeholder="Detalla el servicio prestado..."></textarea></div>
+        <div class="f"><label>N° Factura / Boleta (opcional)</label><input type="text" id="p-factura" placeholder="Ej: Factura 001234"></div>
+        <div class="f"><label>N° Cotización (opcional)</label><input type="text" id="p-cotizacion" placeholder="Ej: COT-2026-045"></div>
+      </div>
+
+      <div class="divider"><span>Montos</span></div>
+      <div class="fg">
+        <div class="f"><label>Monto Neto ($)</label><input type="number" id="p-neto" placeholder="0" oninput="calcularTotales()"></div>
+        <div class="f"><label>IVA (19%)</label><input type="number" id="p-iva" placeholder="0" readonly style="background:#f5f5f5;color:#666"></div>
+        <div class="f"><label>Descuento ($) (opcional)</label><input type="number" id="p-descuento" placeholder="0" oninput="calcularTotales()"></div>
+        <div class="f"><label style="color:var(--accent);font-weight:800">TOTAL A PAGAR ($)</label><input type="number" id="p-total" placeholder="0" readonly style="background:#EBF0F8;font-weight:700;color:var(--accent);font-size:15px"></div>
+      </div>
+
+      <div class="divider"><span>Forma de Pago</span></div>
+      <div class="fg">
+        <div class="f"><label>Forma de Pago</label>
+          <select id="p-forma">
+            <option>Transferencia Bancaria</option>
+            <option>Efectivo</option>
+            <option>Cheque</option>
+          </select>
+        </div>
+        <div class="f"><label>N° Operación / Referencia (opcional)</label><input type="text" id="p-operacion" placeholder="Ej: 000123456"></div>
+        <div class="f full"><label>Observaciones (opcional)</label><textarea id="p-obs" rows="2" placeholder="Notas adicionales..."></textarea></div>
+      </div>
+
+      <div class="divider"><span>Firma Administración</span></div>
+      <div class="notice">✉️&nbsp; <div><strong>Gmail:</strong> Al guardar se enviará el comprobante PDF al proveedor con copia a <strong>com12norte@gmail.com</strong>.</div></div>
+      <div class="sig-title" style="margin-bottom:8px">Firma quien autoriza el pago</div>
+      <div class="sig-wrap">
+        <canvas id="sig-p" height="140"></canvas>
+        <div class="sig-hint" id="hint-p">Firme aquí</div>
+        <div class="sig-foot"><button class="btn-clr" onclick="clrSig('p')">🗑 Borrar</button></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="resetPago()">Limpiar</button>
+        <button class="btn btn-primary" id="btn-p" onclick="guardarPago()"><span>💾</span> Guardar Comprobante</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PAGO PROVEEDOR — HISTORIAL
+══════════════════════════════════ -->
+<div id="view-pago-hist" class="view">
+  <div class="hist-top">
+    <h2>💳 Historial de Pagos a Proveedores</h2>
+    <span class="hcount" id="pcount">0</span>
+  </div>
+  <div id="plist"></div>
+</div>
+
 </div><!-- /container -->
 
 <!-- MODAL RECIBO -->
@@ -435,6 +532,20 @@ textarea{resize:vertical;min-height:76px}
   </div>
 </div>
 
+
+<!-- MODAL PAGO -->
+<div class="overlay" id="modal-p" onclick="closeOverlay('modal-p',event)">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="modal-p-title">Vista Previa — Comprobante</h3><button class="mclose" onclick="closeOverlay('modal-p')">✕</button></div>
+    <div class="modal-body"><div class="doc" id="pdoc"></div></div>
+    <div class="modal-ft">
+      <button class="btn btn-secondary" onclick="closeOverlay('modal-p')">Cerrar</button>
+      <button class="btn btn-success" onclick="pPDF()">⬇ PDF</button>
+      <button class="btn btn-primary" onclick="pEmail()">✉ Gmail</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toasts"></div>
 
 <script>
@@ -442,6 +553,15 @@ textarea{resize:vertical;min-height:76px}
 // CONFIG
 // ════════════════════════════════════════
 const ADMIN_EMAIL = 'com12norte@gmail.com';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwg6sLTgWlc5koW8wkicSphL3MfBvHtsTent0M-NuC2bb6SIBCr7qqhXGgr-NVkgn6f/exec'; // ← Pega aquí la URL tras implementar
+
+async function enviarAlScript(payload) {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const json = await res.json();
+    return json;
+  } catch (err) { return { ok: false, error: err.message }; }
+}
 
 // ════════════════════════════════════════
 // DATOS PARKADMIN
@@ -511,7 +631,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('o-fecha-vis').value = hoy;
   document.getElementById('o-hora').value = new Date().toTimeString().slice(0,5);
   poblarDirecciones();
-  ['r','or','ot'].forEach(initCanvas);
+  ['r','or','ot','p'].forEach(initCanvas);
+  calcularTotales();
 });
 
 // ════════════════════════════════════════
@@ -524,6 +645,7 @@ function nav(name) {
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'recibo-hist') renderRecibos();
   if (name === 'ot-hist') renderOTs();
+  if (name === 'pago-hist') renderPagos();
 }
 
 // ════════════════════════════════════════
@@ -642,7 +764,7 @@ function validarRecibo() {
   return true;
 }
 
-function guardarRecibo() {
+async function guardarRecibo() {
   if (!validarRecibo()) return;
   const btn = document.getElementById('btn-r');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
@@ -650,6 +772,7 @@ function guardarRecibo() {
   const recibo = {
     id: Date.now(),
     tipo: tipoRecibo,
+    tipoRecibo: tipoRecibo,
     nombre: document.getElementById('r-nombre').value.trim(),
     rut: document.getElementById('r-rut').value.trim(),
     dir: document.getElementById('r-dir').value.trim(),
@@ -665,13 +788,21 @@ function guardarRecibo() {
   recibos.unshift(recibo);
   localStorage.setItem('recibos_v2', JSON.stringify(recibos));
 
-  setTimeout(() => {
-    btn.disabled = false; btn.innerHTML = '<span>💾</span> Guardar Recibo';
-    toast('Recibo guardado ✓', 'success');
-    if (recibo.email) emailRecibo(recibo);
-    resetRecibo();
-    nav('recibo-hist');
-  }, 500);
+  if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_APPS_SCRIPT') {
+    btn.innerHTML = '<span class="spinner"></span> Guardando en Drive...';
+    const res = await enviarAlScript({ tipo: 'recibo', ...recibo });
+    if (res.ok) {
+      toast('Recibo guardado en Drive ✓' + (res.emailEnviado ? ' · Email enviado ✓' : ''), 'success');
+    } else {
+      toast('Error Drive/Gmail: ' + res.error, 'error');
+    }
+  } else {
+    toast('Recibo guardado localmente ✓', 'success');
+  }
+
+  btn.disabled = false; btn.innerHTML = '<span>💾</span> Guardar Recibo';
+  resetRecibo();
+  nav('recibo-hist');
 }
 
 function resetRecibo() {
@@ -728,8 +859,8 @@ function buildReciboHTML(r) {
   const titulo = r.tipo === 'llaves' ? 'RECIBO CONFORME DE ENTREGA DE LLAVES' : 'RECIBO CONFORME DE ENTREGA DE SEGUNDO CONTROL REMOTO';
   const tipoLlaveStr = r.tipoLlave ? ` correspondiente a <strong>${r.tipoLlave}</strong>` : '';
   const cuerpo = r.tipo === 'llaves'
-    ? `Por medio del presente documento, yo, <strong>${r.nombre}</strong>, RUT/Cédula de Identidad N° <strong>${r.rut}</strong> residente del domicilio <strong>${r.dir}</strong>, departamento N° <strong>${r.depto}</strong>, declaro haber recibido de parte de la Administración una llave de acceso${tipoLlaveStr}.<br><br>La llave que se entrega ha sido probada en mi presencia, confirmando su correcto funcionamiento.`
-    : `Por medio del presente documento, yo, <strong>${r.nombre}</strong>, RUT/Cédula de Identidad N° <strong>${r.rut}</strong> residente del domicilio <strong>${r.dir}</strong>, departamento N° <strong>${r.depto}</strong>, declaro haber recibido de parte de la Administración <strong>${r.numControl} control remoto</strong> para el acceso vehicular.<br><br>El dispositivo se entrega nuevo, en perfectas condiciones y ha sido probado en mi presencia, confirmando su correcto funcionamiento.`;
+    ? `Por medio del presente documento, yo, <strong>${r.nombre}</strong>, RUT/Cédula de Identidad N° <strong>${r.rut}</strong> residente del domicilio <strong>${r.dir}</strong>, departamento N° <strong>${r.depto}</strong>, Viña del Mar, Valparaíso, declaro haber recibido de parte de la Administración una llave de acceso${tipoLlaveStr}.<br><br>La llave que se entrega ha sido probada en mi presencia, confirmando su correcto funcionamiento.`
+    : `Por medio del presente documento, yo, <strong>${r.nombre}</strong>, RUT/Cédula de Identidad N° <strong>${r.rut}</strong> residente del domicilio <strong>${r.dir}</strong>, departamento N° <strong>${r.depto}</strong>, Viña del Mar, Valparaíso, declaro haber recibido de parte de la Administración <strong>${r.numControl} control remoto</strong> para el acceso vehicular.<br><br>El dispositivo se entrega nuevo, en perfectas condiciones y ha sido probado en mi presencia, confirmando su correcto funcionamiento.`;
   return `
     <div class="dt">${titulo}</div>
     <p><strong>Fecha:</strong> ${r.fecha}</p><br>
@@ -760,8 +891,8 @@ function pdfReciboById(id) {
   doc.text(`Fecha: ${r.fecha}`, M, y); y += 10;
   const tipoLlaveStr = r.tipoLlave ? ` correspondiente a ${r.tipoLlave}` : '';
   const tx = r.tipo === 'llaves'
-    ? `Por medio del presente documento, yo, ${r.nombre}, RUT/Cédula de Identidad N° ${r.rut} residente del domicilio ${r.dir}, departamento N° ${r.depto}, declaro haber recibido de parte de la Administración una llave de acceso${tipoLlaveStr}.\n\nLa llave que se entrega ha sido probada en mi presencia, confirmando su correcto funcionamiento.\n\nFirmo en señal de total conformidad con lo aquí estipulado.`
-    : `Por medio del presente documento, yo, ${r.nombre}, RUT/Cédula de Identidad N° ${r.rut} residente del domicilio ${r.dir}, departamento N° ${r.depto}, declaro haber recibido de parte de la Administración ${r.numControl} control remoto para el acceso vehicular.\n\nEl dispositivo se entrega nuevo, en perfectas condiciones y ha sido probado en mi presencia, confirmando su correcto funcionamiento.\n\nFirmo en señal de total conformidad con lo aquí estipulado.`;
+    ? `Por medio del presente documento, yo, ${r.nombre}, RUT/Cédula de Identidad N° ${r.rut} residente del domicilio ${r.dir}, departamento N° ${r.depto}, Viña del Mar, Valparaíso, declaro haber recibido de parte de la Administración una llave de acceso${tipoLlaveStr}.\n\nLa llave que se entrega ha sido probada en mi presencia, confirmando su correcto funcionamiento.\n\nFirmo en señal de total conformidad con lo aquí estipulado.`
+    : `Por medio del presente documento, yo, ${r.nombre}, RUT/Cédula de Identidad N° ${r.rut} residente del domicilio ${r.dir}, departamento N° ${r.depto}, Viña del Mar, Valparaíso, declaro haber recibido de parte de la Administración ${r.numControl} control remoto para el acceso vehicular.\n\nEl dispositivo se entrega nuevo, en perfectas condiciones y ha sido probado en mi presencia, confirmando su correcto funcionamiento.\n\nFirmo en señal de total conformidad con lo aquí estipulado.`;
   const sb = doc.splitTextToSize(tx, W);
   doc.text(sb, M, y); y += sb.length*7 + 14;
   doc.setFont('times','bold'); doc.text('Recibe Conforme:', M, y); y += 8; doc.setFont('times','normal');
@@ -775,7 +906,7 @@ function emailRecibo(r) {
   if (!r.email) { toast('No hay email registrado', 'error'); return; }
   const tipoStr = r.tipo === 'llaves' ? 'llave de acceso hacia la calle' : `${r.numControl} control remoto para acceso vehicular`;
   const su = encodeURIComponent(`Recibo Conforme — Depto. ${r.depto} — ${r.tipo === 'llaves' ? 'Llave' : 'Control Remoto'}`);
-  const body = encodeURIComponent(`Estimado/a ${r.nombre},\n\nPor medio de este correo le informamos que el día ${r.fecha} se realizó la entrega de ${tipoStr} correspondiente al departamento N° ${r.depto}, ubicado en ${r.dir}.\n\nEl recibo conforme fue firmado en señal de conformidad en la fecha indicada.\n\nAnte cualquier consulta, no dude en contactarnos.\n\nSaludos,\nAdministración del Edificio`);
+  const body = encodeURIComponent(`Estimado/a ${r.nombre},\n\nPor medio de este correo le informamos que el día ${r.fecha} se realizó la entrega de ${tipoStr} correspondiente al departamento N° ${r.depto}, ubicado en ${r.dir}.\n\nEl recibo conforme fue firmado en señal de conformidad en la fecha indicada.\n\nAnte cualquier consulta, no dude en contactarnos.\n\nSaludos,\nComunidad Edificio 12 Norte de Viña del Mar`);
   window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(r.email)}&cc=${encodeURIComponent(ADMIN_EMAIL)}&su=${su}&body=${body}`, '_blank');
   toast('Abriendo Gmail ✓', 'success');
 }
@@ -796,7 +927,7 @@ function validarOT() {
   return true;
 }
 
-function guardarOT() {
+async function guardarOT() {
   if (!validarOT()) return;
   const btn = document.getElementById('btn-ot');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
@@ -831,13 +962,21 @@ function guardarOT() {
   ordenes.unshift(ot);
   localStorage.setItem('ot_citofonia_v2', JSON.stringify(ordenes));
 
-  setTimeout(() => {
-    btn.disabled = false; btn.innerHTML = '<span>💾</span> Guardar Orden de Trabajo';
-    toast(`${num} guardada ✓`, 'success');
-    if (ot.email) emailOT(ot);
-    resetOT();
-    nav('ot-hist');
-  }, 500);
+  if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_APPS_SCRIPT') {
+    btn.innerHTML = '<span class="spinner"></span> Guardando en Drive...';
+    const res = await enviarAlScript({ tipo: 'ot', ...ot });
+    if (res.ok) {
+      toast(`${num} guardada en Drive ✓` + (res.emailEnviado ? ' · Email enviado ✓' : ''), 'success');
+    } else {
+      toast('Error Drive/Gmail: ' + res.error, 'error');
+    }
+  } else {
+    toast(`${num} guardada localmente ✓`, 'success');
+  }
+
+  btn.disabled = false; btn.innerHTML = '<span>💾</span> Guardar Orden de Trabajo';
+  resetOT();
+  nav('ot-hist');
 }
 
 function resetOT() {
@@ -917,7 +1056,7 @@ function buildOTHTML(o) {
       <tr><td>Nombre</td><td>${o.nombre}</td></tr>
       <tr><td>RUT / Cédula</td><td>${o.rut}</td></tr>
       <tr><td>Dirección</td><td>${o.dir}</td></tr>
-      <tr><td>Departamento</td><td>${o.depto}</td></tr>
+      <tr><td>Departamento</td><td>${o.depto}</td></tr><tr><td>Ciudad</td><td>Viña del Mar, Valparaíso</td></tr>
       ${o.tel ? `<tr><td>Teléfono</td><td>${o.tel}</td></tr>` : ''}
       ${o.email ? `<tr><td>Email</td><td>${o.email}</td></tr>` : ''}
     </table>
@@ -967,7 +1106,7 @@ function pdfOTById(id) {
   const sec = t => { doc.setFont('times','bold'); doc.setFontSize(11); doc.text(t,M,y); doc.line(M,y+1.5,M+W,y+1.5); y+=8; doc.setFont('times','normal'); doc.setFontSize(10.5); };
   const row = (l,v) => { if(!v) return; const ls=doc.splitTextToSize(`${l}: ${v}`,W); doc.text(ls,M,y); y+=ls.length*6; };
   sec('1. Datos del Residente');
-  row('Nombre',o.nombre); row('RUT',o.rut); row('Dirección',o.dir); row('Departamento',o.depto);
+  row('Nombre',o.nombre); row('RUT',o.rut); row('Dirección',o.dir); row('Departamento',o.depto); row('Ciudad','Viña del Mar, Valparaíso');
   if(o.tel) row('Teléfono',o.tel); if(o.email) row('Email',o.email); y+=4;
   sec('2. Reporte del Problema');
   row('Fecha de Reporte',o.fechaRep); row('Hora',o.hora); row('Tipo de Falla',o.fallaLabel);
@@ -994,7 +1133,7 @@ function emailOT(o) {
   if (!o.email) { toast('No hay email registrado', 'error'); return; }
   const eMap = { ingresado:'Ingresado', revision:'En Revisión', reparacion:'En Reparación', cerrado:'Cerrado' };
   const su = encodeURIComponent(`${o.numero} — Reparación de Citofonía — Depto. ${o.depto}`);
-  const body = encodeURIComponent(`Estimado/a ${o.nombre},\n\nLe informamos que se ha registrado una orden de trabajo por falla de citofonía en el departamento N° ${o.depto}.\n\nDetalle:\n• Número de Orden: ${o.numero}\n• Tipo de Falla: ${o.fallaLabel}\n• Fecha de Reporte: ${o.fechaRep}\n• Técnico Responsable: ${o.tecnico || 'Por asignar'}\n• Estado Actual: ${eMap[o.estado]}${o.diag ? '\n• Diagnóstico: ' + o.diag : ''}${o.trabajo ? '\n• Trabajo Realizado: ' + o.trabajo : ''}\n\nAnte cualquier consulta, no dude en contactarnos.\n\nSaludos,\nAdministración del Edificio`);
+  const body = encodeURIComponent(`Estimado/a ${o.nombre},\n\nLe informamos que se ha registrado una orden de trabajo por falla de citofonía en el departamento N° ${o.depto}.\n\nDetalle:\n• Número de Orden: ${o.numero}\n• Tipo de Falla: ${o.fallaLabel}\n• Fecha de Reporte: ${o.fechaRep}\n• Técnico Responsable: ${o.tecnico || 'Por asignar'}\n• Estado Actual: ${eMap[o.estado]}${o.diag ? '\n• Diagnóstico: ' + o.diag : ''}${o.trabajo ? '\n• Trabajo Realizado: ' + o.trabajo : ''}\n\nAnte cualquier consulta, no dude en contactarnos.\n\nSaludos,\nComunidad Edificio 12 Norte de Viña del Mar`);
   window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(o.email)}&cc=${encodeURIComponent(ADMIN_EMAIL)}&su=${su}&body=${body}`, '_blank');
   toast('Abriendo Gmail ✓', 'success');
 }
@@ -1007,6 +1146,246 @@ function closeOverlay(id, e) {
   document.getElementById(id).classList.remove('open');
   if (id === 'modal-r') currentR = null;
   if (id === 'modal-o') currentO = null;
+}
+
+
+// ════════════════════════════════════════
+// PROVEEDORES
+// ════════════════════════════════════════
+let pagos = JSON.parse(localStorage.getItem('pagos_v1') || '[]');
+let currentP = null;
+
+function calcularTotales() {
+  const neto = parseFloat(document.getElementById('p-neto').value) || 0;
+  const desc = parseFloat(document.getElementById('p-descuento').value) || 0;
+  const iva  = Math.round(neto * 0.19);
+  const total = neto + iva - desc;
+  document.getElementById('p-iva').value   = iva;
+  document.getElementById('p-total').value = total;
+}
+
+function fmtMonto(n) {
+  return '$' + Number(n||0).toLocaleString('es-CL');
+}
+
+function validarPago() {
+  let ok = true;
+  ['p-nombre','p-rut','p-concepto','p-desc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.classList.add('err'); ok = false; }
+    else el.classList.remove('err');
+  });
+  if (!ok) { toast('Completa los campos obligatorios', 'error'); return false; }
+  if (!sigStates['p']) { toast('Se requiere la firma de quien autoriza', 'error'); return false; }
+  return true;
+}
+
+async function guardarPago() {
+  if (!validarPago()) return;
+  const btn = document.getElementById('btn-p');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
+  const num = 'CP-' + String(pagos.length + 1).padStart(4, '0');
+  const neto = parseFloat(document.getElementById('p-neto').value) || 0;
+  const iva  = Math.round(neto * 0.19);
+  const desc = parseFloat(document.getElementById('p-descuento').value) || 0;
+  const total = neto + iva - desc;
+
+  const pago = {
+    id: Date.now(), numero: num,
+    nombre:     document.getElementById('p-nombre').value.trim(),
+    rut:        document.getElementById('p-rut').value.trim(),
+    giro:       document.getElementById('p-giro').value.trim(),
+    email:      document.getElementById('p-email').value.trim(),
+    banco:      document.getElementById('p-banco').value.trim(),
+    fecha:      fmtFecha(document.getElementById('p-fecha').value),
+    periodo:    document.getElementById('p-periodo').value.trim(),
+    concepto:   document.getElementById('p-concepto').value,
+    desc:       document.getElementById('p-desc').value.trim(),
+    factura:    document.getElementById('p-factura').value.trim(),
+    cotizacion: document.getElementById('p-cotizacion').value.trim(),
+    neto, iva, descuento: desc, total,
+    forma:      document.getElementById('p-forma').value,
+    operacion:  document.getElementById('p-operacion').value.trim(),
+    obs:        document.getElementById('p-obs').value.trim(),
+    firma:      getSig('p'),
+    creado:     new Date().toLocaleString('es-CL')
+  };
+
+  pagos.unshift(pago);
+  localStorage.setItem('pagos_v1', JSON.stringify(pagos));
+
+  if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_APPS_SCRIPT') {
+    btn.innerHTML = '<span class="spinner"></span> Guardando en Drive...';
+    const res = await enviarAlScript({ tipo: 'pago', ...pago });
+    if (res.ok) {
+      toast(num + ' guardado en Drive ✓' + (res.emailEnviado ? ' · Email enviado ✓' : ''), 'success');
+    } else {
+      toast('Error: ' + res.error, 'error');
+    }
+  } else {
+    toast(num + ' guardado ✓', 'success');
+  }
+
+  btn.disabled = false; btn.innerHTML = '<span>💾</span> Guardar Comprobante';
+  resetPago();
+  nav('pago-hist');
+}
+
+function resetPago() {
+  ['p-nombre','p-rut','p-giro','p-email','p-banco','p-periodo','p-desc','p-factura','p-cotizacion','p-operacion','p-obs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('err'); }
+  });
+  document.getElementById('p-concepto').value = '';
+  document.getElementById('p-forma').value = 'Transferencia Bancaria';
+  document.getElementById('p-neto').value = '';
+  document.getElementById('p-descuento').value = '';
+  document.getElementById('p-fecha').value = new Date().toISOString().split('T')[0];
+  calcularTotales();
+  clrSig('p');
+}
+
+function renderPagos() {
+  const el = document.getElementById('plist');
+  const cnt = document.getElementById('pcount');
+  cnt.textContent = pagos.length + ' pago' + (pagos.length !== 1 ? 's' : '');
+  if (!pagos.length) {
+    el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay comprobantes de pago.</p></div></div>';
+    return;
+  }
+  el.innerHTML = '<div class="item-list">' + pagos.map(p => `
+    <div class="item">
+      <div class="item-num">${p.numero}</div>
+      <div class="item-info">
+        <strong>${p.nombre}</strong>
+        <div class="item-meta">${p.concepto} · ${fmtMonto(p.total)} · ${p.fecha} · ${p.forma}</div>
+      </div>
+      <div class="item-actions">
+        <button class="bicon" title="Ver" onclick="verPago(${p.id})">👁</button>
+        <button class="bicon" title="PDF" onclick="pdfPagoById(${p.id})">⬇</button>
+        ${p.email ? `<button class="bicon" title="Gmail" onclick="emailPago(getPById(${p.id}))">✉</button>` : ''}
+        <button class="bicon danger" title="Eliminar" onclick="delPago(${p.id})">🗑</button>
+      </div>
+    </div>`).join('') + '</div>';
+}
+
+function getPById(id) { return pagos.find(p => p.id === id); }
+
+function delPago(id) {
+  if (!confirm('¿Eliminar este comprobante?')) return;
+  pagos = pagos.filter(p => p.id !== id);
+  localStorage.setItem('pagos_v1', JSON.stringify(pagos));
+  renderPagos(); toast('Comprobante eliminado', '');
+}
+
+function verPago(id) {
+  const p = getPById(id);
+  if (!p) return;
+  currentP = p;
+  document.getElementById('modal-p-title').textContent = 'Vista Previa — ' + p.numero;
+  document.getElementById('pdoc').innerHTML = buildPagoHTML(p);
+  document.getElementById('modal-p').classList.add('open');
+}
+
+function buildPagoHTML(p) {
+  const firmaImg = p.firma ? '<img class="sig-img" src="' + p.firma + '" alt="Firma">' : '';
+  return `
+    <div class="dt">COMPROBANTE DE PAGO A PROVEEDOR</div>
+    <div class="ds">${p.numero} · ${p.creado}</div>
+    <div class="sh">Datos del Proveedor</div>
+    <table>
+      <tr><td>Razón Social</td><td>${p.nombre}</td></tr>
+      <tr><td>RUT</td><td>${p.rut}</td></tr>
+      ${p.giro ? '<tr><td>Giro</td><td>' + p.giro + '</td></tr>' : ''}
+      ${p.email ? '<tr><td>Email</td><td>' + p.email + '</td></tr>' : ''}
+      ${p.banco ? '<tr><td>Cuenta Bancaria</td><td>' + p.banco + '</td></tr>' : ''}
+    </table>
+    <div class="sh">Detalle del Servicio</div>
+    <table>
+      <tr><td>Fecha de Pago</td><td>${p.fecha}</td></tr>
+      <tr><td>Período</td><td>${p.periodo || '—'}</td></tr>
+      <tr><td>Concepto</td><td>${p.concepto}</td></tr>
+      <tr><td>Descripción</td><td>${p.desc}</td></tr>
+      ${p.factura ? '<tr><td>N° Factura/Boleta</td><td>' + p.factura + '</td></tr>' : ''}
+      ${p.cotizacion ? '<tr><td>N° Cotización</td><td>' + p.cotizacion + '</td></tr>' : ''}
+    </table>
+    <div class="sh">Montos</div>
+    <table>
+      <tr><td>Monto Neto</td><td>${fmtMonto(p.neto)}</td></tr>
+      <tr><td>IVA (19%)</td><td>${fmtMonto(p.iva)}</td></tr>
+      ${p.descuento ? '<tr><td>Descuento</td><td>- ' + fmtMonto(p.descuento) + '</td></tr>' : ''}
+      <tr><td><strong>TOTAL PAGADO</strong></td><td><strong>${fmtMonto(p.total)}</strong></td></tr>
+    </table>
+    <div class="sh">Forma de Pago</div>
+    <table>
+      <tr><td>Forma</td><td>${p.forma}</td></tr>
+      ${p.operacion ? '<tr><td>N° Operación</td><td>' + p.operacion + '</td></tr>' : ''}
+      ${p.obs ? '<tr><td>Observaciones</td><td>' + p.obs + '</td></tr>' : ''}
+    </table>
+    <div class="sh">Autorización</div>
+    <div class="sig-row" style="margin-top:16px">
+      <div class="sig-col">
+        ${firmaImg}
+        <div class="sig-line">Firma Administración<br><small>Comunidad Edificio 12 Norte de Viña del Mar</small></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:20px;font-size:22px;font-weight:900;color:#DC2626;border:3px solid #DC2626;display:inline-block;padding:4px 24px;border-radius:6px;transform:rotate(-5deg);letter-spacing:.1em">PAGADO</div>`;
+}
+
+function pPDF() { if (currentP) pdfPagoById(currentP.id); }
+function pEmail() { if (currentP) emailPago(currentP); }
+
+function pdfPagoById(id) {
+  const p = getPById(id);
+  if (!p) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+  const M = 22, W = doc.internal.pageSize.getWidth() - M*2;
+  doc.setFont('times','bold'); doc.setFontSize(14);
+  doc.text('COMPROBANTE DE PAGO A PROVEEDOR', doc.internal.pageSize.getWidth()/2, 25, {align:'center'});
+  doc.setFont('times','normal'); doc.setFontSize(10);
+  doc.text(p.numero + ' · ' + p.creado, doc.internal.pageSize.getWidth()/2, 31, {align:'center'});
+  let y = 40;
+  const sec = t => { doc.setFont('times','bold'); doc.setFontSize(11); doc.text(t,M,y); doc.line(M,y+1.5,M+W,y+1.5); y+=8; doc.setFont('times','normal'); doc.setFontSize(10.5); };
+  const row = (l,v) => { if(!v) return; const ls=doc.splitTextToSize(l+': '+v,W); doc.text(ls,M,y); y+=ls.length*6; };
+  sec('Datos del Proveedor');
+  row('Razón Social',p.nombre); row('RUT',p.rut);
+  if(p.giro) row('Giro',p.giro); if(p.email) row('Email',p.email);
+  if(p.banco) row('Cuenta Bancaria',p.banco); y+=4;
+  sec('Detalle del Servicio');
+  row('Fecha de Pago',p.fecha); row('Período',p.periodo||'—');
+  row('Concepto',p.concepto);
+  const dl=doc.splitTextToSize('Descripción: '+p.desc,W); doc.text(dl,M,y); y+=dl.length*6;
+  if(p.factura) row('N° Factura/Boleta',p.factura);
+  if(p.cotizacion) row('N° Cotización',p.cotizacion); y+=4;
+  sec('Montos');
+  row('Monto Neto',fmtMonto(p.neto)); row('IVA (19%)',fmtMonto(p.iva));
+  if(p.descuento) row('Descuento','- '+fmtMonto(p.descuento));
+  doc.setFont('times','bold'); row('TOTAL PAGADO',fmtMonto(p.total)); doc.setFont('times','normal'); y+=4;
+  sec('Forma de Pago');
+  row('Forma',p.forma); if(p.operacion) row('N° Operación',p.operacion);
+  if(p.obs) row('Observaciones',p.obs); y+=4;
+  sec('Autorización');
+  if(p.firma) { doc.addImage(p.firma,'PNG',M,y,55,22); y+=26; }
+  else y+=10;
+  doc.line(M,y,M+70,y); y+=5;
+  doc.setFontSize(9.5); doc.text('Firma Administración\nComunidad Edificio 12 Norte de Viña del Mar',M,y);
+  // Sello PAGADO
+  doc.setFont('times','bold'); doc.setFontSize(28);
+  doc.setTextColor(220,38,38);
+  doc.text('PAGADO', doc.internal.pageSize.getWidth()/2, y+20, {align:'center', angle:345});
+  doc.setTextColor(0,0,0);
+  doc.save(p.numero + '_' + p.nombre.replace(/ /g,'_') + '.pdf');
+  toast('PDF descargado ✓', 'success');
+}
+
+function emailPago(p) {
+  if (!p.email) { toast('No hay email del proveedor', 'error'); return; }
+  const su = encodeURIComponent(p.numero + ' — Comprobante de Pago — ' + p.concepto);
+  const body = encodeURIComponent('Estimado/a ' + p.nombre + ',\n\nAdjuntamos el comprobante de pago ' + p.numero + ' por el servicio de ' + p.concepto + ' correspondiente al período ' + (p.periodo||p.fecha) + '.\n\nDetalle:\n• Monto Neto: ' + fmtMonto(p.neto) + '\n• IVA: ' + fmtMonto(p.iva) + (p.descuento ? '\n• Descuento: -' + fmtMonto(p.descuento) : '') + '\n• TOTAL PAGADO: ' + fmtMonto(p.total) + '\n• Forma de Pago: ' + p.forma + (p.operacion ? '\n• N° Operación: ' + p.operacion : '') + '\n\nSaludos,\nComunidad Edificio 12 Norte de Viña del Mar\nRUT: 56.028.260-5\ncom12norte@gmail.com');
+  window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(p.email) + '&cc=' + encodeURIComponent(ADMIN_EMAIL) + '&su=' + su + '&body=' + body, '_blank');
+  toast('Abriendo Gmail ✓', 'success');
 }
 
 // ════════════════════════════════════════
