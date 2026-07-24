@@ -790,7 +790,7 @@ async function guardarRecibo() {
 
   if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_APPS_SCRIPT') {
     btn.innerHTML = '<span class="spinner"></span> Guardando en Drive...';
-    const res = await enviarAlScript({ tipo: 'recibo', ...recibo });
+    const res = await enviarAlScript({ ...recibo, tipo: 'recibo' });
     if (res.ok) {
       toast('Recibo guardado en Drive ✓' + (res.emailEnviado ? ' · Email enviado ✓' : ''), 'success');
     } else {
@@ -964,7 +964,29 @@ async function guardarOT() {
 
   if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_APPS_SCRIPT') {
     btn.innerHTML = '<span class="spinner"></span> Guardando en Drive...';
-    const res = await enviarAlScript({ tipo: 'ot', ...ot });
+    const otPayload = {
+      tipo: 'ot',
+      numero: ot.numero,
+      nombre: ot.nombre,
+      rut: ot.rut,
+      dir: ot.dir,
+      depto: ot.depto,
+      tel: ot.tel,
+      email: ot.email,
+      fechaRep: ot.fechaRep,
+      hora: ot.hora,
+      fallaLabel: ot.fallaLabel,
+      desc: ot.desc,
+      fechaVis: ot.fechaVis,
+      tecnico: ot.tecnico,
+      diag: ot.diag,
+      trabajo: ot.trabajo,
+      repuestos: ot.repuestos,
+      estado: ot.estado,
+      firmaRes: ot.firmaRes,
+      firmaTec: ot.firmaTec
+    };
+    const res = await enviarAlScript(otPayload);
     if (res.ok) {
       toast(`${num} guardada en Drive ✓` + (res.emailEnviado ? ' · Email enviado ✓' : ''), 'success');
     } else {
@@ -1217,7 +1239,7 @@ async function guardarPago() {
 
   if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_APPS_SCRIPT') {
     btn.innerHTML = '<span class="spinner"></span> Guardando en Drive...';
-    const res = await enviarAlScript({ tipo: 'pago', ...pago });
+    const res = await enviarAlScript({ ...pago, tipo: 'pago' });
     if (res.ok) {
       toast(num + ' guardado en Drive ✓' + (res.emailEnviado ? ' · Email enviado ✓' : ''), 'success');
     } else {
