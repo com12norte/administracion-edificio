@@ -843,25 +843,57 @@ function resetRecibo() {
   clrSig('r');
 }
 
-function renderRecibos() {
+async function renderRecibos() {
   const el = document.getElementById('rlist');
   const cnt = document.getElementById('rcount');
-  cnt.textContent = `${recibos.length} recibo${recibos.length !== 1 ? 's' : ''}`;
-  if (!recibos.length) { el.innerHTML = `<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay recibos. Crea el primero.</p></div></div>`; return; }
-  el.innerHTML = `<div class="item-list">${recibos.map(r => `
-    <div class="item">
-      <div class="item-badge badge-${r.tipo}">${r.tipo === 'llaves' ? '🔑' : '📡'}</div>
-      <div class="item-info">
-        <strong>${r.nombre}</strong>
-        <div class="item-meta">Depto. ${r.depto} · ${r.tipo === 'llaves' ? 'Llave de acceso' : `Control (${r.numControl})`} · ${r.fecha}</div>
-      </div>
-      <div class="item-actions">
-        <button class="bicon" title="Ver" onclick="verRecibo(${r.id})">👁</button>
-        <button class="bicon" title="PDF" onclick="pdfReciboById(${r.id})">⬇</button>
-        ${r.email ? '<button class="bicon" title="Gmail" onclick="emailRecibo(getRById(${r.id}))">✉</button>' : ''}
-        <button class="bicon danger" title="Eliminar" onclick="delRecibo(${r.id})">🗑</button>
-      </div>
-    </div>`).join('')}</div>`;
+  el.innerHTML = '<div class="empty"><div class="ei">⏳</div><p>Cargando registros...</p></div>';
+
+  // Intentar cargar desde Drive
+  const driveData = await cargarDesdeSheets('Recibos');
+
+  if (driveData && driveData.length > 0) {
+    cnt.textContent = driveData.length + ' recibo' + (driveData.length !== 1 ? 's' : '');
+    el.innerHTML = '<div class="item-list">' + driveData.map(r =>
+      '<div class="item">' +
+      '<div class="item-badge ' + (r.tipo === 'Llave' ? 'badge-llaves' : 'badge-control') + '">' + (r.tipo === 'Llave' ? '🔑' : '📡') + '</div>' +
+      '<div class="item-info">' +
+      '<strong>' + r.nombre + '</strong>' +
+      '<div class="item-meta">Depto. ' + r.depto + ' · ' + r.tipo + ' (' + r.detalle + ') · ' + r.fecha + '</div>' +
+      '</div>' +
+      '<div class="item-actions">' +
+      (r.pdfUrl && r.pdfUrl !== '—' ? '<a class="bicon" href="' + r.pdfUrl + '" target="_blank" title="Ver PDF">⬇</a>' : '') +
+      '<button class="bicon danger" title="Eliminar" onclick="delReciboSheets(\"' + r.id + '\")">🗑</button>' +
+      '</div></div>'
+    ).join('') + '</div>';
+    return;
+  }
+
+  // Fallback: localStorage
+  cnt.textContent = recibos.length + ' recibo' + (recibos.length !== 1 ? 's' : '');
+  if (!recibos.length) {
+    el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay recibos. Crea el primero.</p></div></div>';
+    return;
+  }
+  el.innerHTML = '<div class="item-list">' + recibos.map(r =>
+    '<div class="item">' +
+    '<div class="item-badge badge-' + r.tipo + '">' + (r.tipo === 'llaves' ? '🔑' : '📡') + '</div>' +
+    '<div class="item-info">' +
+    '<strong>' + r.nombre + '</strong>' +
+    '<div class="item-meta">Depto. ' + r.depto + ' · ' + (r.tipo === 'llaves' ? 'Llave' : 'Control') + ' · ' + r.fecha + '</div>' +
+    '</div>' +
+    '<div class="item-actions">' +
+    '<button class="bicon" title="Ver" onclick="verRecibo(' + r.id + ')">👁</button>' +
+    '<button class="bicon" title="PDF" onclick="pdfReciboById(' + r.id + ')">⬇</button>' +
+    '<button class="bicon danger" title="Eliminar" onclick="delRecibo(' + r.id + ')">🗑</button>' +
+    '</div></div>'
+  ).join('') + '</div>';
+}
+
+async function delReciboSheets(id) {
+  if (!confirm('¿Eliminar este recibo?')) return;
+  const ok = await borrarDeSheets('Recibos', id);
+  if (ok) { toast('Recibo eliminado ✓', 'success'); renderRecibos(); }
+  else toast('Error al eliminar', 'error');
 }
 
 function getRById(id) { return recibos.find(r => r.id === id); }
