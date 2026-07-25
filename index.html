@@ -553,7 +553,7 @@ textarea{resize:vertical;min-height:76px}
 // CONFIG
 // ════════════════════════════════════════
 const ADMIN_EMAIL = 'com12norte@gmail.com';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzbKvpRqck-igsfeyRp42VbqwzzCONqmUAJwZ8hDE807hRNcBx8UDRsS7oQf_rsV46l/exec'; // ← Pega aquí la URL tras implementar
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzU4xkj_rG3NLqfDJgbmzjBxpcQBeD-DiUTVRcWKm51IEXsDPZqFu_Iq2laTQcXiM3r/exec'; // ← Pega aquí la URL tras implementar
 
 async function enviarAlScript(payload) {
   try {
@@ -762,12 +762,12 @@ async function cargarDesdeSheets(hoja) {
   } catch(e) { return null; }
 }
 
-async function borrarDeSheets(hoja, rowIndex) {
+async function borrarDeSheets(hoja, id) {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'TU_URL_APPS_SCRIPT') return false;
   try {
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify({ accion: 'borrar', hoja, id: rowIndex })
+      body: JSON.stringify({ accion: 'borrar', hoja: hoja, id: id })
     });
     const json = await res.json();
     return json.ok;
@@ -1061,22 +1061,21 @@ async function renderOTs() {
   const sheetsData = await cargarDesdeSheets('OT Citofonia');
   if (sheetsData && sheetsData.length > 0) {
     const fil = otFil === 'todas' ? sheetsData : sheetsData.filter(o => {
-      const eMap2 = {'Ingresado':'ingresado','En Revisión':'revision','En Reparación':'reparacion','Cerrado':'cerrado'};
-      return eMap2[o['Estado']] === otFil;
+      return o.estadoKey === otFil;
     });
     cnt.textContent = sheetsData.length + ' OT';
     if (!fil.length) { el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>No hay OT con este estado.</p></div></div>'; return; }
     const estadoClass = {'Ingresado':'be-ingresado','En Revisión':'be-revision','En Reparación':'be-reparacion','Cerrado':'be-cerrado'};
     el.innerHTML = '<div class="item-list">' + fil.map(o => `
       <div class="item">
-        <div class="item-num">${o['N° OT']||'—'}</div>
+        <div class="item-num">${o.numero||'—'}</div>
         <div class="item-info">
-          <strong>${o['Nombre']} <span class="badge-e ${estadoClass[o['Estado']]||''}">${o['Estado']}</span></strong>
-          <div class="item-meta">Depto. ${o['Depto']} · ${o['Tipo Falla']} · ${o['Fecha Reporte']}${o['Técnico']&&o['Técnico']!=='—'?' · 🔧 '+o['Técnico']:''}</div>
+          <strong>${o.nombre} <span class="badge-e ${estadoClass[o.estado]||''}">${o.estado}</span></strong>
+          <div class="item-meta">Depto. ${o.depto} · ${o.fallaLabel} · ${o.fechaRep}${o.tecnico&&o.tecnico!=='—'?' · 🔧 '+o.tecnico:''}</div>
         </div>
         <div class="item-actions">
-          ${o['PDF']&&o['PDF']!=='—'?`<a class="bicon" href="${o['PDF']}" target="_blank" title="Ver PDF">⬇</a>`:''}
-          <button class="bicon danger" title="Eliminar" onclick="delOTSheets(${o._row})">🗑</button>
+          ${o.pdfUrl ? '<a class="bicon" href="' + o.pdfUrl + '" target="_blank" title="Ver PDF">⬇</a>' : ''}
+          <button class="bicon danger" title="Eliminar" onclick="delOTSheets('${o.id}')">🗑</button>
         </div>
       </div>`).join('') + '</div>';
   } else {
@@ -1099,9 +1098,9 @@ async function renderOTs() {
   }
 }
 
-async function delOTSheets(row) {
+async function delOTSheets(id) {
   if (!confirm('¿Eliminar esta OT?')) return;
-  const ok = await borrarDeSheets('OT Citofonia', row);
+  const ok = await borrarDeSheets('OT Citofonia', id);
   if (ok) { toast('OT eliminada ✓', 'success'); renderOTs(); }
   else toast('Error al eliminar', 'error');
 }
@@ -1334,14 +1333,14 @@ async function renderPagos() {
     cnt.textContent = sheetsData.length + ' pago' + (sheetsData.length !== 1 ? 's' : '');
     el.innerHTML = '<div class="item-list">' + sheetsData.map(p => `
       <div class="item">
-        <div class="item-num">${p['N° CP']||'—'}</div>
+        <div class="item-num">${p.numero||'—'}</div>
         <div class="item-info">
-          <strong>${p['Proveedor']}</strong>
-          <div class="item-meta">${p['Concepto']} · $${Number(p['Total']||0).toLocaleString('es-CL')} · ${p['Fecha Pago']} · ${p['Forma Pago']}</div>
+          <strong>${p.nombre}</strong>
+          <div class="item-meta">${p.concepto} · $${Number(p.total||0).toLocaleString('es-CL')} · ${p.fecha} · ${p.forma}</div>
         </div>
         <div class="item-actions">
-          ${p['PDF']&&p['PDF']!=='—'?`<a class="bicon" href="${p['PDF']}" target="_blank" title="Ver PDF">⬇</a>`:''}
-          <button class="bicon danger" title="Eliminar" onclick="delPagoSheets(${p._row})">🗑</button>
+          ${p.pdfUrl ? '<a class="bicon" href="' + p.pdfUrl + '" target="_blank" title="Ver PDF">⬇</a>' : ''}
+          <button class="bicon danger" title="Eliminar" onclick="delPagoSheets('${p.id}')">🗑</button>
         </div>
       </div>`).join('') + '</div>';
   } else {
@@ -1366,9 +1365,9 @@ async function renderPagos() {
   }
 }
 
-async function delPagoSheets(row) {
+async function delPagoSheets(id) {
   if (!confirm('¿Eliminar este comprobante?')) return;
-  const ok = await borrarDeSheets('Pagos Proveedores', row);
+  const ok = await borrarDeSheets('Pagos Proveedores', id);
   if (ok) { toast('Comprobante eliminado ✓', 'success'); renderPagos(); }
   else toast('Error al eliminar', 'error');
 }
