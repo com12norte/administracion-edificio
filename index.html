@@ -553,7 +553,7 @@ textarea{resize:vertical;min-height:76px}
 // CONFIG
 // ════════════════════════════════════════
 const ADMIN_EMAIL = 'com12norte@gmail.com';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyeDXqABF3SSZ1QAPVkuK0VZzkX5fcHE53IV3dFBVu9wXUOwKAFDSaVZEPCW_EKuia-/exec'; // ← Pega aquí la URL tras implementar
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzbKvpRqck-igsfeyRp42VbqwzzCONqmUAJwZ8hDE807hRNcBx8UDRsS7oQf_rsV46l/exec'; // ← Pega aquí la URL tras implementar
 
 async function enviarAlScript(payload) {
   try {
@@ -858,7 +858,7 @@ function renderRecibos() {
       <div class="item-actions">
         <button class="bicon" title="Ver" onclick="verRecibo(${r.id})">👁</button>
         <button class="bicon" title="PDF" onclick="pdfReciboById(${r.id})">⬇</button>
-        ${r.email ? `<button class="bicon" title="Gmail" onclick="emailRecibo(getRById(${r.id}))">✉</button>` : ''}
+        ${r.email ? '<button class="bicon" title="Gmail" onclick="emailRecibo(getRById(${r.id}))">✉</button>' : ''}
         <button class="bicon danger" title="Eliminar" onclick="delRecibo(${r.id})">🗑</button>
       </div>
     </div>`).join('')}</div>`;
@@ -894,7 +894,7 @@ function buildReciboHTML(r) {
     <p>Firmo en señal de total conformidad con lo aquí estipulado.</p>
     <br><br>
     <div><strong>Recibe Conforme:</strong><br><br>
-      ${r.firma ? `<img class="sig-img" src="${r.firma}" alt="Firma">` : ''}
+      ${r.firma ? '<img class="sig-img" src="' + r.firma + '" alt="Firma">' : ''}
       <div class="firma-line">Firma</div>
     </div>`;
 }
@@ -1135,8 +1135,8 @@ function buildOTHTML(o) {
       <tr><td>RUT / Cédula</td><td>${o.rut}</td></tr>
       <tr><td>Dirección</td><td>${o.dir}</td></tr>
       <tr><td>Departamento</td><td>${o.depto}</td></tr><tr><td>Ciudad</td><td>Viña del Mar, Valparaíso</td></tr>
-      ${o.tel ? `<tr><td>Teléfono</td><td>${o.tel}</td></tr>` : ''}
-      ${o.email ? `<tr><td>Email</td><td>${o.email}</td></tr>` : ''}
+      ${o.tel ? '<tr><td>Teléfono</td><td>${o.tel}</td></tr>' : ''}
+      ${o.email ? '<tr><td>Email</td><td>${o.email}</td></tr>' : ''}
     </table>
     <div class="sh">2. Reporte del Problema</div>
     <table>
@@ -1157,11 +1157,11 @@ function buildOTHTML(o) {
     <div class="sh">4. Firmas</div>
     <div class="sig-row">
       <div class="sig-col">
-        ${o.firmaRes ? `<img src="${o.firmaRes}" alt="Firma Residente">` : '<div style="height:50px"></div>'}
+        ${o.firmaRes ? '<img src="${o.firmaRes}" alt="Firma Residente">' : '<div style="height:50px"></div>'}
         <div class="sig-line">Firma del Residente<br><small>${o.nombre}</small></div>
       </div>
       <div class="sig-col">
-        ${o.firmaTec ? `<img src="${o.firmaTec}" alt="Firma Técnico">` : '<div style="height:50px"></div>'}
+        ${o.firmaTec ? '<img src="${o.firmaTec}" alt="Firma Técnico">' : '<div style="height:50px"></div>'}
         <div class="sig-line">Firma del Técnico<br><small>${o.tecnico || '—'}</small></div>
       </div>
     </div>`;
@@ -1350,7 +1350,7 @@ async function renderPagos() {
       el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay comprobantes de pago.</p></div></div>';
       return;
     }
-    el.innerHTML = '<div class="item-list">' + pagos.map(p => `el.innerHTML = '<div class="item-list">' + pagos.map(p => `
+    el.innerHTML = '<div class="item-list">' + pagos.map(p => `
     <div class="item">
       <div class="item-num">${p.numero}</div>
       <div class="item-info">
@@ -1360,11 +1360,9 @@ async function renderPagos() {
       <div class="item-actions">
         <button class="bicon" title="Ver" onclick="verPago(${p.id})">👁</button>
         <button class="bicon" title="PDF" onclick="pdfPagoById(${p.id})">⬇</button>
-        ${p.email ? `<button class="bicon" title="Gmail" onclick="emailPago(getPById(${p.id}))">✉</button>` : ''}
         <button class="bicon danger" title="Eliminar" onclick="delPago(${p.id})">🗑</button>
       </div>
     </div>`).join('') + '</div>';
-}
   }
 }
 
