@@ -748,6 +748,32 @@ function fmtFecha(iso) {
   return `${parseInt(dy)} de ${m[parseInt(mo)-1]} de ${yr}`;
 }
 
+
+// ════════════════════════════════════════
+// SHEETS — CARGAR Y BORRAR
+// ════════════════════════════════════════
+async function cargarDesdeSheets(hoja) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'TU_URL_APPS_SCRIPT') return null;
+  try {
+    const url = APPS_SCRIPT_URL + '?accion=listar&hoja=' + encodeURIComponent(hoja);
+    const res = await fetch(url);
+    const json = await res.json();
+    return json.ok ? json.data : null;
+  } catch(e) { return null; }
+}
+
+async function borrarDeSheets(hoja, rowIndex) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'TU_URL_APPS_SCRIPT') return false;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'borrar', hoja, id: rowIndex })
+    });
+    const json = await res.json();
+    return json.ok;
+  } catch(e) { return false; }
+}
+
 // ════════════════════════════════════════
 // RECIBOS
 // ════════════════════════════════════════
@@ -1027,27 +1053,57 @@ function setFil(btn) {
   renderOTs();
 }
 
-function renderOTs() {
+async function renderOTs() {
   const el = document.getElementById('olist');
   const cnt = document.getElementById('ocount');
-  const fil = otFil === 'todas' ? ordenes : ordenes.filter(o => o.estado === otFil);
-  cnt.textContent = `${ordenes.length} OT`;
-  if (!fil.length) { el.innerHTML = `<div class="card"><div class="empty"><div class="ei">📭</div><p>${!ordenes.length ? 'Aún no hay órdenes.' : 'No hay OT con este estado.'}</p></div></div>`; return; }
-  const eMap = { ingresado:'Ingresado', revision:'En Revisión', reparacion:'En Reparación', cerrado:'Cerrado' };
-  el.innerHTML = `<div class="item-list">${fil.map(o => `
-    <div class="item">
-      <div class="item-num">${o.numero}</div>
-      <div class="item-info">
-        <strong>${o.nombre} <span class="badge-e be-${o.estado}">${eMap[o.estado]}</span></strong>
-        <div class="item-meta">Depto. ${o.depto} · ${o.fallaLabel} · ${o.fechaRep}${o.tecnico ? ' · 🔧 ' + o.tecnico : ''}</div>
-      </div>
-      <div class="item-actions">
-        <button class="bicon" title="Ver" onclick="verOT(${o.id})">👁</button>
-        <button class="bicon" title="PDF" onclick="pdfOTById(${o.id})">⬇</button>
-        ${o.email ? `<button class="bicon" title="Gmail" onclick="emailOT(getOById(${o.id}))">✉</button>` : ''}
-        <button class="bicon danger" title="Eliminar" onclick="delOT(${o.id})">🗑</button>
-      </div>
-    </div>`).join('')}</div>`;
+  el.innerHTML = '<div class="empty"><div class="ei">⏳</div><p>Cargando registros...</p></div>';
+
+  const sheetsData = await cargarDesdeSheets('OT Citofonia');
+  if (sheetsData && sheetsData.length > 0) {
+    const fil = otFil === 'todas' ? sheetsData : sheetsData.filter(o => {
+      const eMap2 = {'Ingresado':'ingresado','En Revisión':'revision','En Reparación':'reparacion','Cerrado':'cerrado'};
+      return eMap2[o['Estado']] === otFil;
+    });
+    cnt.textContent = sheetsData.length + ' OT';
+    if (!fil.length) { el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>No hay OT con este estado.</p></div></div>'; return; }
+    const estadoClass = {'Ingresado':'be-ingresado','En Revisión':'be-revision','En Reparación':'be-reparacion','Cerrado':'be-cerrado'};
+    el.innerHTML = '<div class="item-list">' + fil.map(o => `
+      <div class="item">
+        <div class="item-num">${o['N° OT']||'—'}</div>
+        <div class="item-info">
+          <strong>${o['Nombre']} <span class="badge-e ${estadoClass[o['Estado']]||''}">${o['Estado']}</span></strong>
+          <div class="item-meta">Depto. ${o['Depto']} · ${o['Tipo Falla']} · ${o['Fecha Reporte']}${o['Técnico']&&o['Técnico']!=='—'?' · 🔧 '+o['Técnico']:''}</div>
+        </div>
+        <div class="item-actions">
+          ${o['PDF']&&o['PDF']!=='—'?`<a class="bicon" href="${o['PDF']}" target="_blank" title="Ver PDF">⬇</a>`:''}
+          <button class="bicon danger" title="Eliminar" onclick="delOTSheets(${o._row})">🗑</button>
+        </div>
+      </div>`).join('') + '</div>';
+  } else {
+    const fil = otFil === 'todas' ? ordenes : ordenes.filter(o => o.estado === otFil);
+    cnt.textContent = ordenes.length + ' OT';
+    if (!fil.length) { el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay órdenes.</p></div></div>'; return; }
+    const eMap = { ingresado:'Ingresado', revision:'En Revisión', reparacion:'En Reparación', cerrado:'Cerrado' };
+    el.innerHTML = '<div class="item-list">' + fil.map(o => `
+      <div class="item">
+        <div class="item-num">${o.numero}</div>
+        <div class="item-info">
+          <strong>${o.nombre} <span class="badge-e be-${o.estado}">${eMap[o.estado]}</span></strong>
+          <div class="item-meta">Depto. ${o.depto} · ${o.fallaLabel} · ${o.fechaRep}</div>
+        </div>
+        <div class="item-actions">
+          <button class="bicon" title="Ver" onclick="verOT(${o.id})">👁</button>
+          <button class="bicon danger" title="Eliminar" onclick="delOT(${o.id})">🗑</button>
+        </div>
+      </div>`).join('') + '</div>';
+  }
+}
+
+async function delOTSheets(row) {
+  if (!confirm('¿Eliminar esta OT?')) return;
+  const ok = await borrarDeSheets('OT Citofonia', row);
+  if (ok) { toast('OT eliminada ✓', 'success'); renderOTs(); }
+  else toast('Error al eliminar', 'error');
 }
 
 function getOById(id) { return ordenes.find(o => o.id === id); }
@@ -1268,15 +1324,33 @@ function resetPago() {
   clrSig('p');
 }
 
-function renderPagos() {
+async function renderPagos() {
   const el = document.getElementById('plist');
   const cnt = document.getElementById('pcount');
-  cnt.textContent = pagos.length + ' pago' + (pagos.length !== 1 ? 's' : '');
-  if (!pagos.length) {
-    el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay comprobantes de pago.</p></div></div>';
-    return;
-  }
-  el.innerHTML = '<div class="item-list">' + pagos.map(p => `
+  el.innerHTML = '<div class="empty"><div class="ei">⏳</div><p>Cargando registros...</p></div>';
+
+  const sheetsData = await cargarDesdeSheets('Pagos Proveedores');
+  if (sheetsData && sheetsData.length > 0) {
+    cnt.textContent = sheetsData.length + ' pago' + (sheetsData.length !== 1 ? 's' : '');
+    el.innerHTML = '<div class="item-list">' + sheetsData.map(p => `
+      <div class="item">
+        <div class="item-num">${p['N° CP']||'—'}</div>
+        <div class="item-info">
+          <strong>${p['Proveedor']}</strong>
+          <div class="item-meta">${p['Concepto']} · $${Number(p['Total']||0).toLocaleString('es-CL')} · ${p['Fecha Pago']} · ${p['Forma Pago']}</div>
+        </div>
+        <div class="item-actions">
+          ${p['PDF']&&p['PDF']!=='—'?`<a class="bicon" href="${p['PDF']}" target="_blank" title="Ver PDF">⬇</a>`:''}
+          <button class="bicon danger" title="Eliminar" onclick="delPagoSheets(${p._row})">🗑</button>
+        </div>
+      </div>`).join('') + '</div>';
+  } else {
+    cnt.textContent = pagos.length + ' pago' + (pagos.length !== 1 ? 's' : '');
+    if (!pagos.length) {
+      el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay comprobantes de pago.</p></div></div>';
+      return;
+    }
+    el.innerHTML = '<div class="item-list">' + pagos.map(p => `el.innerHTML = '<div class="item-list">' + pagos.map(p => `
     <div class="item">
       <div class="item-num">${p.numero}</div>
       <div class="item-info">
@@ -1290,6 +1364,15 @@ function renderPagos() {
         <button class="bicon danger" title="Eliminar" onclick="delPago(${p.id})">🗑</button>
       </div>
     </div>`).join('') + '</div>';
+}
+  }
+}
+
+async function delPagoSheets(row) {
+  if (!confirm('¿Eliminar este comprobante?')) return;
+  const ok = await borrarDeSheets('Pagos Proveedores', row);
+  if (ok) { toast('Comprobante eliminado ✓', 'success'); renderPagos(); }
+  else toast('Error al eliminar', 'error');
 }
 
 function getPById(id) { return pagos.find(p => p.id === id); }
