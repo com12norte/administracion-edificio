@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Controles — Administración</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F2F5;--surface:#fff;--surface2:#F7F8FA;--border:#E2E5EA;
+  --text:#1A1D23;--muted:#6B7280;--accent:#1E3A5F;--accent2:#2E5490;--accent-bg:#EBF0F8;
+  --success:#059669;--warning:#D97706;--danger:#DC2626;--info:#0284C7;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.07);--shadow-md:0 4px 24px rgba(0,0,0,.12);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{background:var(--accent);color:#fff;padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.hbrand{display:flex;align-items:center;gap:12px}
+.hicon{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.hbrand h1{font-family:'Playfair Display',serif;font-size:17px;font-weight:600}
+.hbrand span{font-size:11px;opacity:.6;display:block;margin-top:-2px}
+.hnav{display:flex;gap:3px;flex-wrap:wrap}
+.hnav button{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.75);padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;white-space:nowrap}
+.hnav button.active,.hnav button:hover{background:rgba(255,255,255,.22);color:#fff}
+.hnav .sep{width:1px;background:rgba(255,255,255,.2);margin:8px 4px}
+.container{max-width:1000px;margin:0 auto;padding:28px 16px}
+.view{display:none}.view.active{display:block}
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.card-hd{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-hd-left{display:flex;align-items:center;gap:12px}
+.card-hd-icon{width:40px;height:40px;background:var(--accent-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.card-hd h2{font-size:15px;font-weight:600}
+.card-hd p{font-size:12px;color:var(--muted);margin-top:2px}
+.card-body{padding:24px}
+.divider{display:flex;align-items:center;gap:10px;margin:22px 0 18px}
+.divider span{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow)}
+.stat-n{font-size:28px;font-weight:800;color:var(--accent)}
+.stat-l{font-size:11px;color:var(--muted);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{background:var(--accent);color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.tbl td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:nth-child(even) td{background:var(--surface2)}
+.tbl tr:hover td{background:var(--accent-bg)}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
+.b-v{background:#D1FAE5;color:#065F46}
+.b-b{background:#FEE2E2;color:#991B1B}
+.b-p{background:#FEF3C7;color:#92400E}
+.b-a{background:#DBEAFE;color:#1D4ED8}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.toolbar input{border:1.5px solid var(--border);border-radius:7px;padding:8px 13px;font-size:13px;font-family:'Inter',sans-serif;outline:none;min-width:220px}
+.toolbar input:focus{border-color:var(--accent)}
+.fbtn{padding:6px 13px;border-radius:20px;border:1px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;background:var(--surface);transition:all .15s;font-family:'Inter',sans-serif;color:var(--muted)}
+.fbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.notice{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;line-height:1.6}
+.n-info{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF}
+.n-warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E}
+.n-success{background:#ECFDF5;border:1px solid #6EE7B7;color:#065F46}
+.n-danger{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}.btn-secondary:hover{background:var(--border)}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{filter:brightness(1.08)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{filter:brightness(1.08)}
+.btn-warning{background:var(--warning);color:#fff}
+.btn-sm{padding:5px 12px;font-size:11px;border-radius:6px}
+.bicon{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;color:var(--muted);vertical-align:middle}
+.bicon:hover{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.bicon.s:hover{background:#D1FAE5;border-color:var(--success);color:var(--success)}
+.bicon.d:hover{background:#FEE2E2;border-color:var(--danger);color:var(--danger)}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.f{display:flex;flex-direction:column;gap:5px}
+.f.full{grid-column:1/-1}
+label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+input,select,textarea{border:1.5px solid var(--border);border-radius:7px;padding:10px 13px;font-size:13px;font-family:'Inter',sans-serif;color:var(--text);background:var(--surface);transition:border-color .15s;outline:none;width:100%}
+input:focus,select:focus{border-color:var(--accent)}
+.sol-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);margin-bottom:10px;transition:border-color .15s}
+.sol-card:hover{border-color:var(--accent)}
+.sol-id{font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-bg);border-radius:7px;padding:7px 10px;white-space:nowrap;flex-shrink:0}
+.sol-info{flex:1;min-width:0}
+.sol-info strong{font-size:14px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sol-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.sol-actions{display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap}
+.tipo-box{border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface2)}
+.tipo-box:hover{border-color:var(--accent);background:var(--accent-bg)}
+.tipo-box.sel{border-color:var(--accent);background:var(--accent-bg)}
+.link-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.link-url{font-size:12px;color:var(--accent);word-break:break-all;flex:1}
+.copy-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 13px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif}
+.cfg-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)}
+.cfg-row:last-child{border-bottom:none}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-md);max-width:680px;width:100%;max-height:92vh;overflow-y:auto}
+.modal-hd{padding:17px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-hd h3{font-size:15px;font-weight:600}
+.mclose{width:30px;height:30px;border-radius:6px;border:none;background:var(--surface2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:22px}
+.modal-ft{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap}
+.toast-wrap{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:7px;z-index:9999}
+.toast{background:var(--text);color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:var(--shadow-md);animation:tin .3s ease;max-width:300px}
+.toast.success{background:var(--success)}.toast.error{background:var(--danger)}.toast.warning{background:var(--warning)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@media(max-width:640px){
+  header{padding:0 14px;flex-wrap:wrap;height:auto;padding:10px 14px;gap:10px}
+  .hnav{width:100%;justify-content:center;overflow-x:auto}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .fg{grid-template-columns:1fr}
+  .f.full{grid-column:1}
+  .card-body{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbrand">
+    <div class="hicon">🏢</div>
+    <div>
+      <h1>Comunidad Edificio 12 Norte</h1>
+      <span>Gestión de Controles Remotos</span>
+    </div>
+  </div>
+  <nav class="hnav">
+    <button onclick="nav('listado')" id="tab-listado">📋 Controles</button>
+    <div class="sep"></div>
+    <button onclick="nav('enviar')" id="tab-enviar">📤 Enviar Link</button>
+    <button onclick="nav('solicitudes')" id="tab-solicitudes">⏳ Solicitudes <span id="badge-pend" style="background:#DC2626;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:3px;display:none">0</span></button>
+    <button onclick="nav('config')" id="tab-config">⚙️ Config</button>
+  </nav>
+</header>
+
+<div class="container">
+
+<div id="view-listado" class="view active">
+  <div class="stats">
+    <div class="stat"><div class="stat-n" id="st-total">0</div><div class="stat-l">Total</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--success)" id="st-vig">0</div><div class="stat-l">Vigentes</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--danger)" id="st-bloq">0</div><div class="stat-l">Bloqueados</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--warning)" id="st-pend">0</div><div class="stat-l">Solicitudes</div></div>
+  </div>
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-left">
+        <div class="card-hd-icon">📡</div>
+        <div><h2>Listado de Controles Remotos</h2><p>Click en ✏️ para editar cualquier control</p></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="agregarCtrl()">+ Agregar</button>
+    </div>
+    <div class="card-body">
+      <div class="toolbar">
+        <input type="text" id="search" placeholder="🔍 Buscar depto, dirección, N°..." oninput="renderListado()">
+        <button class="fbtn active" data-f="todos" onclick="setF(this)">Todos</button>
+        <button class="fbtn" data-f="Vigente" onclick="setF(this)">Vigentes</button>
+        <button class="fbtn" data-f="Bloqueado" onclick="setF(this)">Bloqueados</button>
+        <button class="fbtn" data-f="2ctrl" onclick="setF(this)">Con 2 ctrl</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl">
+          <thead><tr><th>N°</th><th>Dirección</th><th>Depto</th><th>Estado</th><th>Ctrl/Depto</th><th>Entrega</th><th>Fecha</th><th>Notas</th><th></th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="view-enviar" class="view">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-left">
+        <div class="card-hd-icon">📤</div>
+        <div><h2>Enviar Link al Residente</h2><p>El residente completa todo desde su celular</p></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="notice n-info">ℹ️ <div>El residente recibe un link y completa el proceso completo desde su celular: declaración, firma y comprobante de pago. Puede entrar y salir cuando quiera.</div></div>
+      <div class="divider"><span>Tipo de Solicitud</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+        <div class="tipo-box" id="tipo-perdida" onclick="selTipo('perdida')">
+          <div style="font-size:32px;margin-bottom:8px">🚨</div>
+          <div style="font-size:14px;font-weight:700">Pérdida / Falla</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Declaración + reposición</div>
+        </div>
+        <div class="tipo-box" id="tipo-segundo" onclick="selTipo('segundo')">
+          <div style="font-size:32px;margin-bottom:8px">➕</div>
+          <div style="font-size:14px;font-weight:700">2° Control</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Solicitud segundo control</div>
+        </div>
+      </div>
+      <div id="link-generado" style="display:none">
+        <div class="divider"><span>Link Generado</span></div>
+        <div class="link-box">
+          <div class="link-url" id="link-url"></div>
+          <button class="copy-btn" onclick="copiarLink()">📋 Copiar</button>
+        </div>
+        <div class="divider"><span>Enviar por Email</span></div>
+        <div class="fg">
+          <div class="f"><label>Email del Residente</label><input type="email" id="env-email" placeholder="residente@email.com"></div>
+          <div class="f"><label>Nombre (opcional)</label><input type="text" id="env-nombre" placeholder="Nombre del residente"></div>
+        </div>
+        <button class="btn btn-primary" onclick="enviarEmail()" style="margin-top:12px">✉ Enviar por Email</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="view-solicitudes" class="view">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-left">
+        <div class="card-hd-icon">⏳</div>
+        <div><h2>Solicitudes de Residentes</h2><p>Revisa comprobantes y gestiona el proceso</p></div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="cargarSols()">🔄 Actualizar</button>
+    </div>
+    <div class="card-body">
+      <div class="toolbar">
+        <button class="fbtn active" data-sf="todas" onclick="setFS(this)">Todas</button>
+        <button class="fbtn" data-sf="pendiente" onclick="setFS(this)">⏳ Pendientes</button>
+        <button class="fbtn" data-sf="aprobado" onclick="setFS(this)">✅ Aprobadas</button>
+        <button class="fbtn" data-sf="listo" onclick="setFS(this)">📦 Listas</button>
+        <button class="fbtn" data-sf="entregado" onclick="setFS(this)">🎉 Entregadas</button>
+      </div>
+      <div id="lista-sol"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Cargando...</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="view-config" class="view">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-left">
+        <div class="card-hd-icon">⚙️</div>
+        <div><h2>Configuración</h2><p>Ajusta los parámetros del sistema</p></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="cfg-row">
+        <div><div style="font-size:14px;font-weight:700">Valor del Control ($)</div><div style="font-size:12px;color:var(--muted)">Monto a cobrar por reposición o 2° control</div></div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input type="number" id="cfg-monto" value="15000" style="width:120px;text-align:right;font-weight:700">
+          <button class="btn btn-primary btn-sm" onclick="guardarCfg()">Guardar</button>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div><div style="font-size:14px;font-weight:700">Plazo de Entrega (días hábiles)</div><div style="font-size:12px;color:var(--muted)">Desde aprobación hasta entrega</div></div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input type="number" id="cfg-plazo" value="20" style="width:80px;text-align:right;font-weight:700">
+          <button class="btn btn-primary btn-sm" onclick="guardarCfg()">Guardar</button>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div><div style="font-size:14px;font-weight:700">URL de solicitud.html</div><div style="font-size:12px;color:var(--muted)">URL donde está alojado el archivo del residente</div></div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input type="url" id="cfg-url" style="min-width:280px;font-size:12px">
+          <button class="btn btn-primary btn-sm" onclick="guardarCfg()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="overlay" id="modal-sol" onclick="closeMod(event,'modal-sol')">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="mst">Solicitud</h3><button class="mclose" onclick="closeMod(null,'modal-sol')">x</button></div>
+    <div class="modal-body" id="msb"></div>
+    <div class="modal-ft" id="msf"></div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-edit" onclick="closeMod(event,'modal-edit')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hd"><h3 id="met">Editar Control</h3><button class="mclose" onclick="closeMod(null,'modal-edit')">x</button></div>
+    <div class="modal-body">
+      <div class="fg">
+        <div class="f"><label>N° Control</label><input type="number" id="en" min="1"></div>
+        <div class="f"><label>Estado</label><select id="ee"><option value="Vigente">Vigente</option><option value="Bloqueado">Bloqueado</option></select></div>
+        <div class="f"><label>Dirección</label><select id="ed"></select></div>
+        <div class="f"><label>Departamento</label><select id="edp"></select></div>
+        <div class="f"><label>Estado Entrega</label><select id="eent"><option>Completada</option><option>En curso</option><option>No iniciada</option><option>Sin comprobante</option><option>—</option></select></div>
+        <div class="f"><label>Fecha</label><input type="text" id="ef" placeholder="dd/mm/aaaa"></div>
+        <div class="f full"><label>Notas</label><input type="text" id="en2" placeholder="Observaciones..."></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-secondary" onclick="closeMod(null,'modal-edit')">Cancelar</button>
+      <button class="btn btn-danger btn-sm" onclick="elimCtrl()">Eliminar</button>
+      <button class="btn btn-primary" onclick="guardarCtrl()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+const ADMIN_EMAIL='com12norte@gmail.com';
+const NOMBRE_COM='Comunidad de Edificios 12 Norte de Viña del Mar';
+const RUT_COM='56.028.260-5';
+const ASU=`https://script.google.com/macros/s/AKfycbzU4xkj_rG3NLqfDJgbmzjBxpcQBeD-DiUTVRcWKm51IEXsDPZqFu_Iq2laTQcXiM3r/exec`;
+const DIRS=['3 Oriente 1080','3 Oriente 1060','12 Norte 1054','12 Norte 1052','12 Norte 1036','12 Norte 1038','4 Oriente 1061','4 Oriente 1081'];
+const DEPS=['A1','B2','C3','D4','E5','E6','F5','F6','G7','H8'];
+
+let controles=JSON.parse(localStorage.getItem('ctrl_listado')||'null')||[
+  {n:1,dir:'4 Oriente 1081',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:2,dir:'4 Oriente 1081',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:3,dir:'4 Oriente 1081',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:4,dir:'4 Oriente 1081',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:5,dir:'4 Oriente 1081',depto:'E6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:6,dir:'4 Oriente 1081',depto:'F5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:7,dir:'4 Oriente 1081',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:8,dir:'4 Oriente 1081',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:9,dir:'4 Oriente 1061',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:10,dir:'4 Oriente 1061',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:11,dir:'4 Oriente 1061',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:12,dir:'4 Oriente 1061',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:13,dir:'4 Oriente 1061',depto:'E6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:14,dir:'4 Oriente 1061',depto:'F5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:15,dir:'4 Oriente 1061',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:16,dir:'4 Oriente 1061',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:17,dir:'12 Norte 1052',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:18,dir:'12 Norte 1052',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:19,dir:'12 Norte 1052',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:20,dir:'12 Norte 1052',depto:'D4',estado:'Vigente',entrega:'No iniciada',fecha:'',notas:''},
+  {n:21,dir:'12 Norte 1052',depto:'E5',estado:'Bloqueado',entrega:'Sin comprobante',fecha:'',notas:''},
+  {n:22,dir:'12 Norte 1052',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:23,dir:'12 Norte 1052',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:24,dir:'12 Norte 1052',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:25,dir:'12 Norte 1054',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:26,dir:'12 Norte 1054',depto:'B2',estado:'Bloqueado',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:27,dir:'12 Norte 1054',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:28,dir:'12 Norte 1054',depto:'D4',estado:'Vigente',entrega:'Sin comprobante',fecha:'',notas:''},
+  {n:29,dir:'12 Norte 1054',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:30,dir:'12 Norte 1054',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:31,dir:'12 Norte 1054',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:32,dir:'12 Norte 1054',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:33,dir:'12 Norte 1036',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:34,dir:'12 Norte 1036',depto:'B2',estado:'Vigente',entrega:'En curso',fecha:'',notas:''},
+  {n:35,dir:'12 Norte 1036',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:36,dir:'12 Norte 1036',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:37,dir:'12 Norte 1036',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:38,dir:'12 Norte 1036',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:39,dir:'12 Norte 1036',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:40,dir:'12 Norte 1036',depto:'H8',estado:'Bloqueado',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:41,dir:'12 Norte 1038',depto:'A1',estado:'Vigente',entrega:'Sin comprobante',fecha:'',notas:''},
+  {n:42,dir:'12 Norte 1038',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:43,dir:'12 Norte 1038',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:44,dir:'12 Norte 1038',depto:'D4',estado:'Vigente',entrega:'No iniciada',fecha:'',notas:''},
+  {n:45,dir:'12 Norte 1038',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:46,dir:'12 Norte 1038',depto:'F6',estado:'Vigente',entrega:'No iniciada',fecha:'',notas:''},
+  {n:47,dir:'12 Norte 1038',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:48,dir:'12 Norte 1038',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:49,dir:'3 Oriente 1080',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:50,dir:'3 Oriente 1060',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:51,dir:'3 Oriente 1080',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:52,dir:'3 Oriente 1080',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'2/07/2025',notas:''},
+  {n:53,dir:'3 Oriente 1080',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:54,dir:'3 Oriente 1080',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:55,dir:'3 Oriente 1080',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:56,dir:'3 Oriente 1080',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:57,dir:'3 Oriente 1060',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:58,dir:'3 Oriente 1080',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:59,dir:'3 Oriente 1060',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:60,dir:'3 Oriente 1060',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:61,dir:'3 Oriente 1060',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:62,dir:'3 Oriente 1060',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:63,dir:'3 Oriente 1060',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:64,dir:'3 Oriente 1060',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:65,dir:'Administración',depto:'—',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:'Tomas Ulibarry'},
+  {n:66,dir:'Administración',depto:'—',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:'Francisco Ibáñez'},
+  {n:67,dir:'3 Oriente 1080',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:68,dir:'12 Norte 1054',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:69,dir:'12 Norte 1052',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'10/07/2025',notas:''},
+  {n:70,dir:'3 Oriente 1060',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:71,dir:'4 Oriente 1081',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:72,dir:'4 Oriente 1061',depto:'D4',estado:'Bloqueado',entrega:'—',fecha:'',notas:''},
+  {n:73,dir:'12 Norte 1054',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'10/07/2025',notas:''},
+  {n:74,dir:'12 Norte 1038',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:75,dir:'3 Oriente 1080',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'10/07/2025',notas:''},
+  {n:76,dir:'3 Oriente 1080',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'10/07/2025',notas:''},
+  {n:77,dir:'12 Norte 1052',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:78,dir:'12 Norte 1036',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'11/07/2025',notas:''},
+  {n:79,dir:'3 Oriente 1060',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'13/08/2025',notas:''},
+  {n:80,dir:'3 Oriente 1080',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:81,dir:'4 Oriente 1081',depto:'F6',estado:'Bloqueado',entrega:'En curso',fecha:'',notas:''},
+  {n:82,dir:'12 Norte 1036',depto:'E5',estado:'Vigente',entrega:'En curso',fecha:'',notas:''},
+  {n:83,dir:'3 Oriente 1060',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:85,dir:'12 Norte 1036',depto:'H8',estado:'Vigente',entrega:'En curso',fecha:'',notas:''},
+  {n:86,dir:'4 Oriente 1061',depto:'D4',estado:'Vigente',entrega:'—',fecha:'',notas:''},
+  {n:87,dir:'12 Norte 1038',depto:'A1',estado:'Vigente',entrega:'—',fecha:'',notas:''},
+  {n:88,dir:'12 Norte 1036',depto:'H8',estado:'Vigente',entrega:'En curso',fecha:'',notas:''},
+  {n:89,dir:'12 Norte 1054',depto:'C3',estado:'Vigente',entrega:'—',fecha:'',notas:''},
+  {n:90,dir:'4 Oriente 1081',depto:'F6',estado:'Vigente',entrega:'—',fecha:'',notas:''}
+];
+
+let sols=[],filtroCtrl='todos',filtroSol='todas',editIdx=-1,solActual=null,tipoLink='perdida';
+let cfg=JSON.parse(localStorage.getItem('ctrl_cfg')||'{"monto":15000,"plazo":20,"url":"https://com12norte.github.io/administracion-edificio/solicitud.html"}');
+
+document.addEventListener('DOMContentLoaded',()=>{
+  poblarEdits();
+  renderListado();
+  cargarSols();
+  document.getElementById('cfg-monto').value=cfg.monto;
+  document.getElementById('cfg-plazo').value=cfg.plazo;
+  document.getElementById('cfg-url').value=cfg.url;
+});
+
+function nav(n){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+n).classList.add('active');
+  document.querySelectorAll('.hnav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+n).classList.add('active');
+  if(n==='solicitudes') cargarSols();
+  if(n==='listado') renderListado();
+}
+
+function cntDepto(dir,depto){return controles.filter(c=>c.dir===dir&&c.depto===depto&&c.estado==='Vigente').length;}
+
+function setF(btn){
+  document.querySelectorAll('[data-f]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); filtroCtrl=btn.dataset.f; renderListado();
+}
+
+function renderListado(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const data=controles.filter(c=>{
+    if(filtroCtrl==='Vigente'&&c.estado!=='Vigente') return false;
+    if(filtroCtrl==='Bloqueado'&&c.estado!=='Bloqueado') return false;
+    if(filtroCtrl==='2ctrl'&&cntDepto(c.dir,c.depto)<2) return false;
+    if(q&&!(String(c.n)+c.dir+c.depto+(c.notas||'')).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const tb=document.getElementById('tbody');
+  tb.innerHTML=data.map(c=>{
+    const cnt=cntDepto(c.dir,c.depto);
+    const bE=c.estado==='Vigente'?'<span class="badge b-v">Vigente</span>':'<span class="badge b-b">Bloqueado</span>';
+    const bC=cnt>=2?'<span class="badge b-a">'+cnt+' ⚠️</span>':'<span style="font-size:11px;color:var(--muted)">'+cnt+'</span>';
+    return '<tr><td><strong>'+c.n+'</strong></td><td>'+c.dir+'</td><td><strong>'+c.depto+'</strong></td><td>'+bE+'</td><td>'+bC+'</td><td><span style="font-size:11px;color:var(--muted)">'+(c.entrega||'—')+'</span></td><td><span style="font-size:11px;color:var(--muted)">'+(c.fecha||'—')+'</span></td><td><span style="font-size:11px;color:var(--muted)">'+(c.notas||'—')+'</span></td><td><button class="bicon" onclick="abrirEdit('+controles.indexOf(c)+')">✏️</button></td></tr>';
+  }).join('');
+  document.getElementById('st-total').textContent=controles.filter(c=>c.dir!=='Administración').length;
+  document.getElementById('st-vig').textContent=controles.filter(c=>c.estado==='Vigente'&&c.dir!=='Administración').length;
+  document.getElementById('st-bloq').textContent=controles.filter(c=>c.estado==='Bloqueado').length;
+  document.getElementById('st-pend').textContent=sols.filter(s=>s.estado==='pendiente').length;
+  localStorage.setItem('ctrl_listado',JSON.stringify(controles));
+}
+
+function poblarEdits(){
+  const sd=document.getElementById('ed'),sp=document.getElementById('edp');
+  DIRS.concat(['Administración']).forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sd.appendChild(o);});
+  DEPS.concat(['—']).forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sp.appendChild(o);});
+}
+
+function abrirEdit(idx){
+  editIdx=idx; const c=controles[idx];
+  document.getElementById('met').textContent='Editar Control N° '+c.n;
+  document.getElementById('en').value=c.n;
+  document.getElementById('ee').value=c.estado;
+  document.getElementById('ed').value=c.dir;
+  document.getElementById('edp').value=c.depto;
+  document.getElementById('eent').value=c.entrega||'—';
+  document.getElementById('ef').value=c.fecha||'';
+  document.getElementById('en2').value=c.notas||'';
+  document.getElementById('modal-edit').classList.add('open');
+}
+
+function guardarCtrl(){
+  if(editIdx<0) return;
+  controles[editIdx]={n:parseInt(document.getElementById('en').value),estado:document.getElementById('ee').value,dir:document.getElementById('ed').value,depto:document.getElementById('edp').value,entrega:document.getElementById('eent').value,fecha:document.getElementById('ef').value,notas:document.getElementById('en2').value};
+  closeMod(null,'modal-edit'); renderListado(); toast('Control actualizado','success');
+}
+
+function elimCtrl(){
+  if(!confirm('¿Eliminar este control?')) return;
+  controles.splice(editIdx,1); closeMod(null,'modal-edit'); renderListado(); toast('Control eliminado','warning');
+}
+
+function agregarCtrl(){
+  const nv=Math.max(...controles.map(c=>c.n))+1;
+  controles.push({n:nv,dir:'',depto:'',estado:'Vigente',entrega:'No iniciada',fecha:'',notas:''});
+  editIdx=controles.length-1; abrirEdit(editIdx);
+}
+
+function selTipo(t){
+  tipoLink=t;
+  ['perdida','segundo'].forEach(x=>{
+    const el=document.getElementById('tipo-'+x);
+    el.style.border=t===x?'2px solid var(--accent)':'2px solid var(--border)';
+    el.style.background=t===x?'var(--accent-bg)':'var(--surface2)';
+  });
+  document.getElementById('link-url').textContent=cfg.url+'?tipo='+t;
+  document.getElementById('link-generado').style.display='block';
+}
+
+function copiarLink(){
+  navigator.clipboard.writeText(cfg.url+'?tipo='+tipoLink).then(()=>toast('Link copiado','success'));
+}
+
+function enviarEmail(){
+  const email=document.getElementById('env-email').value.trim();
+  const nombre=document.getElementById('env-nombre').value.trim()||'Residente';
+  if(!email){toast('Ingresa el email','error');return;}
+  const url=cfg.url+'?tipo='+tipoLink;
+  const tl=tipoLink==='perdida'?'reposición de control remoto':'solicitud de 2° control remoto';
+  const su=encodeURIComponent('Solicitud Control Remoto — Comunidad 12 Norte de Viña del Mar');
+  const body=encodeURIComponent('Estimado/a '+nombre+',\n\nReciba un cordial saludo de parte de la '+NOMBRE_COM+'.\n\nLe enviamos el siguiente link para completar su '+tl+':\n\n👉 '+url+'\n\nPodrá ingresar y salir cuando lo necesite — su información quedará guardada.\n\nAtentamente,\n'+NOMBRE_COM+'\nRUT: '+RUT_COM+'\n'+ADMIN_EMAIL);
+  window.open('https://mail.google.com/mail/?view=cm&to='+encodeURIComponent(email)+'&cc='+encodeURIComponent(ADMIN_EMAIL)+'&su='+su+'&body='+body,'_blank');
+  toast('Abriendo Gmail','success');
+}
+
+async function cargarSols(){
+  try{
+    const r=await fetch(ASU+'?accion=listar&hoja=Controles');
+    const j=await r.json();
+    sols=j.ok?(j.data||[]):[];
+  }catch(e){sols=JSON.parse(localStorage.getItem('ctrl_sols_adm')||'[]');}
+  renderSols(); badge();
+}
+
+function setFS(btn){
+  document.querySelectorAll('[data-sf]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); filtroSol=btn.dataset.sf; renderSols();
+}
+
+function renderSols(){
+  const el=document.getElementById('lista-sol');
+  const fil=filtroSol==='todas'?sols:sols.filter(s=>s.estado===filtroSol);
+  if(!fil.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">'+(sols.length?'No hay solicitudes con este estado':'No hay solicitudes')+'</div>';return;}
+  const em={datos_enviados:['📋','#6B7280','Datos recibidos'],declaracion:['📝','#D97706','Declaración firmada'],pendiente:['⏳','#D97706','Comprobante pendiente'],aprobado:['✅','#059669','Aprobado'],listo:['📦','#7C3AED','Listo para entrega'],entregado:['🎉','#059669','Entregado']};
+  el.innerHTML=fil.map(s=>{
+    const[ic,co,lb]=em[s.estado]||['❓','#6B7280','—'];
+    const tl=s.tipo==='perdida'?'🚨 Pérdida':'➕ 2° Control';
+    return '<div class="sol-card"><div class="sol-id">'+(s.id||'—')+'</div><div class="sol-info"><strong>'+(s.nombre||'—')+' — Depto. '+(s.depto||'—')+'</strong><div class="sol-meta">'+(s.dir||'—')+' · '+tl+(s.ctrlN?' · N°'+s.ctrlN:'')+' · <span style="color:'+co+';font-weight:700">'+ic+' '+lb+'</span></div></div><div class="sol-actions"><button class="bicon" onclick="verSol(\''+s.id+'\')">👁</button>'+(s.estado==='pendiente'?'<button class="bicon s" onclick="aprobarRap(\''+s.id+'\')">✓</button>':'')+(s.estado==='aprobado'?'<button class="bicon" onclick="marcarListo(\''+s.id+'\')">📦</button>':'')+'</div></div>';
+  }).join('');
+}
+
+function badge(){
+  const p=sols.filter(s=>s.estado==='pendiente').length;
+  const b=document.getElementById('badge-pend');
+  b.style.display=p?'inline':'none'; b.textContent=p;
+  document.getElementById('st-pend').textContent=p;
+}
+
+function verSol(id){
+  solActual=sols.find(s=>s.id===id); if(!solActual) return;
+  const em={datos_enviados:'📋 Datos recibidos',declaracion:'📝 Declaración firmada',pendiente:'⏳ Comprobante en revisión',aprobado:'✅ Aprobado',listo:'📦 Listo para entrega',entregado:'🎉 Entregado'};
+  const tl=solActual.tipo==='perdida'?'🚨 Pérdida/Falla':'➕ 2° Control';
+  document.getElementById('mst').textContent=(solActual.id||'—')+' — '+(solActual.nombre||'—');
+  document.getElementById('msb').innerHTML=
+    '<div class="notice n-info"><div><strong>'+tl+'</strong><br>Estado: <strong>'+(em[solActual.estado]||solActual.estado)+'</strong></div></div>'+
+    '<table class="tbl" style="margin-bottom:14px"><tbody>'+
+    '<tr><td>Nombre</td><td>'+(solActual.nombre||'—')+'</td></tr>'+
+    '<tr><td>RUT</td><td>'+(solActual.rut||'—')+'</td></tr>'+
+    '<tr><td>Dirección</td><td>'+(solActual.dir||'—')+'</td></tr>'+
+    '<tr><td>Departamento</td><td>'+(solActual.depto||'—')+'</td></tr>'+
+    (solActual.tel?'<tr><td>Teléfono</td><td>'+solActual.tel+'</td></tr>':'')+
+    (solActual.email?'<tr><td>Email</td><td>'+solActual.email+'</td></tr>':'')+
+    (solActual.ctrlN?'<tr><td>Control Afectado</td><td>N° '+solActual.ctrlN+'</td></tr>':'')+
+    (solActual.motivo?'<tr><td>Motivo</td><td>'+solActual.motivo+'</td></tr>':'')+
+    '<tr><td>Creado</td><td>'+(solActual.creado||'—')+'</td></tr>'+
+    '</tbody></table>'+
+    (solActual.comprobante&&solActual.comprobante.startsWith('data:image')?'<strong style="font-size:12px;color:var(--muted)">COMPROBANTE:</strong><br><img src="'+solActual.comprobante+'" style="width:100%;max-width:400px;margin-top:8px;border-radius:8px;border:1px solid var(--border)">':
+    solActual.comprobanteLink?'<a href="'+solActual.comprobanteLink+'" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:8px">📎 Ver comprobante en Drive</a>':'');
+  const ft=document.getElementById('msf');
+  ft.innerHTML='<button class="btn btn-secondary" onclick="closeMod(null,\'modal-sol\')">Cerrar</button>';
+  if(solActual.estado==='pendiente'){
+    ft.innerHTML+='<button class="btn btn-danger btn-sm" onclick="rechazar()">✗ Rechazar</button>';
+    ft.innerHTML+='<button class="btn btn-success" onclick="aprobar()">✓ Aprobar y Notificar</button>';
+  }
+  if(solActual.estado==='aprobado') ft.innerHTML+='<button class="btn btn-primary" onclick="marcarListo(\''+solActual.id+'\')">📦 Marcar Listo</button>';
+  document.getElementById('modal-sol').classList.add('open');
+}
+
+async function aprobar(){
+  if(!solActual) return;
+  await cambiar(solActual.id,'aprobado');
+  if(solActual.tipo==='perdida'&&solActual.ctrlN){const c=controles.find(x=>x.n==solActual.ctrlN);if(c){c.estado='Bloqueado';localStorage.setItem('ctrl_listado',JSON.stringify(controles));}}
+  if(solActual.email){
+    const su=encodeURIComponent((solActual.id||'SOL')+'—Pago Aprobado—'+NOMBRE_COM);
+    const body=encodeURIComponent('Estimado/a '+(solActual.nombre||'')+',\n\nSu pago ha sido verificado. Solicitud '+(solActual.id||'')+'APROBADA.\n\nEl plazo de entrega es de '+cfg.plazo+' días hábiles. Le avisaremos cuando su control esté disponible.\n\n'+NOMBRE_COM+'\n'+ADMIN_EMAIL);
+    window.open('https://mail.google.com/mail/?view=cm&to='+encodeURIComponent(solActual.email)+'&cc='+encodeURIComponent(ADMIN_EMAIL)+'&su='+su+'&body='+body,'_blank');
+  }
+  closeMod(null,'modal-sol'); renderSols(); renderListado(); toast('Aprobado ✓','success');
+}
+
+function aprobarRap(id){solActual=sols.find(s=>s.id===id);if(solActual) aprobar();}
+
+async function rechazar(){
+  if(!confirm('¿Rechazar?')) return;
+  await cambiar(solActual.id,'rechazado');
+  closeMod(null,'modal-sol'); renderSols(); toast('Rechazado','warning');
+}
+
+async function marcarListo(id){
+  await cambiar(id,'listo');
+  const s=sols.find(x=>x.id===id);
+  if(s&&s.email){
+    const su=encodeURIComponent((s.id||'SOL')+' — Control Disponible — '+NOMBRE_COM);
+    const body=encodeURIComponent('Estimado/a '+(s.nombre||'')+',\n\nSu control remoto ya está disponible para retiro en la administración.\n\nSolicitud: '+(s.id||'')+'\nDepartamento: '+(s.depto||'')+' — '+(s.dir||'')+'\n\nPase a retirarlo en el horario de atención.\n\n'+NOMBRE_COM+'\n'+ADMIN_EMAIL);
+    window.open('https://mail.google.com/mail/?view=cm&to='+encodeURIComponent(s.email)+'&cc='+encodeURIComponent(ADMIN_EMAIL)+'&su='+su+'&body='+body,'_blank');
+  }
+  closeMod(null,'modal-sol'); renderSols(); toast('Marcado como listo ✓','success');
+}
+
+async function cambiar(id,estado){
+  const s=sols.find(x=>x.id===id); if(s) s.estado=estado;
+  localStorage.setItem('ctrl_sols_adm',JSON.stringify(sols));
+  try{await fetch(ASU,{method:'POST',body:JSON.stringify({tipo:'solicitud_ctrl',...s})});}catch(e){}
+  badge();
+}
+
+function guardarCfg(){
+  cfg.monto=parseInt(document.getElementById('cfg-monto').value)||15000;
+  cfg.plazo=parseInt(document.getElementById('cfg-plazo').value)||20;
+  cfg.url=document.getElementById('cfg-url').value.trim();
+  localStorage.setItem('ctrl_cfg',JSON.stringify(cfg));
+  toast('Configuración guardada','success');
+}
+
+function closeMod(e,id){
+  if(e&&e.target!==document.getElementById(id)) return;
+  document.getElementById(id).classList.remove('open');
+  if(id==='modal-sol') solActual=null;
+  if(id==='modal-edit') editIdx=-1;
+}
+
+function toast(msg,type=''){
+  const c=document.getElementById('toasts'),t=document.createElement('div');
+  t.className='toast '+type; t.textContent=msg; c.appendChild(t); setTimeout(()=>t.remove(),3500);
+}
+</script>
+</body>
+</html>
