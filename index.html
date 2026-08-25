@@ -204,6 +204,15 @@ textarea{resize:vertical;min-height:76px}
   .btn-row{flex-direction:column-reverse}
   .btn{justify-content:center}
 }
+
+/* MODO OSCURO */
+.dark{--bg:#0F1117;--surface:#1A1D27;--surface2:#22253A;--border:#2D3048;--text:#E8EAED;--muted:#9AA3B2;--accent:#4A7FC1;--accent2:#5B8FD1;--accent-bg:#1A2A42}
+.dark header{background:#0D1B2E}
+.dark .modal{background:#1A1D27}
+.dark input,.dark select,.dark textarea{background:#22253A;color:#E8EAED;border-color:#2D3048}
+.dark .card{background:#1A1D27;border-color:#2D3048}
+.dark .card-hd{border-color:#2D3048}
+
 </style>
 </head>
 <body>
@@ -223,9 +232,9 @@ textarea{resize:vertical;min-height:76px}
     <button onclick="nav('pago-nuevo')" id="tab-pago-nuevo">💳 Pago Proveedor</button>
     <button onclick="nav('pago-hist')" id="tab-pago-hist">📋 Pagos</button>
     <div class="sep"></div>
-    <button onclick="nav('controles')" id="tab-controles">📡 Controles</button>
-       <a href="controles.html" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.22)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,.1)';this.style.color='rgba(255,255,255,.75)'">📡 Controles</a>
+    <button onclick="nav('controles')" id="tab-controles">📡 Controles <span id='ctrl-nav-badge' style='background:#DC2626;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:2px;display:none'>0</span></button>
   </nav>
+  <button id="btn-dark" onclick="toggleDark()" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer;flex-shrink:0">🌙</button>
 </header>
 
 <div class="container">
@@ -587,6 +596,46 @@ textarea{resize:vertical;min-height:76px}
   </div>
 </div>
 
+
+<!-- MODAL HISTORIAL DEPTO -->
+<div class="overlay" id="modal-hist-depto" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-hd"><h3 id="mhd-title">Historial</h3><button class="mclose" onclick="document.getElementById('modal-hist-depto').classList.remove('open')">✕</button></div>
+    <div class="modal-body" id="mhd-body"></div>
+    <div class="modal-ft"><button class="btn btn-secondary" onclick="document.getElementById('modal-hist-depto').classList.remove('open')">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- MODAL ENTREGA DE CONTROL -->
+<div class="overlay" id="modal-entrega-ctrl" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-hd"><h3>Entrega de Control Remoto</h3><button class="mclose" onclick="document.getElementById('modal-entrega-ctrl').classList.remove('open')">✕</button></div>
+    <div class="modal-body">
+      <div class="notice" style="background:#ECFDF5;border:1px solid #6EE7B7;color:#065F46;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:flex;gap:10px">✅ <div>Completa la entrega — se generará el recibo conforme y se actualizará el listado.</div></div>
+      <input type="hidden" id="ent-sol-id">
+      <div class="fg">
+        <div class="f"><label>Nombre</label><input type="text" id="ent-nombre" readonly style="background:var(--surface2)"></div>
+        <div class="f"><label>RUT</label><input type="text" id="ent-rut" readonly style="background:var(--surface2)"></div>
+        <div class="f"><label>Dirección</label><input type="text" id="ent-dir" readonly style="background:var(--surface2)"></div>
+        <div class="f"><label>Depto</label><input type="text" id="ent-depto" readonly style="background:var(--surface2)"></div>
+        <div class="f"><label>Tipo</label><input type="text" id="ent-tipo" readonly style="background:var(--surface2)"></div>
+        <div class="f"><label>N° Control Asignado</label><input type="number" id="ent-num-ctrl" placeholder="Ej: 91" min="1"></div>
+        <div class="f full"><label>Fecha de Entrega</label><input type="date" id="ent-fecha"></div>
+      </div>
+      <div class="divider"><span>Firma del Residente</span></div>
+      <div class="sig-wrap">
+        <canvas id="sig-ent" height="140"></canvas>
+        <div class="sig-hint" id="hint-ent">Firme aquí</div>
+        <div class="sig-foot"><button class="btn-clr" onclick="clrSig('ent')">🗑 Borrar</button></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-entrega-ctrl').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-success" onclick="generarReciboEntrega()">✅ Finalizar y Generar Recibo</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toasts"></div>
 
 <script>
@@ -668,11 +717,10 @@ let currentR = null;
 document.addEventListener('DOMContentLoaded', () => {
   const hoy = new Date().toISOString().split('T')[0];
   document.getElementById('r-fecha').value = hoy;
-  document.getElementById('o-fecha-rep').value = hoy;
-  document.getElementById('o-fecha-vis').value = hoy;
-  document.getElementById('o-hora').value = new Date().toTimeString().slice(0,5);
   poblarDirecciones();
   ['r','p'].forEach(initCanvas);
+  if (localStorage.getItem('dark_mode') === '1') { document.documentElement.classList.add('dark'); document.getElementById('btn-dark').textContent = '☀️'; }
+  // No cargar controles al inicio — se carga al entrar a la pestaña
   calcularTotales();
 });
 
@@ -685,7 +733,7 @@ function nav(name) {
   document.querySelectorAll('.hnav button').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'recibo-hist') renderRecibos();
-  if (name === 'controles') { renderCtrls(); cargarSolCtrl(); }
+  if (name === 'controles') { sincronizarListado().then(() => renderCtrls()); cargarSolCtrl(); }
   if (name === 'pago-hist') renderPagos();
 }
 
@@ -1132,9 +1180,6 @@ function resetOT() {
   });
   ['o-dir','o-depto'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).classList.remove('err'); });
   const hoy = new Date().toISOString().split('T')[0];
-  document.getElementById('o-fecha-rep').value = hoy;
-  document.getElementById('o-fecha-vis').value = hoy;
-  document.getElementById('o-hora').value = new Date().toTimeString().slice(0,5);
   document.getElementById('foto-preview').innerHTML = '';
   document.getElementById('foto-input').value = '';
   clrSig('or'); clrSig('ot');
@@ -1745,7 +1790,7 @@ function renderCtrls() {
       '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)">' + (c.entrega||'—') + '</td>' +
       '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)">' + (c.fecha||'—') + '</td>' +
       '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)">' + (c.notas||'—') + '</td>' +
-      '<td style="padding:8px 12px;border-bottom:1px solid var(--border)"><button onclick="abrirCtrl(' + ctrlListado.indexOf(c) + ')" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px">✏️</button></td>' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border);white-space:nowrap">' + (c.dir !== 'Administración' ? '<button onclick="verHistorialDepto(\"' + c.dir + '\",\"' + c.depto + '\")" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;margin-right:4px" title="Ver historial">📂</button>' : '') + '<button onclick="abrirCtrl(' + ctrlListado.indexOf(c) + ')" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px" title="Editar">✏️</button></td>' +
       '</tr>';
   }).join('');
   // Stats
@@ -1754,6 +1799,7 @@ function renderCtrls() {
   document.getElementById('cst-bloq').textContent  = ctrlListado.filter(c=>c.estado==='Bloqueado').length;
   document.getElementById('cst-pend').textContent  = ctrlSols.filter(s=>s.estado==='pendiente').length;
   localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+  sincronizarListadoDrive();
 }
 
 // Poblar selects del modal de edición
@@ -1860,6 +1906,13 @@ async function cargarSolCtrl() {
   }
   renderSolCtrl();
   actualizarBadgeCtrl();
+  // Actualizar badge en nav
+  const navBadge = document.getElementById('ctrl-nav-badge');
+  if (navBadge) {
+    const p = ctrlSols.filter(s => s.estado === 'pendiente').length;
+    navBadge.style.display = p ? 'inline' : 'none';
+    navBadge.textContent = p;
+  }
 }
 
 function setSF2(btn) {
@@ -1981,6 +2034,196 @@ async function cambiarEstadoCtrl(id, estado) {
 function closeMSol() {
   document.getElementById('modal-ctrl-sol').classList.remove('open');
   ctrlSolAct = null;
+}
+
+// ════════════════════════════════════════
+// SINCRONIZACIÓN LISTADO CON DRIVE
+// ════════════════════════════════════════
+let syncTimeout = null;
+
+async function sincronizarListado() {
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?accion=listar&hoja=Listado');
+    const json = await res.json();
+    if (json.ok && json.data && json.data.length > 0) {
+      ctrlListado = json.data;
+      localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+    }
+  } catch(e) {}
+}
+
+function sincronizarListadoDrive() {
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(async () => {
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+      });
+    } catch(e) {}
+  }, 2000);
+}
+
+// ════════════════════════════════════════
+// HISTORIAL POR DEPARTAMENTO
+// ════════════════════════════════════════
+async function verHistorialDepto(dir, depto) {
+  const recibos = await cargarDesdeSheets('Recibos') || [];
+  const pagos   = await cargarDesdeSheets('Pagos') || [];
+  const sols    = await cargarDesdeSheets('Controles') || [];
+  const ctrls   = ctrlListado.filter(c => c.dir === dir && c.depto === depto);
+  const recs    = recibos.filter(r => r.dir === dir && r.depto === depto);
+  const solsDep = sols.filter(s => s.dir === dir && s.depto === depto);
+
+  const modal = document.getElementById('modal-hist-depto');
+  document.getElementById('mhd-title').textContent = 'Historial — ' + depto + ' · ' + dir;
+  document.getElementById('mhd-body').innerHTML =
+    '<div class="divider"><span>Controles Asignados</span></div>' +
+    (ctrls.length ? ctrls.map(c =>
+      '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">' +
+      '<span style="font-weight:800;color:var(--accent);background:var(--accent-bg);padding:4px 10px;border-radius:6px">N° ' + c.n + '</span>' +
+      '<span>' + (c.estado==='Vigente'?'<span style="background:#D1FAE5;color:#065F46;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">Vigente</span>':'<span style="background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">Bloqueado</span>') + '</span>' +
+      '<span style="font-size:12px;color:var(--muted)">' + (c.fecha||'Sin fecha') + '</span>' +
+      '</div>'
+    ).join('') : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Sin controles registrados</div>') +
+
+    '<div class="divider"><span>Recibos</span></div>' +
+    (recs.length ? recs.map(r =>
+      '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">' +
+      '<span style="font-size:18px">' + (r.tipo==='Llave'?'🔑':'📡') + '</span>' +
+      '<div><div style="font-size:13px;font-weight:600">' + r.nombre + '</div>' +
+      '<div style="font-size:11px;color:var(--muted)">' + r.tipo + ' · ' + r.fecha + '</div></div>' +
+      (r.pdfUrl ? '<a href="' + r.pdfUrl + '" target="_blank" style="margin-left:auto;font-size:11px;color:var(--accent)">📄 PDF</a>' : '') +
+      '</div>'
+    ).join('') : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Sin recibos</div>') +
+
+    '<div class="divider"><span>Solicitudes de Control</span></div>' +
+    (solsDep.length ? solsDep.map(s => {
+      const em = { datos_enviados:'📋 Datos', declaracion:'📝 Declarado', pendiente:'⏳ Pendiente', aprobado:'✅ Aprobado', listo:'📦 Listo', entregado:'🎉 Entregado', rechazado:'✗ Rechazado' };
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">' +
+        '<span style="font-weight:700;color:var(--accent);font-size:12px">' + (s.id||'—') + '</span>' +
+        '<div><div style="font-size:13px;font-weight:600">' + (s.tipo==='perdida'?'Pérdida/Falla':'2° Control') + '</div>' +
+        '<div style="font-size:11px;color:var(--muted)">' + (em[s.estado]||s.estado) + ' · ' + (s.creado||'—') + '</div></div>' +
+        '</div>';
+    }).join('') : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Sin solicitudes</div>');
+
+  modal.classList.add('open');
+}
+
+// ════════════════════════════════════════
+// RECIBO DE ENTREGA DESDE SOLICITUDES
+// ════════════════════════════════════════
+function abrirReciboEntrega(id) {
+  const sol = ctrlSols.find(s => s.id === id);
+  if (!sol) { toast('Solicitud no encontrada', 'error'); return; }
+  closeMSol();
+
+  const modalEnt = document.getElementById('modal-entrega-ctrl');
+  if (!modalEnt) { toast('Error: modal no encontrado', 'error'); return; }
+  modalEnt.classList.add('open');
+  document.getElementById('ent-nombre').value  = sol.nombre || '';
+  document.getElementById('ent-rut').value     = sol.rut    || '';
+  document.getElementById('ent-dir').value     = sol.dir    || '';
+  document.getElementById('ent-depto').value   = sol.depto  || '';
+  document.getElementById('ent-tipo').value    = sol.tipo === 'perdida' ? 'Reposición por Pérdida/Falla' : '2° Control Remoto';
+  document.getElementById('ent-fecha').value   = new Date().toISOString().split('T')[0];
+  document.getElementById('ent-sol-id').value  = sol.id;
+  document.getElementById('ent-num-ctrl').value= '';
+  clrSig('ent');
+  if (!sigCtx['ent']) setTimeout(() => initCanvas('ent'), 100);
+}
+
+async function generarReciboEntrega() {
+  const nombre  = document.getElementById('ent-nombre').value;
+  const rut     = document.getElementById('ent-rut').value;
+  const dir     = document.getElementById('ent-dir').value;
+  const depto   = document.getElementById('ent-depto').value;
+  const tipo    = document.getElementById('ent-tipo').value;
+  const fecha   = document.getElementById('ent-fecha').value;
+  const numCtrl = document.getElementById('ent-num-ctrl').value;
+  const solId   = document.getElementById('ent-sol-id').value;
+
+  if (!numCtrl)        { toast('Ingresa el N° de control asignado', 'error'); return; }
+  if (!sigStates['ent']) { toast('Se requiere la firma del residente', 'error'); return; }
+
+  const [yr,mo,dy] = fecha.split('-');
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const fechaTxt = dy + ' de ' + meses[parseInt(mo)-1] + ' de ' + yr;
+  const firma    = getSig('ent');
+
+  // Actualizar control en listado
+  const ctrl = ctrlListado.find(c => c.n == numCtrl);
+  if (ctrl) { ctrl.estado='Vigente'; ctrl.entrega='Completada'; ctrl.fecha=dy+'/'+mo+'/'+yr; }
+  else ctrlListado.push({ n:parseInt(numCtrl), dir, depto, estado:'Vigente', entrega:'Completada', fecha:dy+'/'+mo+'/'+yr, notas:'' });
+  sincronizarListadoDrive();
+  localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+
+  // Marcar solicitud como entregada
+  const sol = ctrlSols.find(s => s.id === solId);
+  if (sol) {
+    sol.estado       = 'entregado';
+    sol.numCtrlNuevo = parseInt(numCtrl);
+    sol.fechaEntrega = fecha;
+    await cambiarEstadoCtrl(solId, 'entregado');
+  }
+
+  // Generar PDF para descarga
+  generarPDFReciboCtrl({ nombre, rut, dir, depto, tipo, fechaTxt, numCtrl, firma });
+  document.getElementById('modal-entrega-ctrl').classList.remove('open');
+  renderCtrls();
+  renderSolCtrl();
+  toast('Entrega registrada ✓ — Control N° ' + numCtrl + ' asignado', 'success');
+
+  // Email al residente
+  const email = sol ? sol.email : null;
+  if (email && email !== '—') {
+    const su   = encodeURIComponent(solId + ' — Control Entregado — ' + NOMBRE_COMUNIDAD);
+    const body = encodeURIComponent('Estimado/a ' + nombre + ',\n\nSe ha realizado la entrega del control remoto N° ' + numCtrl + ' para el departamento ' + depto + ', ' + dir + '.\n\nFecha de entrega: ' + fechaTxt + '\nTipo: ' + tipo + '\n\nAtentamente,\n' + NOMBRE_COMUNIDAD + '\n' + ADMIN_EMAIL);
+    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(email) + '&cc=' + encodeURIComponent(ADMIN_EMAIL) + '&su=' + su + '&body=' + body, '_blank');
+  }
+}
+
+function generarPDFReciboCtrl(d) {
+  const numWord = d.tipo.includes('2°') ? 'un segundo' : 'un';
+  const html = `
+    <html><head><meta charset="UTF-8"><style>
+      body{font-family:Georgia,serif;font-size:13px;color:#111;padding:20mm 22mm;line-height:1.85}
+      .hdr{border-bottom:2.5px solid #1E3A5F;padding-bottom:10px;margin-bottom:20px}
+      h1{font-size:13px;font-weight:700;color:#1E3A5F;margin:0}
+      p.rut{font-size:11px;color:#555;margin:3px 0 0}
+      h2{text-align:center;font-size:14px;text-decoration:underline;text-transform:uppercase;margin:18px 0}
+      .fecha{text-align:right;margin-bottom:14px}
+      .fl{border-top:1.5px solid #333;padding-top:6px;font-size:11px;display:inline-block;min-width:200px;text-align:center;margin-top:30px}
+      .ft{margin-top:50px;border-top:1px solid #ddd;padding-top:8px;display:flex;justify-content:space-between;font-size:10px;color:#999}
+    </style></head><body>
+    <div class="hdr"><h1>${NOMBRE_COMUNIDAD}</h1><p class="rut">RUT: ${RUT_COMUNIDAD} &bull; ${ADMIN_EMAIL}</p></div>
+    <h2>RECIBO CONFORME DE ENTREGA DE CONTROL REMOTO</h2>
+    <div class="fecha">Viña del Mar, <strong>${d.fechaTxt}</strong></div>
+    <p>Por medio del presente documento, yo, <strong>${d.nombre}</strong>, RUT N° <strong>${d.rut}</strong> residente del domicilio <strong>${d.dir}</strong>, departamento N° <strong>${d.depto}</strong>, Viña del Mar, Valparaíso, declaro haber recibido de parte de la Administración ${numWord} control remoto (N° <strong>${d.numCtrl}</strong>) para el acceso vehicular (<strong>${d.tipo}</strong>).</p>
+    <br><p>El dispositivo se entrega nuevo y fue probado en mi presencia, confirmando su correcto funcionamiento.</p>
+    <br><p>Firmo en señal de total conformidad con lo aquí estipulado.</p>
+    <br><br><p><strong>Recibe Conforme:</strong></p><br>
+    ${d.firma ? '<img src="' + d.firma + '" style="max-height:65px;display:block;margin-bottom:6px;">' : '<div style="height:65px"></div>'}
+    <div class="fl">Firma<br><small><strong>${d.nombre}</strong></small><br><small>RUT: ${d.rut}</small></div>
+    <div class="ft"><span>${NOMBRE_COMUNIDAD} · RUT ${RUT_COMUNIDAD}</span><span>${new Date().toLocaleDateString('es-CL')}</span></div>
+    </body></html>`;
+
+  const blob   = new Blob([html], { type: 'text/html' });
+  const url    = URL.createObjectURL(blob);
+  const link   = document.createElement('a');
+  link.href    = url;
+  link.download = 'Recibo_Control_' + d.numCtrl + '_Depto' + d.depto + '.html';
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+// ════════════════════════════════════════
+// MODO OSCURO
+// ════════════════════════════════════════
+function toggleDark() {
+  const dark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('dark_mode', dark ? '1' : '0');
+  document.getElementById('btn-dark').textContent = dark ? '☀️' : '🌙';
 }
 
 // TOAST
