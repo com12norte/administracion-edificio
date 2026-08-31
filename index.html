@@ -438,7 +438,10 @@ textarea{resize:vertical;min-height:76px}
           <div class="card-hd-icon">📡</div>
           <div><h2>Listado de Controles</h2><p>Click en ✏️ para editar — máx. 2 por depto</p></div>
         </div>
-        <button class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="agregarCtrl()">+ Agregar</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="subirListadoDrive()" title="Guardar listado actual en Drive">☁️ Subir</button>
+          <button class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="agregarCtrl()">+ Agregar</button>
+        </div>
       </div>
       <div class="card-body">
         <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
@@ -1832,7 +1835,7 @@ function abrirCtrl(idx) {
   document.getElementById('modal-ctrl-edit').classList.add('open');
 }
 
-function guardarCtrl() {
+async function guardarCtrl() {
   if (ctrlEditIdx < 0) return;
   ctrlListado[ctrlEditIdx] = {
     n:       parseInt(document.getElementById('mce-n').value),
@@ -1843,17 +1846,36 @@ function guardarCtrl() {
     fecha:   document.getElementById('mce-fecha').value,
     notas:   document.getElementById('mce-notas').value
   };
+  localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
   closeMCtrl();
   renderCtrls();
-  toast('Control actualizado ✓', 'success');
+  // Subir inmediatamente a Drive
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+    });
+    toast('Control guardado en Drive ✓', 'success');
+  } catch(e) {
+    toast('Guardado localmente — sin conexión', 'warning');
+  }
 }
 
-function elimCtrl() {
+async function elimCtrl() {
   if (!confirm('¿Eliminar este control del listado?')) return;
   ctrlListado.splice(ctrlEditIdx, 1);
+  localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
   closeMCtrl();
   renderCtrls();
-  toast('Control eliminado', 'warning');
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+    });
+    toast('Control eliminado ✓', 'warning');
+  } catch(e) {
+    toast('Eliminado localmente — sin conexión', 'warning');
+  }
 }
 
 function agregarCtrl() {
@@ -2045,13 +2067,37 @@ function closeMSol() {
 // ════════════════════════════════════════
 let syncTimeout = null;
 
+async function subirListadoDrive() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+    });
+    const json = await res.json();
+    if (json.ok) toast('Listado subido a Drive ✓', 'success');
+    else toast('Error al subir', 'error');
+  } catch(e) { toast('Sin conexión', 'error'); }
+}
+
 async function sincronizarListado() {
   try {
     const res  = await fetch(APPS_SCRIPT_URL + '?accion=listar&hoja=Listado');
     const json = await res.json();
     if (json.ok && json.data && json.data.length > 0) {
-      ctrlListado = json.data;
-      localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+      // Normalizar campos — Drive puede devolver n como numero o string
+      const normalizado = json.data.map(c => ({
+        n:       parseInt(c.n) || parseInt(c.num) || parseInt(c.numero) || 0,
+        dir:     c.dir || c.direccion || c.Direccion || '',
+        depto:   c.depto || c.Depto || c.departamento || '',
+        estado:  c.estado || c.Estado || 'Vigente',
+        entrega: c.entrega || c.Entrega || '—',
+        fecha:   c.fecha || c.Fecha || '',
+        notas:   c.notas || c.Notas || ''
+      })).filter(c => c.n > 0); // Filtrar los que no tienen número válido
+      if (normalizado.length > 0) {
+        ctrlListado = normalizado;
+        localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+      }
     }
   } catch(e) {}
 }
@@ -2161,8 +2207,14 @@ async function generarReciboEntrega() {
   const ctrl = ctrlListado.find(c => c.n == numCtrl);
   if (ctrl) { ctrl.estado='Vigente'; ctrl.entrega='Completada'; ctrl.fecha=dy+'/'+mo+'/'+yr; }
   else ctrlListado.push({ n:parseInt(numCtrl), dir, depto, estado:'Vigente', entrega:'Completada', fecha:dy+'/'+mo+'/'+yr, notas:'' });
-  sincronizarListadoDrive();
   localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+  // Subir inmediatamente a Drive
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+    });
+  } catch(e) {}
 
   // Marcar solicitud como entregada
   const sol = ctrlSols.find(s => s.id === solId);
@@ -2172,6 +2224,23 @@ async function generarReciboEntrega() {
     sol.fechaEntrega = fecha;
     await cambiarEstadoCtrl(solId, 'entregado');
   }
+
+  // Guardar en db_recibos (historial de Recibos)
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        tipo:       'recibo',
+        tipoRecibo: 'control',
+        numControl: '1',
+        nombre, rut, dir, depto,
+        fecha:      fecha.split('-').reverse().join('/'),
+        email:      sol ? (sol.email || '') : '',
+        firma,
+        notaExtra:  tipo
+      })
+    });
+  } catch(e) {}
 
   // Generar PDF para descarga
   generarPDFReciboCtrl({ nombre, rut, dir, depto, tipo, fechaTxt, numCtrl, firma });
