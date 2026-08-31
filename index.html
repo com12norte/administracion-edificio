@@ -1792,7 +1792,9 @@ function renderCtrls() {
       '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)">' + (c.entrega||'—') + '</td>' +
       '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)">' + (c.fecha||'—') + '</td>' +
       '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)">' + (c.notas||'—') + '</td>' +
-      '<td style="padding:8px 12px;border-bottom:1px solid var(--border);white-space:nowrap">' + (c.dir !== 'Administración' ? '<button onclick="verHistorialDepto(\"' + c.dir + '\",\"' + c.depto + '\")" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;margin-right:4px" title="Ver historial">📂</button>' : '') + '<button onclick="abrirCtrl(' + ctrlListado.indexOf(c) + ')" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px" title="Editar">✏️</button></td>' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border);white-space:nowrap">' +
+      (c.dir !== 'Administración' ? '<button onclick="verHistorialDepto(this)" data-dir="' + c.dir.replace(/"/g,'&quot;') + '" data-dep="' + c.depto + '" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;margin-right:4px" title="Ver historial">📂</button>' : '') +
+      '<button onclick="abrirCtrl(' + ctrlListado.indexOf(c) + ')" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px" title="Editar">✏️</button></td>' +
       '</tr>';
   }).join('');
   // Stats
@@ -2069,7 +2071,9 @@ function sincronizarListadoDrive() {
 // ════════════════════════════════════════
 // HISTORIAL POR DEPARTAMENTO
 // ════════════════════════════════════════
-async function verHistorialDepto(dir, depto) {
+async function verHistorialDepto(btn) {
+  const dir   = btn.dataset.dir;
+  const depto = btn.dataset.dep;
   const recibos = await cargarDesdeSheets('Recibos') || [];
   const pagos   = await cargarDesdeSheets('Pagos') || [];
   const sols    = await cargarDesdeSheets('Controles') || [];
