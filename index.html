@@ -740,8 +740,10 @@ function nav(name) {
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'recibo-hist') renderRecibos();
   if (name === 'controles') {
-    renderCtrls();
+    renderCtrls(); // Mostrar hardcodeado inmediatamente
     cargarSolCtrl();
+    // Cargar desde Drive en background — si tiene datos válidos, actualizar
+    sincronizarListado().then(ok => { if (ok) renderCtrls(); });
   }
   if (name === 'pago-hist') renderPagos();
 }
@@ -1651,6 +1653,19 @@ const URL_SOLICITUD = 'https://com12norte.github.io/administracion-edificio/soli
 const COSTO_CTRL    = 15000;
 const PLAZO_CTRL    = 20;
 
+// Limpiar localStorage si tiene datos corruptos
+(function() {
+  const raw = localStorage.getItem('ctrl_listado');
+  if (raw) {
+    try {
+      const d = JSON.parse(raw);
+      if (!d || !d.length || d[0].n === undefined || d[0].n === null) {
+        localStorage.removeItem('ctrl_listado');
+      }
+    } catch(e) { localStorage.removeItem('ctrl_listado'); }
+  }
+})();
+
 let ctrlListado = JSON.parse(localStorage.getItem('ctrl_listado') || 'null') || [
   {n:1,dir:'4 Oriente 1081',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
   {n:2,dir:'4 Oriente 1081',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
@@ -1853,16 +1868,8 @@ async function guardarCtrl() {
   localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
   closeMCtrl();
   renderCtrls();
-  // Subir inmediatamente a Drive
-  try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
-    });
-    toast('Control guardado en Drive ✓', 'success');
-  } catch(e) {
-    toast('Guardado localmente — sin conexión', 'warning');
-  }
+  const ok = await subirListadoDrive();
+  toast(ok ? 'Control guardado ✓' : 'Guardado local — sin conexión', ok ? 'success' : 'warning');
 }
 
 async function elimCtrl() {
@@ -2072,15 +2079,14 @@ function closeMSol() {
 let syncTimeout = null;
 
 async function sincronizarDriveManual() {
-  toast('Sincronizando con Drive...', '');
-  // Intentar bajar desde Drive primero
+  toast('Sincronizando...', '');
   const bajado = await sincronizarListado();
   if (bajado) {
     renderCtrls();
-    toast('Listado actualizado desde Drive ✓', 'success');
+    toast('Listado cargado desde Drive ✓', 'success');
   } else {
-    // Si no hay datos en Drive, subir el local
-    await subirListadoDrive();
+    const subido = await subirListadoDrive();
+    toast(subido ? 'Listado subido a Drive ✓' : 'Sin conexión con Drive', subido ? 'success' : 'error');
   }
 }
 
@@ -2097,13 +2103,12 @@ async function subirListadoDrive() {
       body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
     });
     const json = await res.json();
-    if (json.ok) toast('Listado subido a Drive ✓', 'success');
-    else toast('Error al subir', 'error');
-  } catch(e) { toast('Sin conexión', 'error'); }
+    if (json.ok) return true;
+  } catch(e) {}
+  return false;
 }
 
 async function sincronizarListado() {
-  // Solo llamar manualmente — no automático al cargar
   try {
     const res  = await fetch(APPS_SCRIPT_URL + '?accion=listar&hoja=Listado');
     const json = await res.json();
@@ -2111,7 +2116,7 @@ async function sincronizarListado() {
       const normalizado = json.data
         .map(c => ({ n: parseInt(c.n)||0, dir: c.dir||'', depto: c.depto||'', estado: c.estado||'Vigente', entrega: c.entrega||'—', fecha: c.fecha||'', notas: c.notas||'' }))
         .filter(c => c.n > 0 && c.dir);
-      if (normalizado.length > 0) {
+      if (normalizado.length >= 10) { // Solo reemplazar si Drive tiene datos válidos
         ctrlListado = normalizado;
         localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
         return true;
