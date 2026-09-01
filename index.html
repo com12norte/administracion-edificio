@@ -439,7 +439,7 @@ textarea{resize:vertical;min-height:76px}
           <div><h2>Listado de Controles</h2><p>Click en ✏️ para editar — máx. 2 por depto</p></div>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="subirListadoDrive()" title="Guardar listado actual en Drive">☁️ Subir</button>
+          <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="sincronizarDriveManual()" title="Sincronizar con Drive">☁️ Sync Drive</button>
           <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="resetListado()" title="Resetear a datos originales">🔄</button>
           <button class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="agregarCtrl()">+ Agregar</button>
         </div>
@@ -740,9 +740,8 @@ function nav(name) {
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'recibo-hist') renderRecibos();
   if (name === 'controles') {
-    renderCtrls(); // Mostrar datos locales inmediatamente
+    renderCtrls();
     cargarSolCtrl();
-    sincronizarListado().then(() => renderCtrls()); // Actualizar si Drive tiene más datos
   }
   if (name === 'pago-hist') renderPagos();
 }
@@ -2074,6 +2073,19 @@ function closeMSol() {
 // ════════════════════════════════════════
 let syncTimeout = null;
 
+async function sincronizarDriveManual() {
+  toast('Sincronizando con Drive...', '');
+  // Intentar bajar desde Drive primero
+  const bajado = await sincronizarListado();
+  if (bajado) {
+    renderCtrls();
+    toast('Listado actualizado desde Drive ✓', 'success');
+  } else {
+    // Si no hay datos en Drive, subir el local
+    await subirListadoDrive();
+  }
+}
+
 function resetListado() {
   if (!confirm('¿Resetear el listado a los datos originales de la app?')) return;
   localStorage.removeItem('ctrl_listado');
@@ -2093,43 +2105,22 @@ async function subirListadoDrive() {
 }
 
 async function sincronizarListado() {
-  // Limpiar localStorage si tiene datos corruptos (sin campo n)
-  const local = localStorage.getItem('ctrl_listado');
-  if (local) {
-    try {
-      const parsed = JSON.parse(local);
-      if (!parsed || parsed.length === 0 || !parsed[0].n || parsed[0].n === undefined) {
-        localStorage.removeItem('ctrl_listado'); // limpiar corrupto
-      } else {
-        ctrlListado = parsed; // usar local si es válido
-      }
-    } catch(e) {
-      localStorage.removeItem('ctrl_listado');
-    }
-  }
-  // Intentar cargar desde Drive en background
+  // Solo llamar manualmente — no automático al cargar
   try {
     const res  = await fetch(APPS_SCRIPT_URL + '?accion=listar&hoja=Listado');
     const json = await res.json();
     if (json.ok && json.data && json.data.length > 0) {
       const normalizado = json.data
-        .map(c => ({
-          n:       parseInt(c.n) || 0,
-          dir:     c.dir || '',
-          depto:   c.depto || '',
-          estado:  c.estado || 'Vigente',
-          entrega: c.entrega || '—',
-          fecha:   c.fecha || '',
-          notas:   c.notas || ''
-        }))
+        .map(c => ({ n: parseInt(c.n)||0, dir: c.dir||'', depto: c.depto||'', estado: c.estado||'Vigente', entrega: c.entrega||'—', fecha: c.fecha||'', notas: c.notas||'' }))
         .filter(c => c.n > 0 && c.dir);
-      // Solo reemplazar si Drive tiene más datos o datos más recientes
-      if (normalizado.length >= ctrlListado.length) {
+      if (normalizado.length > 0) {
         ctrlListado = normalizado;
         localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+        return true;
       }
     }
   } catch(e) {}
+  return false;
 }
 
 function sincronizarListadoDrive() {
