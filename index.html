@@ -1773,7 +1773,10 @@ function ctrlDeptoCount(dir, depto) {
 }
 
 function renderCtrls() {
-  const q = (document.getElementById('ctrl-search').value || '').toLowerCase();
+  const searchEl = document.getElementById('ctrl-search');
+  const tbEl     = document.getElementById('ctrl-tbody');
+  if (!searchEl || !tbEl) return; // vista no visible aún
+  const q = (searchEl.value || '').toLowerCase();
   const data = ctrlListado.filter(c => {
     if (ctrlFil === 'Vigente'   && c.estado !== 'Vigente')   return false;
     if (ctrlFil === 'Bloqueado' && c.estado !== 'Bloqueado') return false;
@@ -1781,7 +1784,7 @@ function renderCtrls() {
     if (q && !(String(c.n) + c.dir + c.depto + (c.notas||'')).toLowerCase().includes(q)) return false;
     return true;
   });
-  const tb = document.getElementById('ctrl-tbody');
+  const tb = tbEl;
   tb.innerHTML = data.map(c => {
     const cnt = ctrlDeptoCount(c.dir, c.depto);
     const bE  = c.estado === 'Vigente'
