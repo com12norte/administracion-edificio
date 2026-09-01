@@ -740,8 +740,9 @@ function nav(name) {
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'recibo-hist') renderRecibos();
   if (name === 'controles') {
-    renderCtrls();
+    renderCtrls(); // local primero
     cargarSolCtrl();
+    sincronizarListado().then(ok => { if (ok) renderCtrls(); }); // Drive en background
   }
   if (name === 'pago-hist') renderPagos();
 }
