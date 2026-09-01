@@ -738,7 +738,11 @@ function nav(name) {
   document.querySelectorAll('.hnav button').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'recibo-hist') renderRecibos();
-  if (name === 'controles') { sincronizarListado().then(() => renderCtrls()); cargarSolCtrl(); }
+  if (name === 'controles') {
+    renderCtrls(); // Mostrar datos locales inmediatamente
+    cargarSolCtrl();
+    sincronizarListado().then(() => renderCtrls()); // Actualizar si Drive tiene más datos
+  }
   if (name === 'pago-hist') renderPagos();
 }
 
@@ -1806,7 +1810,6 @@ function renderCtrls() {
   document.getElementById('cst-bloq').textContent  = ctrlListado.filter(c=>c.estado==='Bloqueado').length;
   document.getElementById('cst-pend').textContent  = ctrlSols.filter(s=>s.estado==='pendiente').length;
   localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
-  sincronizarListadoDrive();
 }
 
 // Poblar selects del modal de edición
@@ -2080,21 +2083,34 @@ async function subirListadoDrive() {
 }
 
 async function sincronizarListado() {
+  // Si hay datos en localStorage, usarlos primero (más rápido)
+  const local = localStorage.getItem('ctrl_listado');
+  if (local) {
+    try {
+      const parsed = JSON.parse(local);
+      if (parsed && parsed.length > 0 && parsed[0].n) {
+        ctrlListado = parsed;
+      }
+    } catch(e) {}
+  }
+  // Intentar cargar desde Drive en background
   try {
     const res  = await fetch(APPS_SCRIPT_URL + '?accion=listar&hoja=Listado');
     const json = await res.json();
     if (json.ok && json.data && json.data.length > 0) {
-      // Normalizar campos — Drive puede devolver n como numero o string
-      const normalizado = json.data.map(c => ({
-        n:       parseInt(c.n) || parseInt(c.num) || parseInt(c.numero) || 0,
-        dir:     c.dir || c.direccion || c.Direccion || '',
-        depto:   c.depto || c.Depto || c.departamento || '',
-        estado:  c.estado || c.Estado || 'Vigente',
-        entrega: c.entrega || c.Entrega || '—',
-        fecha:   c.fecha || c.Fecha || '',
-        notas:   c.notas || c.Notas || ''
-      })).filter(c => c.n > 0); // Filtrar los que no tienen número válido
-      if (normalizado.length > 0) {
+      const normalizado = json.data
+        .map(c => ({
+          n:       parseInt(c.n) || 0,
+          dir:     c.dir || '',
+          depto:   c.depto || '',
+          estado:  c.estado || 'Vigente',
+          entrega: c.entrega || '—',
+          fecha:   c.fecha || '',
+          notas:   c.notas || ''
+        }))
+        .filter(c => c.n > 0 && c.dir);
+      // Solo reemplazar si Drive tiene más datos o datos más recientes
+      if (normalizado.length >= ctrlListado.length) {
         ctrlListado = normalizado;
         localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
       }
