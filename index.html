@@ -1920,16 +1920,38 @@ function copiarLinkCtrl() {
   navigator.clipboard.writeText(url).then(() => toast('Link copiado ✓', 'success'));
 }
 
-function enviarLinkCtrl() {
+async function enviarLinkCtrl() {
   const email  = document.getElementById('lnk-email').value.trim();
   const nombre = document.getElementById('lnk-nombre').value.trim() || 'Residente';
   if (!email) { toast('Ingresa el email del residente', 'error'); return; }
-  const url    = URL_SOLICITUD + '?tipo=' + ctrlTipoLink;
-  const tl     = ctrlTipoLink === 'perdida' ? 'reposición de control remoto' : 'solicitud de 2° control remoto';
-  const su     = encodeURIComponent('Solicitud Control Remoto — Comunidad 12 Norte de Viña del Mar');
-  const body   = encodeURIComponent('Estimado/a ' + nombre + ',\n\nReciba un cordial saludo de parte de la ' + NOMBRE_COMUNIDAD + '.\n\nLe enviamos el link para completar su ' + tl + ':\n\n' + url + '\n\nPuede ingresar y salir cuando lo necesite.\n\nAtentamente,\n' + NOMBRE_COMUNIDAD + '\nRUT: ' + RUT_COMUNIDAD + '\n' + ADMIN_EMAIL);
-  window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(email) + '&cc=' + encodeURIComponent(ADMIN_EMAIL) + '&su=' + su + '&body=' + body, '_blank');
-  toast('Abriendo Gmail ✓', 'success');
+  const url = URL_SOLICITUD + '?tipo=' + ctrlTipoLink;
+  const tl  = ctrlTipoLink === 'perdida' ? 'reposicion de control remoto' : 'solicitud de 2 control remoto';
+  const btn = document.querySelector('[onclick="enviarLinkCtrl()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '...Enviando'; }
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        tipo:   'email_link',
+        para:   email,
+        nombre: nombre,
+        asunto: 'Solicitud Control Remoto - Comunidad 12 Norte de Vina del Mar',
+        cuerpo: 'Estimado/a ' + nombre + ',\n\nLe enviamos el link para completar su ' + tl + ':\n\n' + url + '\n\nPuede ingresar y salir cuando lo necesite.\n\nAtentamente,\n' + NOMBRE_COMUNIDAD + '\nRUT: ' + RUT_COMUNIDAD + '\n' + ADMIN_EMAIL
+      })
+    });
+    const json = await res.json();
+    if (json.ok) {
+      toast('Email enviado a ' + email + ' \u2713', 'success');
+      document.getElementById('lnk-email').value = '';
+      document.getElementById('lnk-nombre').value = '';
+    } else { toast('Error: ' + (json.error||''), 'error'); }
+  } catch(e) {
+    toast('Sin conexion - abriendo Gmail...', 'warning');
+    const su = encodeURIComponent('Solicitud Control Remoto - Comunidad 12 Norte');
+    const body = encodeURIComponent('Estimado/a ' + nombre + ',\n\nLink:\n\n' + url + '\n\nAtentamente,\n' + NOMBRE_COMUNIDAD);
+    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(email) + '&su=' + su + '&body=' + body, '_blank');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '\u2709 Enviar por Email'; }
 }
 
 // ── SOLICITUDES ────────────────────────────────────────
