@@ -508,7 +508,7 @@ textarea{resize:vertical;min-height:76px}
             <div class="f"><label>Email del Residente</label><input type="email" id="lnk-email" placeholder="residente@email.com"></div>
             <div class="f"><label>Nombre (opcional)</label><input type="text" id="lnk-nombre" placeholder="Nombre del residente"></div>
           </div>
-          <button class="btn btn-primary" onclick="enviarLinkCtrl()" style="margin-top:12px">✉ Enviar por Email</button>
+          <button id="btn-enviar-link" class="btn btn-primary" onclick="enviarLinkCtrl()" style="margin-top:12px">✉ Enviar por Email</button>
         </div>
       </div>
     </div>
@@ -1927,16 +1927,16 @@ async function enviarLinkCtrl() {
   const nombre = document.getElementById('lnk-nombre').value.trim() || 'Residente';
   if (!email) { toast('Ingresa el email del residente', 'error'); return; }
   const solId = 'SOL-' + String(Math.floor(Math.random()*9000)+1000);
-  const url   = URL_SOLICITUD + '?tipo=' + ctrlTipoLink + '&id=' + solId;
+  const urlSol = URL_SOLICITUD + '?tipo=' + ctrlTipoLink + '&id=' + solId;
   const tl    = ctrlTipoLink === 'perdida' ? 'Perdida/Falla de Control' : '2 Control Remoto';
-  const btn   = document.querySelector('[onclick="enviarLinkCtrl()"]');
+  const btn   = document.getElementById('btn-enviar-link');
   if (btn) { btn.disabled = true; btn.textContent = '...Enviando'; }
   try {
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       body: JSON.stringify({
         tipo: 'enviar_link_ctrl', id: solId, tipoSol: ctrlTipoLink,
-        nombre, email, url, tipoLabel: tl,
+        nombre, email, url: urlSol, tipoLabel: tl,
         estado: 'link_enviado', creado: new Date().toLocaleString('es-CL')
       })
     });
@@ -1950,7 +1950,7 @@ async function enviarLinkCtrl() {
   } catch(e) {
     toast('Sin conexion — abriendo Gmail...', 'warning');
     const su   = encodeURIComponent('Solicitud Control Remoto — ' + NOMBRE_COMUNIDAD);
-    const body = encodeURIComponent('Estimado/a ' + nombre + ',\n\nLink para su solicitud ' + solId + ':\n\n' + url + '\n\nAtentamente,\n' + NOMBRE_COMUNIDAD);
+    const body = encodeURIComponent('Estimado/a ' + nombre + ',\n\nLink para su solicitud ' + solId + ':\n\n' + urlSol + '\n\nAtentamente,\n' + NOMBRE_COMUNIDAD);
     window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(email) + '&su=' + su + '&body=' + body, '_blank');
   }
   if (btn) { btn.disabled = false; btn.textContent = '✉ Enviar por Email'; }
@@ -2023,20 +2023,43 @@ function verSolCtrl(id) {
   const em = { datos_enviados:'📋 Datos recibidos', declaracion:'📝 Declaración firmada', pendiente:'⏳ Comprobante en revisión', aprobado:'✅ Aprobado', listo:'📦 Listo para entrega', entregado:'🎉 Entregado' };
   const tl  = ctrlSolAct.tipo === 'perdida' ? '🚨 Pérdida/Falla' : '➕ 2° Control';
   document.getElementById('mcs-title').textContent = (ctrlSolAct.id||'—') + ' — ' + (ctrlSolAct.nombre||'—');
+  const s = ctrlSolAct;
   document.getElementById('mcs-body').innerHTML =
-    '<div style="background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;display:flex;gap:10px"><div><strong>' + tl + '</strong><br>Estado: <strong>' + (em[ctrlSolAct.estado]||ctrlSolAct.estado) + '</strong></div></div>' +
-    '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px">' +
-    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2);width:35%">Nombre</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (ctrlSolAct.nombre||'—') + '</td></tr>' +
-    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">RUT</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (ctrlSolAct.rut||'—') + '</td></tr>' +
-    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Dirección</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (ctrlSolAct.dir||'—') + '</td></tr>' +
-    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Departamento</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (ctrlSolAct.depto||'—') + '</td></tr>' +
-    (ctrlSolAct.email ? '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Email</td><td style="padding:6px 10px;border:1px solid var(--border)">' + ctrlSolAct.email + '</td></tr>' : '') +
-    (ctrlSolAct.ctrlN ? '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Control Afectado</td><td style="padding:6px 10px;border:1px solid var(--border)">N° ' + ctrlSolAct.ctrlN + '</td></tr>' : '') +
-    (ctrlSolAct.motivo ? '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Motivo</td><td style="padding:6px 10px;border:1px solid var(--border)">' + ctrlSolAct.motivo + '</td></tr>' : '') +
+    // Estado
+    '<div style="background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;display:flex;gap:10px"><div><strong>' + tl + '</strong><br>Estado: <strong>' + (em[s.estado]||s.estado) + '</strong></div></div>' +
+
+    // Datos personales
+    '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Datos del Residente</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px">' +
+    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2);width:35%">Nombre</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (s.nombre||'—') + '</td></tr>' +
+    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">RUT</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (s.rut||'—') + '</td></tr>' +
+    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Dirección</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (s.dir||'—') + '</td></tr>' +
+    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Departamento</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (s.depto||'—') + '</td></tr>' +
+    (s.email ? '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Email</td><td style="padding:6px 10px;border:1px solid var(--border)">' + s.email + '</td></tr>' : '') +
+    (s.tel ? '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Teléfono</td><td style="padding:6px 10px;border:1px solid var(--border)">' + s.tel + '</td></tr>' : '') +
+    (s.ctrlN ? '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Control Afectado</td><td style="padding:6px 10px;border:1px solid var(--border)">N° ' + s.ctrlN + '</td></tr>' : '') +
+    (s.motivo ? '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Motivo</td><td style="padding:6px 10px;border:1px solid var(--border)">' + s.motivo + '</td></tr>' : '') +
     '</table>' +
-    (ctrlSolAct.comprobante && ctrlSolAct.comprobante.startsWith('data:image')
-      ? '<strong style="font-size:11px;color:var(--muted)">COMPROBANTE:</strong><br><img src="' + ctrlSolAct.comprobante + '" style="width:100%;max-width:400px;margin-top:8px;border-radius:8px;border:1px solid var(--border)">'
-      : ctrlSolAct.comprobanteLink ? '<a href="' + ctrlSolAct.comprobanteLink + '" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;margin-top:8px">📎 Ver comprobante en Drive</a>' : '');
+
+    // Declaración firmada (si existe)
+    (s.firma ? (
+      '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Declaración Firmada</div>' +
+      '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;font-size:12px;line-height:1.7;color:var(--text)">' +
+      'Yo, <strong>' + (s.nombre||'—') + '</strong>, RUT <strong>' + (s.rut||'—') + '</strong>, residente del departamento N° <strong>' + (s.depto||'—') + '</strong>, ' + (s.dir||'—') + ', ' +
+      'declaro bajo juramento que el control remoto ' + (s.ctrlN ? 'N° <strong>'+s.ctrlN+'</strong> ' : '') +
+      (s.tipo==='perdida' ? ('fue <strong>' + (s.motivo||'extraviado/dañado') + '</strong> y no se encuentra en mi poder.') : 'ha sido solicitado como segundo dispositivo de acceso.') +
+      '</div>' +
+      '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Firma Digital del Residente</div>' +
+      '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:16px;text-align:center">' +
+      '<img src="' + s.firma + '" style="max-height:80px;max-width:100%">' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:4px">' + (s.nombre||'—') + ' · ' + (s.creado||'—') + '</div>' +
+      '</div>'
+    ) : '') +
+
+    // Comprobante de pago
+    (s.comprobante && s.comprobante.startsWith('data:image')
+      ? '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Comprobante de Pago</div><img src="' + s.comprobante + '" style="width:100%;max-width:400px;border-radius:8px;border:1px solid var(--border)">'
+      : s.comprobanteLink ? '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Comprobante de Pago</div><a href="' + s.comprobanteLink + '" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none">📎 Ver comprobante en Drive</a>' : '');
 
   const ft = document.getElementById('mcs-ft');
   ft.innerHTML = '<button class="btn btn-secondary" onclick="closeMSol()">Cerrar</button>';
