@@ -463,9 +463,10 @@ async function cargarSolicitud() {
       return;
     }
 
-    tipo = solicitud.tipo;
+    tipo = solicitud.tipo || solicitud.tipoSol || 'perdida';
     // Mostrar vista según estado
-    if (solicitud.estado === 'datos_enviados')      { showView('paso2'); cargarPaso2(); }
+    if (solicitud.estado === 'link_enviado')         { showView('paso1'); configurarTipo(); return; } // El residente completa sus datos por primera vez
+    if (solicitud.estado === 'datos_enviados')       { showView('paso2'); cargarPaso2(); }
     else if (solicitud.estado === 'declaracion')    { showView('paso3'); cargarPaso3(); }
     else if (solicitud.estado === 'pendiente')      { showView('revision'); document.getElementById('sol-num-revision').textContent = solId; }
     else if (solicitud.estado === 'aprobado')       { showView('aprobado'); document.getElementById('sol-num-aprobado').textContent = solId; }
@@ -564,8 +565,10 @@ async function enviarDatos() {
   const btn = document.getElementById('btn-paso1');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';
 
-  // Generar ID único
-  solId = 'SOL-' + String(Math.floor(Math.random()*9000)+1000);
+  // Preservar ID si ya viene de la URL (link enviado por el admin), si no generar nuevo
+  if (!solId) {
+    solId = 'SOL-' + String(Math.floor(Math.random()*9000)+1000);
+  }
   const ctrlN = document.getElementById('d-ctrl').value || '';
 
   solicitud = { id: solId, tipo, nombre, rut, tel, email, dir, depto, ctrlN, estado: 'datos_enviados', creado: new Date().toLocaleString('es-CL') };
@@ -617,7 +620,12 @@ function cargarPaso2() {
     document.getElementById('decl-perdida').style.display = 'none';
     document.getElementById('decl-segundo').style.display = 'block';
     const ctrls = CONTROLES.filter(c => c.dir === solicitud.dir && c.depto === solicitud.depto && c.estado === 'Vigente');
-    document.getElementById('aptitud-box').innerHTML = '<div class="notice notice-success">✅ <div>El departamento <strong>' + solicitud.depto + '</strong> tiene <strong>' + ctrls.length + ' control vigente</strong> (N° ' + ctrls.map(c=>c.n).join(', ') + '). Puede solicitar un 2° control.</div></div>';
+    if (ctrls.length >= 2) {
+      document.getElementById('aptitud-box').innerHTML = '<div class="notice notice-danger">🚫 <div><strong>No puede continuar.</strong> El departamento <strong>' + solicitud.depto + '</strong> ya tiene <strong>' + ctrls.length + ' controles vigentes</strong> (N° ' + ctrls.map(c=>c.n).join(', ') + '). El máximo permitido es 2.<br><br>Si tiene consultas escríbanos a <strong>com12norte@gmail.com</strong></div></div>';
+      document.querySelector('[onclick="enviarDeclaracion()"]').style.display = 'none';
+    } else {
+      document.getElementById('aptitud-box').innerHTML = '<div class="notice notice-success">✅ <div>El departamento <strong>' + solicitud.depto + '</strong> tiene <strong>' + ctrls.length + ' control vigente</strong> (N° ' + ctrls.map(c=>c.n).join(', ') + '). Puede solicitar un 2° control.</div></div>';
+    }
   }
   initCanvas();
 }
