@@ -463,7 +463,9 @@ async function cargarSolicitud() {
       return;
     }
 
-    tipo = solicitud.tipo || solicitud.tipoSol || 'perdida';
+    // tipo en Drive puede ser 'enviar_link_ctrl' (del POST), el real está en tipoSol
+    const tipoReal = solicitud.tipoSol || (solicitud.tipo === 'segundo' || solicitud.tipo === 'perdida' ? solicitud.tipo : null);
+    tipo = tipoReal || tipo || 'perdida'; // fallback al ?tipo= de la URL que ya está en tipo
     // Mostrar vista según estado
     if (solicitud.estado === 'link_enviado')         { showView('paso1'); configurarTipo(); return; } // El residente completa sus datos por primera vez
     if (solicitud.estado === 'datos_enviados')       { showView('paso2'); cargarPaso2(); }
