@@ -187,7 +187,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="card-body">
         <div class="steps">
           <div class="step done"><div class="step-icon">📋</div><div class="step-label">Datos</div></div>
-          <div class="step active"><div class="step-icon">📝</div><div class="step-label">Declaración</div></div>
+          <div class="step active" id="step-decl-p2"><div class="step-icon">📝</div><div class="step-label">Declaración</div></div>
           <div class="step locked"><div class="step-icon">💳</div><div class="step-label">Pago</div></div>
           <div class="step locked"><div class="step-icon">✅</div><div class="step-label">Listo</div></div>
         </div>
@@ -243,12 +243,12 @@ textarea{resize:vertical;min-height:80px}
     <div class="card">
       <div class="card-hd">
         <div class="card-hd-icon">💳</div>
-        <div><h2>Pago de Reposición</h2><p id="sol-num-p3"></p></div>
+        <div><h2 id="titulo-paso3">Pago</h2><p id="sol-num-p3"></p></div>
       </div>
       <div class="card-body">
-        <div class="steps">
+        <div class="steps" id="steps-paso3">
           <div class="step done"><div class="step-icon">📋</div><div class="step-label">Datos</div></div>
-          <div class="step done"><div class="step-icon">📝</div><div class="step-label">Declaración</div></div>
+          <div class="step done" id="step-decl-p3"><div class="step-icon">📝</div><div class="step-label">Declaración</div></div>
           <div class="step active"><div class="step-icon">💳</div><div class="step-label">Pago</div></div>
           <div class="step locked"><div class="step-icon">✅</div><div class="step-label">Listo</div></div>
         </div>
@@ -488,6 +488,11 @@ async function cargarSolicitud() {
 // ══════════════════════════════════════════════
 function configurarTipo() {
   if (tipo === 'segundo') {
+    // Ocultar step Declaración en todos los pasos
+    ['step-decl-p1','step-decl-p3'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
     document.getElementById('tipo-icon').textContent     = '➕';
     document.getElementById('tipo-titulo').textContent   = 'Solicitud de 2° Control Remoto';
     document.getElementById('tipo-desc').textContent     = 'Complete sus datos para verificar la disponibilidad';
@@ -591,22 +596,8 @@ async function enviarDatos() {
   } catch(e) {}
 
   // Email al residente con link
-  const linkSol = window.location.origin + window.location.pathname + '?tipo=' + tipo + '&id=' + solId;
-  const tipoLabel = tipo === 'perdida' ? 'reposición de control remoto' : 'solicitud de 2° control remoto';
-  const asunto = encodeURIComponent('Solicitud ' + solId + ' — Control Remoto — Comunidad 12 Norte');
-  const body   = encodeURIComponent(
-    'Estimado/a ' + nombre + ',\n\n' +
-    'Reciba un cordial saludo de parte de la ' + NOMBRE_COMUNIDAD + '.\n\n' +
-    'Hemos registrado su ' + tipoLabel + '. A continuación encontrará el link para continuar con el proceso:\n\n' +
-    '👉 ' + linkSol + '\n\n' +
-    'Detalle de su solicitud:\n' +
-    '• N° Solicitud: ' + solId + '\n' +
-    '• Departamento: ' + depto + ' — ' + dir + '\n' +
-    '• Tipo: ' + (tipo === 'perdida' ? 'Pérdida/Falla' : '2° Control Remoto') + '\n\n' +
-    'Podrá ingresar y salir del link cuantas veces necesite — su información quedará guardada.\n\n' +
-    'Atentamente,\n' + NOMBRE_COMUNIDAD + '\nRUT: ' + RUT_COMUNIDAD + '\n' + ADMIN_EMAIL
-  );
-  window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(email) + '&su=' + asunto + '&body=' + body, '_blank');
+  // Solo enviar email si la solicitud es nueva (no llegó con ?id= del admin)
+  // Si ya tenía solId del admin, el email ya fue enviado por el admin
 
   // Avanzar: para 2° control saltar declaración
   window.history.replaceState({}, '', '?tipo=' + tipo + '&id=' + solId);
@@ -713,10 +704,15 @@ async function enviarDeclaracion() {
 function cargarPaso3() {
   document.getElementById('sol-num-p3').textContent = 'N° ' + solId;
   document.getElementById('asunto-trans').textContent = 'Pago Control ' + solId;
-  // Para 2° control, el step de Declaración ya fue completado automáticamente
   if (tipo === 'segundo') {
-    const steps = document.querySelectorAll('#view-paso3 .step');
-    if (steps[1]) { steps[1].classList.add('done'); steps[1].classList.remove('locked'); }
+    // Ocultar step Declaración y cambiar título
+    const stepDecl = document.getElementById('step-decl-p3');
+    if (stepDecl) stepDecl.style.display = 'none';
+    const titulo = document.getElementById('titulo-paso3');
+    if (titulo) titulo.textContent = 'Pago 2° Control';
+  } else {
+    const titulo = document.getElementById('titulo-paso3');
+    if (titulo) titulo.textContent = 'Pago de Reposición';
   }
 }
 
