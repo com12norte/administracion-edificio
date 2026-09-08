@@ -1922,7 +1922,19 @@ async function enviarLinkCtrl() {
     s.estado !== 'rechazado'
   );
 
-  const solId  = yaExiste ? yaExiste.id : ('SOL-' + String(Math.floor(Math.random()*9000)+1000));
+  let solId;
+  if (yaExiste) {
+    solId = yaExiste.id;
+  } else {
+    try {
+      const _r    = await fetch(APPS_SCRIPT_URL + '?accion=listar&hoja=Controles');
+      const _json = await _r.json();
+      const _n    = _json.ok && _json.data ? _json.data.length + 1 : Math.floor(Math.random()*9000)+1000;
+      solId = 'SOL-' + String(_n).padStart(4, '0');
+    } catch(e) {
+      solId = 'SOL-' + String(Math.floor(Math.random()*9000)+1000);
+    }
+  }
   const urlSol = URL_SOLICITUD + '?tipo=' + ctrlTipoLink + '&id=' + solId;
   const tl     = ctrlTipoLink === 'perdida' ? 'Perdida/Falla de Control' : '2 Control Remoto';
 
