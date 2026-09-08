@@ -150,7 +150,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="card-body">
         <div class="steps">
           <div class="step active"><div class="step-icon">📋</div><div class="step-label">Datos</div></div>
-          <div class="step locked"><div class="step-icon">📝</div><div class="step-label">Declaración</div></div>
+          <div class="step locked" id="step-decl-p1"><div class="step-icon">📝</div><div class="step-label">Declaración</div></div>
           <div class="step locked"><div class="step-icon">💳</div><div class="step-label">Pago</div></div>
           <div class="step locked"><div class="step-icon">✅</div><div class="step-label">Listo</div></div>
         </div>
@@ -486,6 +486,41 @@ async function cargarSolicitud() {
 // ══════════════════════════════════════════════
 // CONFIGURAR TIPO
 // ══════════════════════════════════════════════
+// ── VALIDAR Y FORMATEAR RUT ──
+function validarRUT(rutCompleto) {
+  const rutLimpio = rutCompleto.replace(/[^0-9kK]/g, '').toUpperCase();
+  if (rutLimpio.length < 7) return false;
+  const cuerpo = rutLimpio.slice(0, -1);
+  const dvIngresado = rutLimpio.slice(-1);
+  let suma = 0, multiplicador = 2;
+  for (let i = cuerpo.length - 1; i >= 0; i--) {
+    suma += parseInt(cuerpo[i]) * multiplicador;
+    multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+  }
+  const resto = suma % 11;
+  let dvEsperado = 11 - resto;
+  if (dvEsperado === 11) dvEsperado = '0';
+  else if (dvEsperado === 10) dvEsperado = 'K';
+  else dvEsperado = dvEsperado.toString();
+  return dvIngresado === dvEsperado;
+}
+
+function formatearRUT(valor) {
+  const limpio = valor.replace(/[^0-9kK]/g, '').toUpperCase();
+  if (limpio.length < 2) return limpio;
+  const dv     = limpio.slice(-1);
+  const cuerpo = limpio.slice(0, -1);
+  const fmt    = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return fmt + '-' + dv;
+}
+
+function formatearTel(valor) {
+  const limpio = valor.replace(/[^0-9]/g, '');
+  if (limpio.length < 8) return valor;
+  const digits = limpio.slice(-9); // últimos 9 dígitos
+  return '+56 ' + digits[0] + ' ' + digits.slice(1, 5) + ' ' + digits.slice(5);
+}
+
 function configurarTipo() {
   if (tipo === 'segundo') {
     // Ocultar step Declaración en todos los pasos
@@ -500,6 +535,21 @@ function configurarTipo() {
     document.getElementById('tipo-icon').textContent     = '🚨';
     document.getElementById('tipo-titulo').textContent   = 'Declaración de Pérdida o Falla';
     document.getElementById('tipo-desc').textContent     = 'Complete sus datos para iniciar el proceso';
+  }
+  // Formateo RUT en tiempo real
+  const inpRut = document.getElementById('d-rut');
+  if (inpRut && !inpRut._fmt) {
+    inpRut._fmt = true;
+    inpRut.addEventListener('input', () => { inpRut.value = formatearRUT(inpRut.value); });
+    inpRut.addEventListener('blur',  () => {
+      if (inpRut.value && !validarRUT(inpRut.value)) { inpRut.classList.add('err'); }
+      else { inpRut.classList.remove('err'); }
+    });
+  }
+  const inpTel = document.getElementById('d-tel');
+  if (inpTel && !inpTel._fmt) {
+    inpTel._fmt = true;
+    inpTel.addEventListener('blur', () => { if (inpTel.value) inpTel.value = formatearTel(inpTel.value); });
   }
   initCanvas();
 }
@@ -556,6 +606,7 @@ async function enviarDatos() {
   const depto  = document.getElementById('d-depto').value;
 
   if (!nombre || !rut || !email || !dir || !depto) { toast('Completa todos los campos', 'error'); return; }
+  if (!validarRUT(rut)) { toast('RUT inválido — verifica el formato', 'error'); document.getElementById('d-rut').classList.add('err'); return; }
   if (!email.includes('@')) { toast('Email inválido', 'error'); return; }
 
   // Verificar aptitud para 2° control
