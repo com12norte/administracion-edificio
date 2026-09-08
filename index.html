@@ -5,785 +5,2360 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Solicitud Control Remoto — Comunidad 12 Norte</title>
+<title>Administración — Edificio Calle 12 Norte</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap');
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
 :root{
   --bg:#F0F2F5;--surface:#fff;--surface2:#F7F8FA;--border:#E2E5EA;
   --text:#1A1D23;--muted:#6B7280;--accent:#1E3A5F;--accent2:#2E5490;--accent-bg:#EBF0F8;
-  --success:#059669;--warning:#D97706;--danger:#DC2626;
-  --radius:12px;--shadow:0 2px 16px rgba(0,0,0,.08);
+  --success:#059669;--warning:#D97706;--danger:#DC2626;--info:#0284C7;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.07);--shadow-md:0 4px 24px rgba(0,0,0,.10);
 }
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0 0 40px}
 
-/* HEADER */
-.header{background:var(--accent);color:#fff;padding:20px 24px;text-align:center}
-.header h1{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;margin-bottom:4px}
-.header p{font-size:12px;opacity:.7}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-/* CONTAINER */
-.container{max-width:560px;margin:0 auto;padding:24px 16px}
+/* ── HEADER ── */
+header{
+  background:var(--accent);color:#fff;
+  padding:0 28px;display:flex;align-items:center;justify-content:space-between;
+  height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.18);
+}
+.hbrand{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.hicon{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.hbrand h1{font-family:'Playfair Display',serif;font-size:17px;font-weight:600}
+.hbrand span{font-size:11px;opacity:.6;display:block;margin-top:-2px}
+.hnav{display:flex;gap:3px;flex-wrap:wrap}
+.hnav button{
+  background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.75);
+  padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+  transition:all .15s;font-family:'Inter',sans-serif;white-space:nowrap;
+}
+.hnav button.active,.hnav button:hover{background:rgba(255,255,255,.22);color:#fff}
+.hnav .sep{width:1px;background:rgba(255,255,255,.2);margin:8px 4px}
 
-/* CARD */
+/* ── LAYOUT ── */
+.container{max-width:900px;margin:0 auto;padding:28px 16px}
+.view{display:none}.view.active{display:block}
+
+/* ── CARD ── */
 .card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
-.card-hd{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
-.card-hd-icon{width:42px;height:42px;background:var(--accent-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.card-hd h2{font-size:15px;font-weight:700}
+.card-hd{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.card-hd-icon{width:40px;height:40px;background:var(--accent-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.card-hd h2{font-size:15px;font-weight:600}
 .card-hd p{font-size:12px;color:var(--muted);margin-top:2px}
-.card-body{padding:22px}
+.card-body{padding:24px}
 
-/* STEPS */
-.steps{display:flex;margin-bottom:28px;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
-.step{flex:1;padding:12px 6px;text-align:center;background:var(--surface2);border-right:1px solid var(--border);transition:all .2s}
-.step:last-child{border-right:none}
-.step.active{background:var(--accent);color:#fff}
-.step.done{background:#D1FAE5;color:#065F46}
-.step.locked{opacity:.4}
-.step-icon{font-size:20px;margin-bottom:3px}
-.step-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+/* ── DIVIDER ── */
+.divider{display:flex;align-items:center;gap:10px;margin:22px 0 18px}
+.divider span{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
-/* FORM */
-.f{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+/* ── FORM ── */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.f{display:flex;flex-direction:column;gap:5px}
+.f.full{grid-column:1/-1}
 label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-input,select,textarea{border:1.5px solid var(--border);border-radius:8px;padding:11px 14px;font-size:14px;font-family:'Inter',sans-serif;color:var(--text);background:var(--surface);transition:border-color .15s;outline:none;width:100%}
+input,select,textarea{
+  border:1.5px solid var(--border);border-radius:7px;padding:10px 13px;font-size:14px;
+  font-family:'Inter',sans-serif;color:var(--text);background:var(--surface);
+  transition:border-color .15s;outline:none;width:100%;
+}
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-input.err,select.err{border-color:var(--danger)}
-textarea{resize:vertical;min-height:80px}
+input.err,select.err,textarea.err{border-color:var(--danger)}
+textarea{resize:vertical;min-height:76px}
 
-/* NOTICE */
-.notice{padding:14px 16px;border-radius:10px;font-size:13px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;line-height:1.6}
-.notice-info{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF}
-.notice-warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E}
-.notice-success{background:#ECFDF5;border:1px solid #6EE7B7;color:#065F46}
-.notice-danger{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B}
+/* ── TYPE SELECTOR (recibos) ── */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.type-opt{border:2px solid var(--border);border-radius:var(--radius);padding:18px;cursor:pointer;text-align:center;background:var(--surface2);transition:all .15s}
+.type-opt:hover{border-color:var(--accent2);background:var(--accent-bg)}
+.type-opt.selected{border-color:var(--accent);background:var(--accent-bg)}
+.type-opt .ticon{font-size:30px;margin-bottom:8px}
+.type-opt h3{font-size:13px;font-weight:600}
+.type-opt p{font-size:11px;color:var(--muted);margin-top:3px}
+.ctrl-row{display:none;flex-direction:column;gap:5px;grid-column:1/-1}
+.ctrl-row.show{display:flex}
+.llave-row{display:none;flex-direction:column;gap:5px;grid-column:1/-1}
+.llave-row.show{display:flex}
 
-/* BANK */
-.bank-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:18px}
-.bank-box h3{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--accent)}
-.bank-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
-.bank-row:last-child{border-bottom:none;padding-bottom:0}
-.bank-row .lbl{color:var(--muted);font-size:12px}
-.bank-row .val{font-weight:600}
-.monto{background:var(--accent);color:#fff;border-radius:8px;padding:12px 16px;text-align:center;font-size:22px;font-weight:800;margin-bottom:18px}
-.monto small{display:block;font-size:11px;font-weight:500;opacity:.8;margin-bottom:4px}
+/* ── FALLA GRID (citofonía) ── */
+.falla-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.falla-opt{border:1.5px solid var(--border);border-radius:8px;padding:11px 8px;cursor:pointer;text-align:center;background:var(--surface2);transition:all .15s;user-select:none}
+.falla-opt:hover{border-color:var(--accent2);background:var(--accent-bg)}
+.falla-opt.selected{border-color:var(--accent);background:var(--accent-bg)}
+.falla-opt .fi{font-size:20px;margin-bottom:5px}
+.falla-opt span{font-size:11px;font-weight:600;display:block;line-height:1.3}
 
-/* SIGNATURE */
-.sig-wrap{border:2px dashed var(--border);border-radius:10px;overflow:hidden;background:#FAFBFC;position:relative;margin-bottom:8px}
+/* ── ESTADO ── */
+.estado-row{display:flex;gap:8px;flex-wrap:wrap}
+.estado-opt{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;background:var(--surface2);transition:all .15s;white-space:nowrap}
+.estado-opt:hover,.estado-opt.selected{color:#fff;border-color:transparent}
+.estado-opt[data-e="ingresado"]:hover,.estado-opt[data-e="ingresado"].selected{background:var(--info)}
+.estado-opt[data-e="revision"]:hover,.estado-opt[data-e="revision"].selected{background:var(--warning)}
+.estado-opt[data-e="reparacion"]:hover,.estado-opt[data-e="reparacion"].selected{background:#7C3AED}
+.estado-opt[data-e="cerrado"]:hover,.estado-opt[data-e="cerrado"].selected{background:var(--success)}
+
+/* ── SIGNATURE ── */
+.sig-wrap{border:2px dashed var(--border);border-radius:var(--radius);overflow:hidden;background:#FAFBFC;position:relative}
 .sig-wrap canvas{display:block;width:100%;touch-action:none;cursor:crosshair}
-.sig-hint{position:absolute;top:12px;left:16px;font-size:12px;color:#CBD0D8;font-weight:500;pointer-events:none;transition:opacity .2s}
+.sig-hint{position:absolute;top:11px;left:14px;font-size:11px;color:#CBD0D8;font-weight:500;pointer-events:none;transition:opacity .2s}
 .sig-hint.hidden{opacity:0}
-.sig-foot{display:flex;justify-content:flex-end;padding:8px 12px;border-top:1px solid var(--border);background:var(--surface2)}
-.btn-clr{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.sig-foot{display:flex;justify-content:flex-end;padding:7px 11px;border-top:1px solid var(--border);background:var(--surface2)}
+.btn-clr{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 11px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
 .btn-clr:hover{border-color:var(--danger);color:var(--danger)}
+.sig-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.sig-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 
-/* UPLOAD */
-.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface2);margin-bottom:12px}
-.upload-zone:hover{border-color:var(--accent);background:var(--accent-bg)}
-.upload-zone .uz-icon{font-size:36px;margin-bottom:10px}
-.upload-zone p{font-size:13px;color:var(--muted);margin-bottom:4px}
-.upload-zone small{font-size:11px;color:#9CA3AF}
-.upload-preview{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.upload-preview .fi{font-size:28px}
-.upload-preview .fn{font-size:13px;font-weight:600}
-.upload-preview .fs{font-size:11px;color:var(--muted)}
+/* ── FOTO ── */
+.foto-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface2)}
+.foto-zone:hover{border-color:var(--accent);background:var(--accent-bg)}
+.foto-zone p{font-size:13px;color:var(--muted);margin-top:7px}
+.foto-zone small{font-size:11px;color:#9CA3AF}
+.foto-preview{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.foto-thumb{width:68px;height:68px;border-radius:6px;object-fit:cover;border:1px solid var(--border)}
 
-/* ALSO LINK */
-.divider-or{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted);font-size:12px;font-weight:600}
-.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* BUTTONS */
-.btn{width:100%;padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:10px;margin-top:24px;justify-content:flex-end}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;gap:7px}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:var(--accent2)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
 .btn-secondary{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{filter:brightness(1.08)}
 
-/* STATUS */
-.status-box{text-align:center;padding:40px 24px}
-.status-icon{font-size:64px;margin-bottom:16px}
-.status-title{font-size:20px;font-weight:700;margin-bottom:8px}
-.status-sub{font-size:14px;color:var(--muted);line-height:1.6}
-.sol-num{display:inline-block;background:var(--accent);color:#fff;border-radius:8px;padding:8px 20px;font-size:18px;font-weight:800;margin:14px 0}
-.radio-group{display:flex;flex-direction:column;gap:10px;margin-top:6px}
-.radio-opt{border:1.5px solid var(--border);border-radius:8px;padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .15s;font-size:14px;font-weight:500}
-.radio-opt:hover{border-color:var(--accent);background:var(--accent-bg)}
-.radio-opt.selected{border-color:var(--accent);background:var(--accent-bg)}
-.radio-opt input{width:auto;accent-color:var(--accent)}
+/* ── NOTICE ── */
+.notice{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px 15px;font-size:12px;color:#1E40AF;margin-bottom:16px;display:flex;gap:9px;align-items:flex-start}
 
-/* TOAST */
-.toast-wrap{position:fixed;bottom:22px;right:16px;left:16px;display:flex;flex-direction:column;gap:7px;z-index:9999;max-width:480px;margin:0 auto}
-.toast{background:var(--text);color:#fff;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.15);animation:tin .3s ease}
-.toast.success{background:var(--success)}.toast.error{background:var(--danger)}.toast.warning{background:var(--warning)}
-@keyframes tin{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+/* ── HISTORIAL ── */
+.hist-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.hist-top h2{font-size:17px;font-weight:700}
+.hcount{background:var(--accent);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
+.filter-row{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+.fbtn{padding:6px 13px;border-radius:20px;border:1px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;background:var(--surface);transition:all .15s;font-family:'Inter',sans-serif;color:var(--muted)}
+.fbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.item-list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:border-color .15s}
+.item:hover{border-color:var(--accent)}
+.item-badge{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.badge-llaves{background:#FEF3C7}.badge-control{background:#DBEAFE}.badge-ot{background:#EDE9FE}
+.item-info{flex:1;min-width:0}
+.item-info strong{font-size:14px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.item-num{font-size:11px;font-weight:700;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;white-space:nowrap;flex-shrink:0}
+.badge-e{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700;margin-left:5px}
+.be-ingresado{background:#DBEAFE;color:#1D4ED8}.be-revision{background:#FEF3C7;color:#92400E}
+.be-reparacion{background:#EDE9FE;color:#5B21B6}.be-cerrado{background:#D1FAE5;color:#065F46}
+.item-actions{display:flex;gap:7px;flex-shrink:0}
+.bicon{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;color:var(--muted)}
+.bicon:hover{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.bicon.danger:hover{background:#FEE2E2;border-color:var(--danger);color:var(--danger)}
+.empty{text-align:center;padding:56px 32px;color:var(--muted)}
+.empty .ei{font-size:44px;margin-bottom:14px}
+.empty p{font-size:13px}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-md);max-width:660px;width:100%;max-height:92vh;overflow-y:auto}
+.modal-hd{padding:17px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-hd h3{font-size:15px;font-weight:600}
+.mclose{width:30px;height:30px;border-radius:6px;border:none;background:var(--surface2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:22px}
+.modal-ft{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end}
+
+/* ── DOC PREVIEW ── */
+.doc{font-family:'Times New Roman',serif;font-size:12.5px;line-height:1.8;color:#111;padding:26px;border:1px solid var(--border);border-radius:8px;background:#fff}
+.doc .dt{text-align:center;font-size:13.5px;text-decoration:underline;margin-bottom:5px;font-weight:700}
+.doc .ds{text-align:center;font-size:12px;color:#555;margin-bottom:18px}
+.doc table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
+.doc td{padding:5px 9px;border:1px solid #ccc;vertical-align:top}
+.doc td:first-child{font-weight:700;width:38%;background:#f5f5f5}
+.doc .sh{font-weight:700;margin:14px 0 5px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #999;padding-bottom:3px}
+.doc .sig-row{display:flex;gap:28px;margin-top:22px}
+.doc .sig-col{flex:1;text-align:center}
+.doc .sig-col img{max-height:50px;margin:0 auto 4px;display:block}
+.doc .sig-line{border-top:1px solid #333;padding-top:5px;font-size:11px}
+.doc .firma-line{border-top:1px solid #333;padding-top:5px;display:inline-block;min-width:180px;text-align:center;font-size:11px}
+.doc .sig-img{max-height:56px;display:block;margin-bottom:4px}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:7px;z-index:9999}
+.toast{background:var(--text);color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:var(--shadow-md);display:flex;align-items:center;gap:9px;animation:tin .3s ease;max-width:300px}
+.toast.success{background:var(--success)}.toast.error{background:var(--danger)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
 @keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:620px){
+  header{padding:0 14px;flex-wrap:wrap;height:auto;padding-top:10px;padding-bottom:10px;gap:10px}
+  .hnav{width:100%;justify-content:center}
+  .hnav .sep{display:none}
+  .fg,.type-grid,.sig-cols{grid-template-columns:1fr}
+  .f.full{grid-column:1}
+  .falla-grid{grid-template-columns:repeat(2,1fr)}
+  .card-body{padding:16px}
+  .btn-row{flex-direction:column-reverse}
+  .btn{justify-content:center}
+}
+
+/* MODO OSCURO */
+.dark{--bg:#0F1117;--surface:#1A1D27;--surface2:#22253A;--border:#2D3048;--text:#E8EAED;--muted:#9AA3B2;--accent:#4A7FC1;--accent2:#5B8FD1;--accent-bg:#1A2A42}
+.dark header{background:#0D1B2E}
+.dark .modal{background:#1A1D27}
+.dark input,.dark select,.dark textarea{background:#22253A;color:#E8EAED;border-color:#2D3048}
+.dark .card{background:#1A1D27;border-color:#2D3048}
+.dark .card-hd{border-color:#2D3048}
+
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>Comunidad de Edificios 12 Norte</h1>
-  <p>Viña del Mar · RUT: 56.028.260-5</p>
-</div>
+<header>
+  <div class="hbrand">
+    <div class="hicon">🏢</div>
+    <div>
+      <h1>Comunidad Edificio 12 Norte de Viña del Mar</h1>
+      <span>RUT: 56.028.260-5</span>
+    </div>
+  </div>
+  <nav class="hnav">
+    <button onclick="nav('recibo-nuevo')" id="tab-recibo-nuevo">＋ Recibo</button>
+    <button onclick="nav('recibo-hist')" id="tab-recibo-hist">📋 Recibos</button>
+    <div class="sep"></div>
+    <button onclick="nav('pago-nuevo')" id="tab-pago-nuevo">💳 Pago Proveedor</button>
+    <button onclick="nav('pago-hist')" id="tab-pago-hist">📋 Pagos</button>
+    <div class="sep"></div>
+    <button onclick="nav('controles')" id="tab-controles">📡 Controles <span id='ctrl-nav-badge' style='background:#DC2626;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:2px;display:none'>0</span></button>
+  </nav>
+  <button id="btn-dark" onclick="toggleDark()" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer;flex-shrink:0">🌙</button>
+</header>
 
 <div class="container">
 
-  <!-- CARGANDO -->
-  <div id="view-loading">
-    <div class="status-box">
-      <div class="status-icon">⏳</div>
-      <div class="status-title">Cargando solicitud...</div>
+<!-- ══════════════════════════════════
+     RECIBO — NUEVO
+══════════════════════════════════ -->
+<div id="view-recibo-nuevo" class="view active">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-icon">📄</div>
+      <div><h2>Nuevo Recibo Conforme</h2><p>Llaves de acceso o control remoto vehicular</p></div>
+    </div>
+    <div class="card-body">
+
+      <div class="divider"><span>Tipo de Recibo</span></div>
+      <div class="type-grid">
+        <div class="type-opt" id="opt-llaves" onclick="selTipo('llaves')">
+          <div class="ticon">🔑</div><h3>Entrega de Llaves</h3><p>Llave de acceso hacia la calle</p>
+        </div>
+        <div class="type-opt" id="opt-control" onclick="selTipo('control')">
+          <div class="ticon">📡</div><h3>Control Remoto</h3><p>Control para acceso vehicular</p>
+        </div>
+      </div>
+
+      <div class="divider"><span>Datos del Residente</span></div>
+      <div class="fg">
+        <div class="f"><label>Nombre Completo</label><input type="text" id="r-nombre" placeholder="Ej: Juan Pérez González"></div>
+        <div class="f"><label>RUT / Cédula</label><input type="text" id="r-rut" placeholder="Ej: 12.345.678-9"></div>
+        <div class="f full"><label>Dirección / Calle</label><select id="r-dir" onchange="actualizarDeptos('r')"><option value="">— Selecciona dirección —</option></select></div>
+        <div class="f"><label>N° Departamento</label><select id="r-depto"><option value="">— Selecciona depto —</option></select></div>
+        <div class="f"><label>Fecha</label><input type="date" id="r-fecha"></div>
+        <div class="ctrl-row f" id="ctrl-row">
+          <label>Número de Control</label>
+          <select id="r-num-ctrl"><option value="un">un (1)</option><option value="dos">dos (2)</option><option value="tres">tres (3)</option></select>
+        </div>
+        <div class="llave-row f" id="llave-row">
+          <label>Tipo de Llave</label>
+          <select id="r-tipo-llave">
+            <option value="">— Selecciona tipo —</option>
+            <option value="Bodega">Bodega</option>
+            <option value="Puerta acceso patio">Puerta acceso patio</option>
+            <option value="Mampara">Mampara</option>
+            <option value="Puerta acceso calle">Puerta acceso calle</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"><span>Email del Residente</span></div>
+      <div class="notice">✉️&nbsp; <div><strong>Gmail:</strong> Al guardar se abrirá Gmail con el correo listo. <strong>com12norte@gmail.com</strong> quedará en copia automáticamente.</div></div>
+      <div class="f"><label>Email (opcional)</label><input type="email" id="r-email" placeholder="residente@email.com"></div>
+
+      <div class="divider"><span>Firma del Residente</span></div>
+      <div class="sig-wrap">
+        <canvas id="sig-r" height="160"></canvas>
+        <div class="sig-hint" id="hint-r">Firme aquí con el dedo o mouse</div>
+        <div class="sig-foot"><button class="btn-clr" onclick="clrSig('r')">🗑 Borrar firma</button></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="resetRecibo()">Limpiar</button>
+        <button class="btn btn-primary" id="btn-r" onclick="guardarRecibo()"><span>💾</span> Guardar Recibo</button>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- PASO 1: DATOS INICIALES -->
-  <div id="view-paso1" style="display:none">
+<!-- ══════════════════════════════════
+     RECIBO — HISTORIAL
+══════════════════════════════════ -->
+<div id="view-recibo-hist" class="view">
+  <div class="hist-top">
+    <h2>📋 Historial de Recibos</h2>
+    <span class="hcount" id="rcount">0</span>
+  </div>
+  <div id="rlist"></div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     PAGO PROVEEDOR — NUEVO
+══════════════════════════════════ -->
+<div id="view-pago-nuevo" class="view">
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-icon">💳</div>
+      <div><h2>Comprobante de Pago a Proveedor</h2><p>Registro de pagos con comprobante PDF y envío automático</p></div>
+    </div>
+    <div class="card-body">
+
+      <div class="divider"><span>Datos del Proveedor</span></div>
+      <div class="fg">
+        <div class="f full"><label>Razón Social / Nombre</label><input type="text" id="p-nombre" placeholder="Ej: Servicios Técnicos Ltda."></div>
+        <div class="f"><label>RUT Proveedor</label><input type="text" id="p-rut" placeholder="Ej: 76.123.456-7"></div>
+        <div class="f"><label>Giro</label><input type="text" id="p-giro" placeholder="Ej: Servicios de mantención"></div>
+        <div class="f full"><label>Email Proveedor</label><input type="email" id="p-email" placeholder="proveedor@email.com"></div>
+        <div class="f full"><label>Cuenta Bancaria (opcional)</label><input type="text" id="p-banco" placeholder="Ej: Banco Estado — Cta Cte 12345678"></div>
+      </div>
+
+      <div class="divider"><span>Detalle del Pago</span></div>
+      <div class="fg">
+        <div class="f"><label>Fecha de Pago</label><input type="date" id="p-fecha"></div>
+        <div class="f"><label>Período</label><input type="text" id="p-periodo" placeholder="Ej: Julio 2026"></div>
+        <div class="f full"><label>Concepto del Servicio</label>
+          <select id="p-concepto">
+            <option value="">— Selecciona concepto —</option>
+            <option>Mantención</option>
+            <option>Reparación</option>
+            <option>Aseo</option>
+            <option>Jardinería</option>
+            <option>Seguridad</option>
+            <option>Citofonía</option>
+            <option>Electricidad</option>
+            <option>Gasfitería</option>
+            <option>Pintura</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="f full"><label>Descripción del Servicio</label><textarea id="p-desc" rows="2" placeholder="Detalla el servicio prestado..."></textarea></div>
+        <div class="f"><label>N° Factura / Boleta (opcional)</label><input type="text" id="p-factura" placeholder="Ej: Factura 001234"></div>
+        <div class="f"><label>N° Cotización (opcional)</label><input type="text" id="p-cotizacion" placeholder="Ej: COT-2026-045"></div>
+      </div>
+
+      <div class="divider"><span>Montos</span></div>
+      <div class="fg">
+        <div class="f"><label>Monto Neto ($)</label><input type="number" id="p-neto" placeholder="0" oninput="calcularTotales()"></div>
+        <div class="f"><label>IVA (19%)</label><input type="number" id="p-iva" placeholder="0" readonly style="background:#f5f5f5;color:#666"></div>
+        <div class="f"><label>Descuento ($) (opcional)</label><input type="number" id="p-descuento" placeholder="0" oninput="calcularTotales()"></div>
+        <div class="f"><label style="color:var(--accent);font-weight:800">TOTAL A PAGAR ($)</label><input type="number" id="p-total" placeholder="0" readonly style="background:#EBF0F8;font-weight:700;color:var(--accent);font-size:15px"></div>
+      </div>
+
+      <div class="divider"><span>Forma de Pago</span></div>
+      <div class="fg">
+        <div class="f"><label>Forma de Pago</label>
+          <select id="p-forma">
+            <option>Transferencia Bancaria</option>
+            <option>Efectivo</option>
+            <option>Cheque</option>
+          </select>
+        </div>
+        <div class="f"><label>N° Operación / Referencia (opcional)</label><input type="text" id="p-operacion" placeholder="Ej: 000123456"></div>
+        <div class="f full"><label>Observaciones (opcional)</label><textarea id="p-obs" rows="2" placeholder="Notas adicionales..."></textarea></div>
+      </div>
+
+      <div class="divider"><span>Firma Administración</span></div>
+      <div class="notice">✉️&nbsp; <div><strong>Gmail:</strong> Al guardar se enviará el comprobante PDF al proveedor con copia a <strong>com12norte@gmail.com</strong>.</div></div>
+      <div class="sig-title" style="margin-bottom:8px">Firma quien autoriza el pago</div>
+      <div class="sig-wrap">
+        <canvas id="sig-p" height="140"></canvas>
+        <div class="sig-hint" id="hint-p">Firme aquí</div>
+        <div class="sig-foot"><button class="btn-clr" onclick="clrSig('p')">🗑 Borrar</button></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="resetPago()">Limpiar</button>
+        <button class="btn btn-primary" id="btn-p" onclick="guardarPago()"><span>💾</span> Guardar Comprobante</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PAGO PROVEEDOR — HISTORIAL
+══════════════════════════════════ -->
+<div id="view-pago-hist" class="view">
+  <div class="hist-top">
+    <h2>💳 Historial de Pagos a Proveedores</h2>
+    <span class="hcount" id="pcount">0</span>
+  </div>
+  <div id="plist"></div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     CONTROLES
+══════════════════════════════════ -->
+<div id="view-controles" class="view">
+
+  <!-- STATS -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px">
+    <div class="card" style="padding:16px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:26px;font-weight:800;color:var(--accent)" id="cst-total">0</div><div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-top:4px">Total</div></div>
+    <div class="card" style="padding:16px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:26px;font-weight:800;color:var(--success)" id="cst-vig">0</div><div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-top:4px">Vigentes</div></div>
+    <div class="card" style="padding:16px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:26px;font-weight:800;color:var(--danger)" id="cst-bloq">0</div><div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-top:4px">Bloqueados</div></div>
+    <div class="card" style="padding:16px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:26px;font-weight:800;color:var(--warning)" id="cst-pend">0</div><div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-top:4px">Solicitudes</div></div>
+  </div>
+
+  <!-- TABS INTERNOS -->
+  <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap">
+    <button class="fbtn active" data-ct="listado" onclick="setCtrlTab(this)">📋 Listado</button>
+    <button class="fbtn" data-ct="enviar" onclick="setCtrlTab(this)">📤 Enviar Link</button>
+    <button class="fbtn" data-ct="solicitudes" onclick="setCtrlTab(this)">⏳ Solicitudes <span id="ctrl-badge" style="background:var(--danger);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:3px;display:none">0</span></button>
+  </div>
+
+  <!-- LISTADO DE CONTROLES -->
+  <div id="ct-listado">
     <div class="card">
-      <div class="card-hd">
-        <div class="card-hd-icon" id="tipo-icon">🚨</div>
-        <div>
-          <h2 id="tipo-titulo">Solicitud de Control Remoto</h2>
-          <p id="tipo-desc">Complete sus datos para iniciar el proceso</p>
+      <div class="card-hd" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="card-hd-icon">📡</div>
+          <div><h2>Listado de Controles</h2><p>Click en ✏️ para editar — máx. 2 por depto</p></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="sincronizarDriveManual()" title="Sincronizar con Drive">☁️ Sync Drive</button>
+          <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="resetListado()" title="Resetear a datos originales">🔄</button>
+          <button class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="agregarCtrl()">+ Agregar</button>
         </div>
       </div>
       <div class="card-body">
-        <div class="steps">
-          <div class="step active"><div class="step-icon">📋</div><div class="step-label">Datos</div></div>
-          <div class="step locked"><div class="step-icon">📝</div><div class="step-label">Declaración</div></div>
-          <div class="step locked"><div class="step-icon">💳</div><div class="step-label">Pago</div></div>
-          <div class="step locked"><div class="step-icon">✅</div><div class="step-label">Listo</div></div>
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+          <input type="text" id="ctrl-search" placeholder="🔍 Buscar N°, depto, dirección..." oninput="renderCtrls()" style="border:1.5px solid var(--border);border-radius:7px;padding:8px 13px;font-size:13px;font-family:Inter,sans-serif;outline:none;min-width:220px">
+          <button class="fbtn active" data-cf="todos" onclick="setCF(this)">Todos</button>
+          <button class="fbtn" data-cf="Vigente" onclick="setCF(this)">Vigentes</button>
+          <button class="fbtn" data-cf="Bloqueado" onclick="setCF(this)">Bloqueados</button>
+          <button class="fbtn" data-cf="2ctrl" onclick="setCF(this)">Con 2 ctrl</button>
         </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr>
+              <th style="background:var(--accent);color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">N°</th>
+              <th style="background:var(--accent);color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Dirección</th>
+              <th style="background:var(--accent);color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Depto</th>
+              <th style="background:var(--accent);color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Estado</th>
+              <th style="background:var(--accent);color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Ctrl/Depto</th>
+              <th style="background:var(--accent);color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Entrega</th>
+              <th style="background:var(--accent);color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Fecha</th>
+              <th style="background:var(--accent);color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Notas</th>
+              <th style="background:var(--accent);color:#fff;padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em"></th>
+            </tr></thead>
+            <tbody id="ctrl-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        <div class="notice notice-info">ℹ️ <div>Complete sus datos para iniciar la solicitud. Recibirá un link en su correo para continuar el proceso en cualquier momento.</div></div>
+  <!-- ENVIAR LINK -->
+  <div id="ct-enviar" style="display:none">
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-hd-icon">📤</div>
+        <div><h2>Enviar Link al Residente</h2><p>El residente completa todo el proceso desde su celular</p></div>
+      </div>
+      <div class="card-body">
+        <div class="notice" style="background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF">ℹ️ <div>El residente recibe el link y puede completar la declaración, firma y comprobante de pago en cualquier momento — puede entrar y salir cuando quiera.</div></div>
 
-        <div class="f"><label>Nombre Completo</label><input type="text" id="d-nombre" placeholder="Su nombre completo"></div>
-        <div class="f"><label>RUT</label><input type="text" id="d-rut" placeholder="Ej: 12.345.678-9"></div>
-        <div class="f"><label>Teléfono</label><input type="tel" id="d-tel" placeholder="+56 9 1234 5678"></div>
-        <div class="f"><label>Email</label><input type="email" id="d-email" placeholder="su@email.com"></div>
-        <div class="f"><label>Dirección</label><select id="d-dir"><option value="">— Selecciona —</option></select></div>
-        <div class="f"><label>Departamento</label><select id="d-depto"><option value="">— Selecciona —</option></select></div>
-
-        <div id="ctrl-select-wrap" style="display:none">
-          <div class="f">
-            <label>Control Afectado</label>
-            <select id="d-ctrl"><option value="">— Selecciona el control —</option></select>
-            <small style="color:var(--muted);font-size:11px;margin-top:4px">Su depto tiene 2 controles. Indique cuál se perdió.</small>
+        <div class="divider"><span>Tipo de Solicitud</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+          <div id="lnk-perdida" onclick="selLinkTipo('perdida')" style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;background:var(--surface2);transition:all .15s">
+            <div style="font-size:30px;margin-bottom:8px">🚨</div>
+            <div style="font-size:14px;font-weight:700">Pérdida / Falla</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Declaración + reposición $15.000</div>
+          </div>
+          <div id="lnk-segundo" onclick="selLinkTipo('segundo')" style="border:2px solid var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;background:var(--surface2);transition:all .15s">
+            <div style="font-size:30px;margin-bottom:8px">➕</div>
+            <div style="font-size:14px;font-weight:700">2° Control</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Solicitud segundo control $15.000</div>
           </div>
         </div>
 
-        <button class="btn btn-primary" id="btn-paso1" onclick="enviarDatos()"><span>Continuar</span> →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- PASO 2: DECLARACIÓN + FIRMA -->
-  <div id="view-paso2" style="display:none">
-    <div class="card">
-      <div class="card-hd">
-        <div class="card-hd-icon">📝</div>
-        <div><h2>Declaración y Firma</h2><p id="sol-num-p2"></p></div>
-      </div>
-      <div class="card-body">
-        <div class="steps">
-          <div class="step done"><div class="step-icon">📋</div><div class="step-label">Datos</div></div>
-          <div class="step active"><div class="step-icon">📝</div><div class="step-label">Declaración</div></div>
-          <div class="step locked"><div class="step-icon">💳</div><div class="step-label">Pago</div></div>
-          <div class="step locked"><div class="step-icon">✅</div><div class="step-label">Listo</div></div>
-        </div>
-
-        <!-- DECLARACIÓN PÉRDIDA -->
-        <div id="decl-perdida">
-          <div class="notice notice-warn">⚠️ <div>Lea detenidamente antes de firmar. El control será eliminado permanente e irreversiblemente del sistema de acceso vehicular.</div></div>
-
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:18px;font-size:13px;line-height:1.8;color:var(--text)">
-            <p>Yo, <strong id="decl-nombre"></strong>, RUT <strong id="decl-rut"></strong>, en mi calidad de propietario/arrendatario del departamento <strong id="decl-depto"></strong>, ubicado en <strong id="decl-dir"></strong>, Condominio 12 Norte, Viña del Mar, declaro lo siguiente:</p>
-            <br>
-            <div class="f">
-              <label>Situación del control (marque la que corresponde)</label>
-              <div class="radio-group">
-                <div class="radio-opt" onclick="selMotivo(this,'Pérdida')">
-                  <input type="radio" name="motivo" value="Pérdida"> Pérdida
-                </div>
-                <div class="radio-opt" onclick="selMotivo(this,'Falla o Mal Funcionamiento')">
-                  <input type="radio" name="motivo" value="Falla o Mal Funcionamiento"> Falla o Mal Funcionamiento
-                </div>
-              </div>
-            </div>
-            <br>
-            <p>Declaro estar en pleno conocimiento de que el control remoto mencionado será eliminado de forma <strong>permanente e irreversible</strong> de los registros del sistema de acceso vehicular, y que si el control es encontrado o reparado en el futuro, este no podrá ser reactivado ni volver a registrarse en el sistema.</p>
-            <br>
-            <p>En consecuencia, solicito a la administración gestionar la entrega de un nuevo dispositivo, asumiendo el costo que esta reposición implique (<strong>$15.000</strong>).</p>
+        <div id="link-box-ctrl" style="display:none">
+          <div class="divider"><span>Link a compartir</span></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <div id="link-url-ctrl" style="font-size:12px;color:var(--accent);word-break:break-all;flex:1"></div>
+            <button onclick="copiarLinkCtrl()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 13px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif">📋 Copiar</button>
           </div>
-        </div>
 
-        <!-- DECLARACIÓN 2° CONTROL -->
-        <div id="decl-segundo" style="display:none">
-          <div class="notice notice-info">ℹ️ <div>Está solicitando un <strong>2° control remoto</strong> para su departamento. El costo es de <strong>$15.000</strong>.</div></div>
-          <div id="aptitud-box" style="margin-bottom:18px"></div>
-        </div>
-
-        <div class="f" style="margin-top:4px">
-          <label>Firma</label>
-          <div class="sig-wrap">
-            <canvas id="sig-decl" height="160"></canvas>
-            <div class="sig-hint" id="hint-decl">Firme aquí con el dedo</div>
-            <div class="sig-foot"><button class="btn-clr" onclick="clrSig()">🗑 Borrar firma</button></div>
+          <div class="divider"><span>Enviar por Email</span></div>
+          <div class="fg">
+            <div class="f"><label>Email del Residente</label><input type="email" id="lnk-email" placeholder="residente@email.com"></div>
+            <div class="f"><label>Nombre (opcional)</label><input type="text" id="lnk-nombre" placeholder="Nombre del residente"></div>
           </div>
+          <button class="btn btn-primary" onclick="enviarLinkCtrl()" style="margin-top:12px">✉ Enviar por Email</button>
         </div>
-
-        <button class="btn btn-primary" onclick="enviarDeclaracion()">Firmar y Continuar →</button>
-        <button class="btn btn-secondary" onclick="volver(1)">← Volver</button>
       </div>
     </div>
   </div>
 
-  <!-- PASO 3: PAGO -->
-  <div id="view-paso3" style="display:none">
+  <!-- SOLICITUDES -->
+  <div id="ct-solicitudes" style="display:none">
     <div class="card">
-      <div class="card-hd">
-        <div class="card-hd-icon">💳</div>
-        <div><h2>Pago de Reposición</h2><p id="sol-num-p3"></p></div>
+      <div class="card-hd" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="card-hd-icon">⏳</div>
+          <div><h2>Solicitudes de Residentes</h2><p>Revisa comprobantes y aprueba</p></div>
+        </div>
+        <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px" onclick="cargarSolCtrl()">🔄 Actualizar</button>
       </div>
       <div class="card-body">
-        <div class="steps">
-          <div class="step done"><div class="step-icon">📋</div><div class="step-label">Datos</div></div>
-          <div class="step done"><div class="step-icon">📝</div><div class="step-label">Declaración</div></div>
-          <div class="step active"><div class="step-icon">💳</div><div class="step-label">Pago</div></div>
-          <div class="step locked"><div class="step-icon">✅</div><div class="step-label">Listo</div></div>
+        <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="fbtn active" data-sf2="todas" onclick="setSF2(this)">Todas</button>
+          <button class="fbtn" data-sf2="pendiente" onclick="setSF2(this)">⏳ Pendientes</button>
+          <button class="fbtn" data-sf2="aprobado" onclick="setSF2(this)">✅ Aprobadas</button>
+          <button class="fbtn" data-sf2="listo" onclick="setSF2(this)">📦 Listas</button>
+          <button class="fbtn" data-sf2="entregado" onclick="setSF2(this)">🎉 Entregadas</button>
         </div>
-
-        <div class="notice notice-info">📋 <div>Estimado/a copropietario/a, le informamos que el pago correspondiente debe realizarse a la siguiente cuenta:</div></div>
-
-        <div class="monto"><small>Monto a pagar</small>$15.000</div>
-
-        <div class="bank-box">
-          <h3>💳 Datos de Transferencia</h3>
-          <div class="bank-row"><span class="lbl">Nombre</span><span class="val">Oscar Ibáñez</span></div>
-          <div class="bank-row"><span class="lbl">RUT</span><span class="val">13.229.630-8</span></div>
-          <div class="bank-row"><span class="lbl">Banco</span><span class="val">Falabella</span></div>
-          <div class="bank-row"><span class="lbl">Tipo de Cuenta</span><span class="val">Cuenta Corriente</span></div>
-          <div class="bank-row"><span class="lbl">N° de Cuenta</span><span class="val">1-999-872607-0</span></div>
-          <div class="bank-row"><span class="lbl">Asunto</span><span class="val" id="asunto-trans">Pago Control</span></div>
-        </div>
-
-        <div class="notice notice-warn">⏱ <div>Una vez realizado el pago, adjunte el comprobante a continuación. El plazo de entrega es de <strong>20 días hábiles</strong> contados desde la aprobación del pago.</div></div>
-
-        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:8px">Adjuntar Comprobante de Pago</label>
-
-        <div class="upload-zone" onclick="document.getElementById('comp-file').click()">
-          <div class="uz-icon">📎</div>
-          <p>Toca para adjuntar foto o PDF</p>
-          <small>JPG, PNG o PDF — máx. 5MB</small>
-        </div>
-        <input type="file" id="comp-file" accept="image/*,.pdf" style="display:none" onchange="handleFile(this)">
-
-        <div id="file-preview" style="display:none" class="upload-preview">
-          <div class="fi">📄</div>
-          <div><div class="fn" id="file-name"></div><div class="fs" id="file-size"></div></div>
-        </div>
-
-        <div class="divider-or">o bien</div>
-
-        <div class="f">
-          <label>Link del comprobante en Drive (opcional)</label>
-          <input type="url" id="comp-link" placeholder="https://drive.google.com/file/...">
-          <small style="color:var(--muted);font-size:11px;margin-top:4px">Si el comprobante está en Google Drive, pega el link aquí</small>
-        </div>
-
-        <button class="btn btn-primary" id="btn-enviar-comp" onclick="enviarComprobante()"><span>📤</span> Enviar Comprobante</button>
-        <button class="btn btn-secondary" onclick="volver(2)">← Volver</button>
+        <div id="ctrl-sol-list"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Cargando...</div></div>
       </div>
     </div>
   </div>
 
-  <!-- PASO 4: EN REVISIÓN -->
-  <div id="view-revision" style="display:none">
-    <div class="card">
-      <div class="card-body">
-        <div class="status-box">
-          <div class="status-icon">🕐</div>
-          <div class="status-title">Comprobante en revisión</div>
-          <div class="sol-num" id="sol-num-revision"></div>
-          <div class="status-sub">Hemos recibido su comprobante de pago. La administración lo revisará y le notificará por email una vez aprobado.<br><br>Puede cerrar esta página — recibirá un email cuando haya novedades.</div>
-        </div>
-      </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- MODAL RECIBO -->
+<div class="overlay" id="modal-r" onclick="closeOverlay('modal-r',event)">
+  <div class="modal">
+    <div class="modal-hd"><h3>Vista Previa — Recibo</h3><button class="mclose" onclick="closeOverlay('modal-r')">✕</button></div>
+    <div class="modal-body"><div class="doc" id="rdoc"></div></div>
+    <div class="modal-ft">
+      <button class="btn btn-secondary" onclick="closeOverlay('modal-r')">Cerrar</button>
+      <button class="btn btn-success" onclick="rPDF()">⬇ PDF</button>
+      <button class="btn btn-primary" onclick="rEmail()">✉ Gmail</button>
     </div>
   </div>
+</div>
 
-  <!-- PASO 5: APROBADO -->
-  <div id="view-aprobado" style="display:none">
-    <div class="card">
-      <div class="card-body">
-        <div class="status-box">
-          <div class="status-icon">✅</div>
-          <div class="status-title">¡Pago Aprobado!</div>
-          <div class="sol-num" id="sol-num-aprobado"></div>
-          <div class="status-sub">Su pago ha sido verificado correctamente. Su control remoto estará disponible en un plazo de <strong>20 días hábiles</strong>.<br><br>Le enviaremos un email cuando pueda pasar a retirarlo en la administración.</div>
-        </div>
-      </div>
+
+
+<!-- MODAL PAGO -->
+<div class="overlay" id="modal-p" onclick="closeOverlay('modal-p',event)">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="modal-p-title">Vista Previa — Comprobante</h3><button class="mclose" onclick="closeOverlay('modal-p')">✕</button></div>
+    <div class="modal-body"><div class="doc" id="pdoc"></div></div>
+    <div class="modal-ft">
+      <button class="btn btn-secondary" onclick="closeOverlay('modal-p')">Cerrar</button>
+      <button class="btn btn-success" onclick="pPDF()">⬇ PDF</button>
+      <button class="btn btn-primary" onclick="pEmail()">✉ Gmail</button>
     </div>
   </div>
+</div>
 
-  <!-- PASO 6: LISTO PARA RETIRO -->
-  <div id="view-listo" style="display:none">
-    <div class="card">
-      <div class="card-body">
-        <div class="status-box">
-          <div class="status-icon">🎉</div>
-          <div class="status-title">¡Control Disponible!</div>
-          <div class="sol-num" id="sol-num-listo"></div>
-          <div class="status-sub" id="listo-texto">Su control remoto está listo para retiro en la administración del edificio. Por favor pase a buscarlo en el horario de atención.</div>
-        </div>
+
+<!-- MODAL EDITAR CONTROL -->
+<div class="overlay" id="modal-ctrl-edit" onclick="if(event.target===this)closeMCtrl()">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hd"><h3 id="mce-title">Editar Control</h3><button class="mclose" onclick="closeMCtrl()">✕</button></div>
+    <div class="modal-body">
+      <div class="fg">
+        <div class="f"><label>N° Control</label><input type="number" id="mce-n" min="1"></div>
+        <div class="f"><label>Estado</label><select id="mce-estado"><option value="Vigente">Vigente</option><option value="Bloqueado">Bloqueado</option></select></div>
+        <div class="f"><label>Dirección</label><select id="mce-dir"></select></div>
+        <div class="f"><label>Departamento</label><select id="mce-depto"></select></div>
+        <div class="f"><label>Estado Entrega</label><select id="mce-entrega"><option>Completada</option><option>En curso</option><option>No iniciada</option><option>Sin comprobante</option><option>—</option></select></div>
+        <div class="f"><label>Fecha</label><input type="text" id="mce-fecha" placeholder="dd/mm/aaaa"></div>
+        <div class="f full"><label>Notas</label><input type="text" id="mce-notas" placeholder="Observaciones..."></div>
       </div>
     </div>
-  </div>
-
-  <!-- NO APTO -->
-  <div id="view-no-apto" style="display:none">
-    <div class="card">
-      <div class="card-body">
-        <div class="status-box">
-          <div class="status-icon">🚫</div>
-          <div class="status-title">Solicitud No Disponible</div>
-          <div class="status-sub" id="no-apto-texto">Su departamento ya cuenta con el máximo de controles permitidos (2). No es posible solicitar un control adicional.<br><br>Si tiene consultas, contáctenos en <strong>com12norte@gmail.com</strong></div>
-        </div>
-      </div>
+    <div class="modal-ft">
+      <button class="btn btn-secondary" onclick="closeMCtrl()">Cancelar</button>
+      <button class="btn btn-danger" style="padding:6px 14px;font-size:12px" onclick="elimCtrl()">🗑 Eliminar</button>
+      <button class="btn btn-primary" onclick="guardarCtrl()">💾 Guardar</button>
     </div>
   </div>
+</div>
 
+<!-- MODAL VER SOLICITUD CTRL -->
+<div class="overlay" id="modal-ctrl-sol" onclick="if(event.target===this)closeMSol()">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="mcs-title">Solicitud</h3><button class="mclose" onclick="closeMSol()">✕</button></div>
+    <div class="modal-body" id="mcs-body"></div>
+    <div class="modal-ft" id="mcs-ft"></div>
+  </div>
+</div>
+
+
+<!-- MODAL HISTORIAL DEPTO -->
+<div class="overlay" id="modal-hist-depto" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-hd"><h3 id="mhd-title">Historial</h3><button class="mclose" onclick="document.getElementById('modal-hist-depto').classList.remove('open')">✕</button></div>
+    <div class="modal-body" id="mhd-body"></div>
+    <div class="modal-ft"><button class="btn btn-secondary" onclick="document.getElementById('modal-hist-depto').classList.remove('open')">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- MODAL ENTREGA DE CONTROL -->
+<div class="overlay" id="modal-entrega-ctrl" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-hd"><h3>Entrega de Control Remoto</h3><button class="mclose" onclick="document.getElementById('modal-entrega-ctrl').classList.remove('open')">✕</button></div>
+    <div class="modal-body">
+      <div class="notice" style="background:#ECFDF5;border:1px solid #6EE7B7;color:#065F46;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:flex;gap:10px">✅ <div>Completa la entrega — se generará el recibo conforme y se actualizará el listado.</div></div>
+      <input type="hidden" id="ent-sol-id">
+      <div class="fg">
+        <div class="f"><label>Nombre</label><input type="text" id="ent-nombre" readonly style="background:var(--surface2)"></div>
+        <div class="f"><label>RUT</label><input type="text" id="ent-rut" readonly style="background:var(--surface2)"></div>
+        <div class="f"><label>Dirección</label><input type="text" id="ent-dir" readonly style="background:var(--surface2)"></div>
+        <div class="f"><label>Depto</label><input type="text" id="ent-depto" readonly style="background:var(--surface2)"></div>
+        <div class="f"><label>Tipo</label><input type="text" id="ent-tipo" readonly style="background:var(--surface2)"></div>
+        <div class="f"><label>N° Control Asignado</label><input type="number" id="ent-num-ctrl" placeholder="Ej: 91" min="1"></div>
+        <div class="f full"><label>Fecha de Entrega</label><input type="date" id="ent-fecha"></div>
+      </div>
+      <div class="divider"><span>Firma del Residente</span></div>
+      <div class="sig-wrap">
+        <canvas id="sig-ent" height="140"></canvas>
+        <div class="sig-hint" id="hint-ent">Firme aquí</div>
+        <div class="sig-foot"><button class="btn-clr" onclick="clrSig('ent')">🗑 Borrar</button></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-entrega-ctrl').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-success" onclick="generarReciboEntrega()">✅ Finalizar y Generar Recibo</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast-wrap" id="toasts"></div>
 
 <script>
-// ══════════════════════════════════════════════
+// ════════════════════════════════════════
 // CONFIG
-// ══════════════════════════════════════════════
+// ════════════════════════════════════════
 const ADMIN_EMAIL      = 'com12norte@gmail.com';
-const NOMBRE_COMUNIDAD = 'Comunidad de Edificios 12 Norte de Viña del Mar';
+const NOMBRE_COMUNIDAD = 'Comunidad Edificio 12 Norte de Vina del Mar';
 const RUT_COMUNIDAD    = '56.028.260-5';
-const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbxwFffpjIoL6DfM1jgh5WFuOSwaPOP627OnNyfPK5koJQYOzArXslOzAdfZwvk9HfEq/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyy2z27AOGeg9LMLiUtQljS-z3ohujyFGgmTceKTTl5LkCILrpGSU24OE6Q_BMBKVs4/exec'; // ← Pega aquí la URL tras implementar
 
-const DIRECCIONES = ['3 Oriente 1080','3 Oriente 1060','12 Norte 1054','12 Norte 1052','12 Norte 1036','12 Norte 1038','4 Oriente 1061','4 Oriente 1081'];
-const DEPTOS      = ['A1','B2','C3','D4','E5','E6','F5','F6','G7','H8'];
+async function enviarAlScript(payload) {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const json = await res.json();
+    return json;
+  } catch (err) { return { ok: false, error: err.message }; }
+}
 
-// Controles del sistema
-const CONTROLES = [
-  {n:1,dir:'4 Oriente 1081',depto:'A1',estado:'Vigente'},{n:2,dir:'4 Oriente 1081',depto:'B2',estado:'Vigente'},
-  {n:3,dir:'4 Oriente 1081',depto:'C3',estado:'Vigente'},{n:4,dir:'4 Oriente 1081',depto:'D4',estado:'Vigente'},
-  {n:5,dir:'4 Oriente 1081',depto:'E6',estado:'Vigente'},{n:6,dir:'4 Oriente 1081',depto:'F5',estado:'Vigente'},
-  {n:7,dir:'4 Oriente 1081',depto:'G7',estado:'Vigente'},{n:8,dir:'4 Oriente 1081',depto:'H8',estado:'Vigente'},
-  {n:9,dir:'4 Oriente 1061',depto:'A1',estado:'Vigente'},{n:10,dir:'4 Oriente 1061',depto:'B2',estado:'Vigente'},
-  {n:11,dir:'4 Oriente 1061',depto:'C3',estado:'Vigente'},{n:12,dir:'4 Oriente 1061',depto:'D4',estado:'Vigente'},
-  {n:13,dir:'4 Oriente 1061',depto:'E6',estado:'Vigente'},{n:14,dir:'4 Oriente 1061',depto:'F5',estado:'Vigente'},
-  {n:15,dir:'4 Oriente 1061',depto:'G7',estado:'Vigente'},{n:16,dir:'4 Oriente 1061',depto:'H8',estado:'Vigente'},
-  {n:17,dir:'12 Norte 1052',depto:'A1',estado:'Vigente'},{n:18,dir:'12 Norte 1052',depto:'B2',estado:'Vigente'},
-  {n:19,dir:'12 Norte 1052',depto:'C3',estado:'Vigente'},{n:20,dir:'12 Norte 1052',depto:'D4',estado:'Vigente'},
-  {n:21,dir:'12 Norte 1052',depto:'E5',estado:'Bloqueado'},{n:22,dir:'12 Norte 1052',depto:'F6',estado:'Vigente'},
-  {n:23,dir:'12 Norte 1052',depto:'G7',estado:'Vigente'},{n:24,dir:'12 Norte 1052',depto:'H8',estado:'Vigente'},
-  {n:25,dir:'12 Norte 1054',depto:'A1',estado:'Vigente'},{n:26,dir:'12 Norte 1054',depto:'B2',estado:'Bloqueado'},
-  {n:27,dir:'12 Norte 1054',depto:'C3',estado:'Vigente'},{n:28,dir:'12 Norte 1054',depto:'D4',estado:'Vigente'},
-  {n:29,dir:'12 Norte 1054',depto:'E5',estado:'Vigente'},{n:30,dir:'12 Norte 1054',depto:'F6',estado:'Vigente'},
-  {n:31,dir:'12 Norte 1054',depto:'G7',estado:'Vigente'},{n:32,dir:'12 Norte 1054',depto:'H8',estado:'Vigente'},
-  {n:33,dir:'12 Norte 1036',depto:'A1',estado:'Vigente'},{n:34,dir:'12 Norte 1036',depto:'B2',estado:'Vigente'},
-  {n:35,dir:'12 Norte 1036',depto:'C3',estado:'Vigente'},{n:36,dir:'12 Norte 1036',depto:'D4',estado:'Vigente'},
-  {n:37,dir:'12 Norte 1036',depto:'E5',estado:'Vigente'},{n:38,dir:'12 Norte 1036',depto:'F6',estado:'Vigente'},
-  {n:39,dir:'12 Norte 1036',depto:'G7',estado:'Vigente'},{n:40,dir:'12 Norte 1036',depto:'H8',estado:'Bloqueado'},
-  {n:41,dir:'12 Norte 1038',depto:'A1',estado:'Vigente'},{n:42,dir:'12 Norte 1038',depto:'B2',estado:'Vigente'},
-  {n:43,dir:'12 Norte 1038',depto:'C3',estado:'Vigente'},{n:44,dir:'12 Norte 1038',depto:'D4',estado:'Vigente'},
-  {n:45,dir:'12 Norte 1038',depto:'E5',estado:'Vigente'},{n:46,dir:'12 Norte 1038',depto:'F6',estado:'Vigente'},
-  {n:47,dir:'12 Norte 1038',depto:'G7',estado:'Vigente'},{n:48,dir:'12 Norte 1038',depto:'H8',estado:'Vigente'},
-  {n:49,dir:'3 Oriente 1080',depto:'A1',estado:'Vigente'},{n:51,dir:'3 Oriente 1080',depto:'C3',estado:'Vigente'},
-  {n:52,dir:'3 Oriente 1080',depto:'D4',estado:'Vigente'},{n:53,dir:'3 Oriente 1080',depto:'E5',estado:'Vigente'},
-  {n:54,dir:'3 Oriente 1080',depto:'F6',estado:'Vigente'},{n:55,dir:'3 Oriente 1080',depto:'G7',estado:'Vigente'},
-  {n:56,dir:'3 Oriente 1080',depto:'H8',estado:'Vigente'},{n:57,dir:'3 Oriente 1060',depto:'A1',estado:'Vigente'},
-  {n:58,dir:'3 Oriente 1080',depto:'B2',estado:'Vigente'},{n:59,dir:'3 Oriente 1060',depto:'C3',estado:'Vigente'},
-  {n:60,dir:'3 Oriente 1060',depto:'D4',estado:'Vigente'},{n:61,dir:'3 Oriente 1060',depto:'E5',estado:'Vigente'},
-  {n:62,dir:'3 Oriente 1060',depto:'F6',estado:'Vigente'},{n:63,dir:'3 Oriente 1060',depto:'G7',estado:'Vigente'},
-  {n:64,dir:'3 Oriente 1060',depto:'H8',estado:'Vigente'},{n:50,dir:'3 Oriente 1060',depto:'B2',estado:'Vigente'},
-  {n:67,dir:'3 Oriente 1080',depto:'F6',estado:'Vigente'},{n:69,dir:'12 Norte 1052',depto:'B2',estado:'Vigente'},
-  {n:70,dir:'3 Oriente 1060',depto:'D4',estado:'Vigente'},{n:71,dir:'4 Oriente 1081',depto:'A1',estado:'Vigente'},
-  {n:72,dir:'4 Oriente 1061',depto:'D4',estado:'Bloqueado'},{n:73,dir:'12 Norte 1054',depto:'B2',estado:'Vigente'},
-  {n:74,dir:'12 Norte 1038',depto:'E5',estado:'Vigente'},{n:75,dir:'3 Oriente 1080',depto:'A1',estado:'Vigente'},
-  {n:76,dir:'3 Oriente 1080',depto:'E5',estado:'Vigente'},{n:77,dir:'12 Norte 1052',depto:'H8',estado:'Vigente'},
-  {n:78,dir:'12 Norte 1036',depto:'A1',estado:'Vigente'},{n:79,dir:'3 Oriente 1060',depto:'A1',estado:'Vigente'},
-  {n:80,dir:'3 Oriente 1080',depto:'C3',estado:'Vigente'},{n:81,dir:'4 Oriente 1081',depto:'F6',estado:'Bloqueado'},
-  {n:82,dir:'12 Norte 1036',depto:'E5',estado:'Vigente'},{n:83,dir:'3 Oriente 1060',depto:'H8',estado:'Vigente'},
-  {n:85,dir:'12 Norte 1036',depto:'H8',estado:'Vigente'},{n:86,dir:'4 Oriente 1061',depto:'D4',estado:'Vigente'},
-  {n:87,dir:'12 Norte 1038',depto:'A1',estado:'Vigente'},{n:88,dir:'12 Norte 1036',depto:'H8',estado:'Vigente'},
-  {n:89,dir:'12 Norte 1054',depto:'C3',estado:'Vigente'},{n:90,dir:'4 Oriente 1081',depto:'F6',estado:'Vigente'}
+// ════════════════════════════════════════
+// DATOS PARKADMIN
+// ════════════════════════════════════════
+const DIRECCIONES = [
+  '3 Oriente 1080',
+  '3 Oriente 1060',
+  '12 Norte 1054',
+  '12 Norte 1052',
+  '12 Norte 1036',
+  '12 Norte 1038',
+  '4 Oriente 1061',
+  '4 Oriente 1081'
 ];
 
-// ══════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════
-let tipo       = '';
-let solId      = '';
-let solicitud  = null;
-let sigCtx     = null;
-let sigDrawn   = false;
-let fileData   = null;
-let motivoSel  = '';
+const DEPTOS = ['A1','B2','C3','D4','E6','E5','F5','F6','G7','H8'];
 
-// ══════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', async () => {
-  const params = new URLSearchParams(window.location.search);
-  tipo  = params.get('tipo') || 'perdida';
-  solId = params.get('id')   || '';
-
-  poblarSelectores();
-
-  if (solId) {
-    // Cargar solicitud existente desde Drive
-    await cargarSolicitud();
-  } else {
-    // Nueva solicitud
-    configurarTipo();
-    showView('paso1');
-  }
-});
-
-// ══════════════════════════════════════════════
-// CARGAR SOLICITUD EXISTENTE
-// ══════════════════════════════════════════════
-async function cargarSolicitud() {
-  try {
-    const url  = APPS_SCRIPT_URL + '?accion=listar&hoja=Controles';
-    const res  = await fetch(url);
-    const json = await res.json();
-    const data = json.ok ? json.data : [];
-    solicitud  = data.find(s => s.id === solId);
-
-    if (!solicitud) {
-      showView('paso1');
-      configurarTipo();
-      return;
-    }
-
-    tipo = solicitud.tipo;
-    // Mostrar vista según estado
-    if (solicitud.estado === 'datos_enviados')      { showView('paso2'); cargarPaso2(); }
-    else if (solicitud.estado === 'declaracion')    { showView('paso3'); cargarPaso3(); }
-    else if (solicitud.estado === 'pendiente')      { showView('revision'); document.getElementById('sol-num-revision').textContent = solId; }
-    else if (solicitud.estado === 'aprobado')       { showView('aprobado'); document.getElementById('sol-num-aprobado').textContent = solId; }
-    else if (solicitud.estado === 'listo')          { showView('listo'); document.getElementById('sol-num-listo').textContent = solId; document.getElementById('listo-texto').textContent = 'Su control remoto (N° ' + (solicitud.numCtrl||'') + ') está listo para retiro en la administración del edificio. Por favor pase a buscarlo en el horario de atención.'; }
-    else                                            { showView('paso1'); configurarTipo(); }
-  } catch(e) {
-    showView('paso1');
-    configurarTipo();
-  }
-}
-
-// ══════════════════════════════════════════════
-// CONFIGURAR TIPO
-// ══════════════════════════════════════════════
-function configurarTipo() {
-  if (tipo === 'segundo') {
-    document.getElementById('tipo-icon').textContent     = '➕';
-    document.getElementById('tipo-titulo').textContent   = 'Solicitud de 2° Control Remoto';
-    document.getElementById('tipo-desc').textContent     = 'Complete sus datos para verificar la disponibilidad';
-  } else {
-    document.getElementById('tipo-icon').textContent     = '🚨';
-    document.getElementById('tipo-titulo').textContent   = 'Declaración de Pérdida o Falla';
-    document.getElementById('tipo-desc').textContent     = 'Complete sus datos para iniciar el proceso';
-  }
-  initCanvas();
-}
-
-// ══════════════════════════════════════════════
-// SELECTORES
-// ══════════════════════════════════════════════
-function poblarSelectores() {
-  const selDir = document.getElementById('d-dir');
-  DIRECCIONES.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d; opt.textContent = d;
-    selDir.appendChild(opt);
+function poblarDirecciones() {
+  ['r-dir','o-dir'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    DIRECCIONES.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d;
+      sel.appendChild(opt);
+    });
   });
-  const selDep = document.getElementById('d-depto');
+  // poblar deptos inicialmente
+  ['r','o'].forEach(p => actualizarDeptos(p));
+}
+
+function actualizarDeptos(prefix) {
+  const sel = document.getElementById(prefix + '-depto');
+  if (!sel) return;
+  const val = sel.value; // conservar selección si existe
+  sel.innerHTML = '<option value="">— Selecciona depto —</option>';
   DEPTOS.forEach(d => {
     const opt = document.createElement('option');
     opt.value = d; opt.textContent = 'Depto. ' + d;
-    selDep.appendChild(opt);
+    sel.appendChild(opt);
   });
-  selDir.addEventListener('change', verificarControles);
-  selDep.addEventListener('change', verificarControles);
+  if (val) sel.value = val;
 }
 
-function verificarControles() {
-  const dir   = document.getElementById('d-dir').value;
-  const depto = document.getElementById('d-depto').value;
-  if (!dir || !depto) return;
-  const ctrls = CONTROLES.filter(c => c.dir === dir && c.depto === depto && c.estado === 'Vigente');
-  const wrap  = document.getElementById('ctrl-select-wrap');
-  const sel   = document.getElementById('d-ctrl');
-  sel.innerHTML = '<option value="">— Selecciona —</option>';
-  if (tipo === 'perdida' && ctrls.length >= 2) {
-    wrap.style.display = 'block';
-    ctrls.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.n; opt.textContent = 'Control N° ' + c.n;
-      sel.appendChild(opt);
-    });
-  } else {
-    wrap.style.display = 'none';
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let recibos = JSON.parse(localStorage.getItem('recibos_v2') || '[]');
+
+let tipoRecibo = null;
+
+
+
+let sigStates = {};
+let sigCtx = {};
+let currentR = null;
+
+
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('r-fecha').value = hoy;
+  poblarDirecciones();
+  ['r','p'].forEach(initCanvas);
+  if (localStorage.getItem('dark_mode') === '1') { document.documentElement.classList.add('dark'); document.getElementById('btn-dark').textContent = '☀️'; }
+  // No cargar controles al inicio — se carga al entrar a la pestaña
+  calcularTotales();
+});
+
+// ════════════════════════════════════════
+// NAVEGACIÓN
+// ════════════════════════════════════════
+function nav(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.hnav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'recibo-hist') renderRecibos();
+  if (name === 'controles') {
+    renderCtrls(); // Mostrar hardcodeado inmediatamente
+    cargarSolCtrl();
+    // Cargar desde Drive en background — si tiene datos válidos, actualizar
+    sincronizarListado().then(ok => { if (ok) renderCtrls(); });
   }
+  if (name === 'pago-hist') renderPagos();
 }
 
-// ══════════════════════════════════════════════
-// PASO 1 — ENVIAR DATOS
-// ══════════════════════════════════════════════
-async function enviarDatos() {
-  const nombre = document.getElementById('d-nombre').value.trim();
-  const rut    = document.getElementById('d-rut').value.trim();
-  const tel    = document.getElementById('d-tel').value.trim();
-  const email  = document.getElementById('d-email').value.trim();
-  const dir    = document.getElementById('d-dir').value;
-  const depto  = document.getElementById('d-depto').value;
-
-  if (!nombre || !rut || !email || !dir || !depto) { toast('Completa todos los campos', 'error'); return; }
-  if (!email.includes('@')) { toast('Email inválido', 'error'); return; }
-
-  // Verificar aptitud para 2° control
-  if (tipo === 'segundo') {
-    const ctrls = CONTROLES.filter(c => c.dir === dir && c.depto === depto && c.estado === 'Vigente');
-    if (ctrls.length >= 2) {
-      showView('no-apto');
-      document.getElementById('no-apto-texto').innerHTML = 'El departamento <strong>' + depto + '</strong> ya cuenta con <strong>' + ctrls.length + ' controles vigentes</strong> (N° ' + ctrls.map(c=>c.n).join(', ') + '). El máximo permitido es 2.<br><br>Si tiene consultas, contáctenos en <strong>com12norte@gmail.com</strong>';
-      return;
-    }
-    if (ctrls.length === 0) {
-      toast('No hay controles vigentes para este departamento. Use el proceso de Pérdida/Falla.', 'warning');
-      return;
-    }
-  }
-
-  const btn = document.getElementById('btn-paso1');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';
-
-  // Generar ID único
-  solId = 'SOL-' + String(Math.floor(Math.random()*9000)+1000);
-  const ctrlN = document.getElementById('d-ctrl').value || '';
-
-  solicitud = { id: solId, tipo, nombre, rut, tel, email, dir, depto, ctrlN, estado: 'datos_enviados', creado: new Date().toLocaleString('es-CL') };
-
-  try {
-    // Guardar en Drive
-    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) });
-  } catch(e) {}
-
-  // Email al residente con link
-  const linkSol = window.location.origin + window.location.pathname + '?tipo=' + tipo + '&id=' + solId;
-  const tipoLabel = tipo === 'perdida' ? 'reposición de control remoto' : 'solicitud de 2° control remoto';
-  const asunto = encodeURIComponent('Solicitud ' + solId + ' — Control Remoto — Comunidad 12 Norte');
-  const body   = encodeURIComponent(
-    'Estimado/a ' + nombre + ',\n\n' +
-    'Reciba un cordial saludo de parte de la ' + NOMBRE_COMUNIDAD + '.\n\n' +
-    'Hemos registrado su ' + tipoLabel + '. A continuación encontrará el link para continuar con el proceso:\n\n' +
-    '👉 ' + linkSol + '\n\n' +
-    'Detalle de su solicitud:\n' +
-    '• N° Solicitud: ' + solId + '\n' +
-    '• Departamento: ' + depto + ' — ' + dir + '\n' +
-    '• Tipo: ' + (tipo === 'perdida' ? 'Pérdida/Falla' : '2° Control Remoto') + '\n\n' +
-    'Podrá ingresar y salir del link cuantas veces necesite — su información quedará guardada.\n\n' +
-    'Atentamente,\n' + NOMBRE_COMUNIDAD + '\nRUT: ' + RUT_COMUNIDAD + '\n' + ADMIN_EMAIL
-  );
-  window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(email) + '&su=' + asunto + '&body=' + body, '_blank');
-
-  // Avanzar a paso 2
-  window.history.replaceState({}, '', '?tipo=' + tipo + '&id=' + solId);
-  btn.disabled = false; btn.innerHTML = 'Continuar →';
-  cargarPaso2();
-  showView('paso2');
-  toast('Solicitud ' + solId + ' creada ✓ — Revise su email', 'success');
-}
-
-// ══════════════════════════════════════════════
-// PASO 2 — DECLARACIÓN + FIRMA
-// ══════════════════════════════════════════════
-function cargarPaso2() {
-  document.getElementById('sol-num-p2').textContent = 'N° ' + solId;
-  if (tipo === 'perdida') {
-    document.getElementById('decl-perdida').style.display = 'block';
-    document.getElementById('decl-segundo').style.display = 'none';
-    document.getElementById('decl-nombre').textContent = solicitud.nombre;
-    document.getElementById('decl-rut').textContent    = solicitud.rut;
-    document.getElementById('decl-depto').textContent  = solicitud.depto;
-    document.getElementById('decl-dir').textContent    = solicitud.dir;
-  } else {
-    document.getElementById('decl-perdida').style.display = 'none';
-    document.getElementById('decl-segundo').style.display = 'block';
-    const ctrls = CONTROLES.filter(c => c.dir === solicitud.dir && c.depto === solicitud.depto && c.estado === 'Vigente');
-    document.getElementById('aptitud-box').innerHTML = '<div class="notice notice-success">✅ <div>El departamento <strong>' + solicitud.depto + '</strong> tiene <strong>' + ctrls.length + ' control vigente</strong> (N° ' + ctrls.map(c=>c.n).join(', ') + '). Puede solicitar un 2° control.</div></div>';
-  }
-  initCanvas();
-}
-
-function selMotivo(el, val) {
-  document.querySelectorAll('.radio-opt').forEach(r => r.classList.remove('selected'));
-  el.classList.add('selected');
-  el.querySelector('input').checked = true;
-  motivoSel = val;
-}
-
-async function enviarDeclaracion() {
-  if (tipo === 'perdida' && !motivoSel) { toast('Selecciona el motivo de la declaración', 'error'); return; }
-  if (!sigDrawn) { toast('Se requiere la firma', 'error'); return; }
-
-  solicitud.motivo   = motivoSel || 'Solicitud 2° Control';
-  solicitud.firma    = getSig();
-  solicitud.estado   = 'declaracion';
-  solicitud.fechaDecl= new Date().toLocaleDateString('es-CL');
-
-  try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) }); } catch(e) {}
-
-  // Email a administración
-  const asunto = encodeURIComponent(solId + ' — Declaración ' + (tipo === 'perdida' ? solicitud.motivo : '2° Control') + ' — Depto. ' + solicitud.depto);
-  const body   = encodeURIComponent(
-    'Estimada Administración,\n\n' +
-    'Se ha recibido la declaración firmada para la solicitud ' + solId + '.\n\n' +
-    'Residente: ' + solicitud.nombre + '\nRUT: ' + solicitud.rut + '\nDirección: ' + solicitud.dir + '\nDepartamento: ' + solicitud.depto +
-    (solicitud.ctrlN ? '\nControl N°: ' + solicitud.ctrlN : '') +
-    '\nTipo: ' + (tipo === 'perdida' ? 'Pérdida/Falla — ' + solicitud.motivo : '2° Control Remoto') + '\n\n' +
-    'El residente recibirá las instrucciones de pago.\n\n' + NOMBRE_COMUNIDAD
-  );
-  window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(ADMIN_EMAIL) + '&su=' + asunto + '&body=' + body, '_blank');
-
-  cargarPaso3();
-  showView('paso3');
-  toast('Declaración enviada ✓', 'success');
-}
-
-// ══════════════════════════════════════════════
-// PASO 3 — PAGO + COMPROBANTE
-// ══════════════════════════════════════════════
-function cargarPaso3() {
-  document.getElementById('sol-num-p3').textContent = 'N° ' + solId;
-  document.getElementById('asunto-trans').textContent = 'Pago Control ' + solId;
-}
-
-function handleFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { toast('El archivo supera los 5MB', 'error'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    fileData = e.target.result;
-    document.getElementById('file-name').textContent = file.name;
-    document.getElementById('file-size').textContent = (file.size/1024).toFixed(1) + ' KB';
-    document.getElementById('file-preview').style.display = 'flex';
-  };
-  reader.readAsDataURL(file);
-}
-
-async function enviarComprobante() {
-  const link = document.getElementById('comp-link').value.trim();
-  if (!fileData && !link) { toast('Adjunta el comprobante o pega el link de Drive', 'error'); return; }
-
-  const btn = document.getElementById('btn-enviar-comp');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';
-
-  solicitud.comprobante     = fileData || null;
-  solicitud.comprobanteLink = link || null;
-  solicitud.estado          = 'pendiente';
-  solicitud.fechaComp       = new Date().toLocaleDateString('es-CL');
-
-  try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) }); } catch(e) {}
-
-  // Email a administración con comprobante
-  const asunto = encodeURIComponent(solId + ' — Comprobante de Pago — Depto. ' + solicitud.depto);
-  const body   = encodeURIComponent(
-    'Estimada Administración,\n\n' +
-    solicitud.nombre + ' ha enviado el comprobante de pago de $15.000 para la solicitud ' + solId + '.\n\n' +
-    'Tipo: ' + (tipo === 'perdida' ? 'Reposición por ' + solicitud.motivo : '2° Control Remoto') + '\n' +
-    'Departamento: ' + solicitud.depto + ' — ' + solicitud.dir + '\n' +
-    (link ? 'Comprobante Drive: ' + link + '\n' : '') +
-    '\nRevise y apruebe en la aplicación de administración.\n\n' + NOMBRE_COMUNIDAD
-  );
-  window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(ADMIN_EMAIL) + '&su=' + asunto + '&body=' + body, '_blank');
-
-  btn.disabled = false; btn.innerHTML = '<span>📤</span> Enviar Comprobante';
-  document.getElementById('sol-num-revision').textContent = solId;
-  showView('revision');
-  toast('Comprobante enviado ✓', 'success');
-}
-
-// ══════════════════════════════════════════════
-// CANVAS FIRMA
-// ══════════════════════════════════════════════
-function initCanvas() {
-  const canvas = document.getElementById('sig-decl');
+// ════════════════════════════════════════
+// CANVAS
+// ════════════════════════════════════════
+function initCanvas(key) {
+  const canvas = document.getElementById('sig-' + key);
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  sigCtx = ctx; sigDrawn = false;
+  sigCtx[key] = ctx;
+  sigStates[key] = false;
 
   function resize() {
     const w = canvas.parentElement.getBoundingClientRect().width;
     if (!w) return;
-    canvas.width = w; canvas.height = 160;
-    ctx.strokeStyle = '#1A1D23'; ctx.lineWidth = 2.2;
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    canvas.width = w; canvas.height = parseInt(canvas.getAttribute('height')) || 140;
+    ctx.strokeStyle = '#1A1D23'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   }
-  resize(); window.addEventListener('resize', resize);
+  resize();
+  window.addEventListener('resize', resize);
 
-  let drawing=false, lx=0, ly=0;
+  let drawing = false, lx = 0, ly = 0;
   function pos(e) {
-    const r=canvas.getBoundingClientRect();
-    const sx=canvas.width/r.width, sy=canvas.height/r.height;
-    if(e.touches) return [(e.touches[0].clientX-r.left)*sx,(e.touches[0].clientY-r.top)*sy];
-    return [(e.clientX-r.left)*sx,(e.clientY-r.top)*sy];
+    const rc = canvas.getBoundingClientRect();
+    const sx = canvas.width / rc.width, sy = canvas.height / rc.height;
+    if (e.touches) return [(e.touches[0].clientX - rc.left)*sx, (e.touches[0].clientY - rc.top)*sy];
+    return [(e.clientX - rc.left)*sx, (e.clientY - rc.top)*sy];
   }
-  const hint = document.getElementById('hint-decl');
-  canvas.addEventListener('mousedown', e=>{ e.preventDefault(); drawing=true; [lx,ly]=pos(e); hint.classList.add('hidden'); });
-  canvas.addEventListener('mousemove', e=>{ if(!drawing) return; const [x,y]=pos(e); ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke(); [lx,ly]=[x,y]; sigDrawn=true; });
-  canvas.addEventListener('mouseup', ()=>drawing=false);
-  canvas.addEventListener('mouseleave', ()=>drawing=false);
-  canvas.addEventListener('touchstart', e=>{ e.preventDefault(); drawing=true; [lx,ly]=pos(e); hint.classList.add('hidden'); },{passive:false});
-  canvas.addEventListener('touchmove', e=>{ if(!drawing) return; e.preventDefault(); const [x,y]=pos(e); ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke(); [lx,ly]=[x,y]; sigDrawn=true; },{passive:false});
-  canvas.addEventListener('touchend', ()=>drawing=false);
+  const hint = document.getElementById('hint-' + key);
+  canvas.addEventListener('mousedown', e => { e.preventDefault(); drawing=true; [lx,ly]=pos(e); if(hint) hint.classList.add('hidden'); });
+  canvas.addEventListener('mousemove', e => { if(!drawing) return; const [x,y]=pos(e); ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke(); [lx,ly]=[x,y]; sigStates[key]=true; });
+  canvas.addEventListener('mouseup', () => drawing=false);
+  canvas.addEventListener('mouseleave', () => drawing=false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; [lx,ly]=pos(e); if(hint) hint.classList.add('hidden'); }, {passive:false});
+  canvas.addEventListener('touchmove', e => { if(!drawing) return; e.preventDefault(); const [x,y]=pos(e); ctx.beginPath(); ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke(); [lx,ly]=[x,y]; sigStates[key]=true; }, {passive:false});
+  canvas.addEventListener('touchend', () => drawing=false);
 }
 
-function clrSig() {
-  const canvas = document.getElementById('sig-decl');
-  sigCtx.clearRect(0,0,canvas.width,canvas.height);
-  sigDrawn = false;
-  document.getElementById('hint-decl').classList.remove('hidden');
+function clrSig(key) {
+  const canvas = document.getElementById('sig-' + key);
+  sigCtx[key].clearRect(0, 0, canvas.width, canvas.height);
+  sigStates[key] = false;
+  const hint = document.getElementById('hint-' + key);
+  if (hint) hint.classList.remove('hidden');
 }
 
-function getSig() {
-  if (!sigDrawn) return null;
-  return document.getElementById('sig-decl').toDataURL('image/png');
+function getSig(key) {
+  if (!sigStates[key]) return null;
+  return document.getElementById('sig-' + key).toDataURL('image/png');
 }
 
-// ══════════════════════════════════════════════
-// VISTAS
-// ══════════════════════════════════════════════
-function showView(name) {
-  const views = ['loading','paso1','paso2','paso3','revision','aprobado','listo','no-apto'];
-  views.forEach(v => {
-    const el = document.getElementById('view-' + v);
-    if (el) el.style.display = 'none';
+// ════════════════════════════════════════
+// SELECTORES
+// ════════════════════════════════════════
+function selTipo(t) {
+  tipoRecibo = t;
+  document.getElementById('opt-llaves').classList.toggle('selected', t === 'llaves');
+  document.getElementById('opt-control').classList.toggle('selected', t === 'control');
+  document.getElementById('ctrl-row').classList.toggle('show', t === 'control');
+  document.getElementById('llave-row').classList.toggle('show', t === 'llaves');
+}
+
+function selFalla(el) {
+  document.querySelectorAll('.falla-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  tipoFalla = el.dataset.f;
+}
+
+function selEstado(el) {
+  document.querySelectorAll('.estado-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  estadoOT = el.dataset.e;
+}
+
+// ════════════════════════════════════════
+// FOTOS
+// ════════════════════════════════════════
+function handleFotos(input) {
+  fotosData = [];
+  document.getElementById('foto-preview').innerHTML = '';
+  Array.from(input.files).slice(0,3).forEach(f => {
+    const rd = new FileReader();
+    rd.onload = e => {
+      fotosData.push(e.target.result);
+      const img = document.createElement('img');
+      img.className = 'foto-thumb'; img.src = e.target.result;
+      document.getElementById('foto-preview').appendChild(img);
+    };
+    rd.readAsDataURL(f);
   });
-  const target = document.getElementById('view-' + name);
-  if (target) target.style.display = 'block';
 }
 
-function volver(paso) {
-  if (paso === 1) { showView('paso1'); configurarTipo(); }
-  if (paso === 2) { showView('paso2'); cargarPaso2(); }
+// ════════════════════════════════════════
+// FECHA FORMATO
+// ════════════════════════════════════════
+function fmtFecha(iso) {
+  if (!iso) return '—';
+  const [yr, mo, dy] = iso.split('-');
+  const m = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${parseInt(dy)} de ${m[parseInt(mo)-1]} de ${yr}`;
 }
 
-// ══════════════════════════════════════════════
+
+// ════════════════════════════════════════
+// SHEETS — CARGAR Y BORRAR
+// ════════════════════════════════════════
+async function cargarDesdeSheets(hoja) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'TU_URL_APPS_SCRIPT') return null;
+  try {
+    const url = APPS_SCRIPT_URL + '?accion=listar&hoja=' + encodeURIComponent(hoja);
+    const res = await fetch(url);
+    const json = await res.json();
+    return json.ok ? json.data : null;
+  } catch(e) { return null; }
+}
+
+async function borrarDeSheets(hoja, id) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'TU_URL_APPS_SCRIPT') return false;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'borrar', hoja: hoja, id: id })
+    });
+    const json = await res.json();
+    return json.ok;
+  } catch(e) { return false; }
+}
+
+// ════════════════════════════════════════
+// RECIBOS
+// ════════════════════════════════════════
+function validarRecibo() {
+  if (!tipoRecibo) { toast('Selecciona el tipo de recibo', 'error'); return false; }
+  let ok = true;
+  ['r-nombre','r-rut','r-dir','r-depto'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.classList.add('err'); ok = false; }
+    else el.classList.remove('err');
+  });
+  if (!ok) { toast('Completa todos los campos obligatorios', 'error'); return false; }
+  if (!sigStates['r']) { toast('Se requiere la firma del residente', 'error'); return false; }
+  return true;
+}
+
+async function guardarRecibo() {
+  if (!validarRecibo()) return;
+  const btn = document.getElementById('btn-r');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
+  const recibo = {
+    id: Date.now(),
+    tipo: tipoRecibo,
+    tipoRecibo: tipoRecibo,
+    nombre: document.getElementById('r-nombre').value.trim(),
+    rut: document.getElementById('r-rut').value.trim(),
+    dir: document.getElementById('r-dir').value.trim(),
+    depto: document.getElementById('r-depto').value.trim(),
+    email: document.getElementById('r-email').value.trim(),
+    fecha: fmtFecha(document.getElementById('r-fecha').value),
+    numControl: tipoRecibo === 'control' ? document.getElementById('r-num-ctrl').value : null,
+    tipoLlave: tipoRecibo === 'llaves' ? document.getElementById('r-tipo-llave').value : null,
+    firma: getSig('r'),
+    creado: new Date().toLocaleString('es-CL')
+  };
+
+  recibos.unshift(recibo);
+  localStorage.setItem('recibos_v2', JSON.stringify(recibos));
+
+  if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_APPS_SCRIPT') {
+    btn.innerHTML = '<span class="spinner"></span> Guardando en Drive...';
+    const res = await enviarAlScript({ ...recibo, tipo: 'recibo' });
+    if (res.ok) {
+      toast('Recibo guardado en Drive ✓' + (res.emailEnviado ? ' · Email enviado ✓' : ''), 'success');
+    } else {
+      toast('Error Drive/Gmail: ' + res.error, 'error');
+    }
+  } else {
+    toast('Recibo guardado localmente ✓', 'success');
+  }
+
+  btn.disabled = false; btn.innerHTML = '<span>💾</span> Guardar Recibo';
+  resetRecibo();
+  nav('recibo-hist');
+}
+
+function resetRecibo() {
+  tipoRecibo = null;
+  ['opt-llaves','opt-control'].forEach(id => document.getElementById(id).classList.remove('selected'));
+  document.getElementById('ctrl-row').classList.remove('show');
+  document.getElementById('llave-row').classList.remove('show');
+  document.getElementById('r-tipo-llave').value = '';
+  ['r-nombre','r-rut','r-email'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).classList.remove('err'); });
+  ['r-dir','r-depto'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).classList.remove('err'); });
+  document.getElementById('r-fecha').value = new Date().toISOString().split('T')[0];
+  clrSig('r');
+}
+
+async function renderRecibos() {
+  const el = document.getElementById('rlist');
+  const cnt = document.getElementById('rcount');
+  el.innerHTML = '<div class="empty"><div class="ei">⏳</div><p>Cargando registros...</p></div>';
+
+  // Intentar cargar desde Drive
+  const driveData = await cargarDesdeSheets('Recibos');
+
+  if (driveData && driveData.length > 0) {
+    cnt.textContent = driveData.length + ' recibo' + (driveData.length !== 1 ? 's' : '');
+    el.innerHTML = '<div class="item-list">' + driveData.map(r =>
+      '<div class="item">' +
+      '<div class="item-badge ' + (r.tipo === 'Llave' ? 'badge-llaves' : 'badge-control') + '">' + (r.tipo === 'Llave' ? '🔑' : '📡') + '</div>' +
+      '<div class="item-info">' +
+      '<strong>' + r.nombre + '</strong>' +
+      '<div class="item-meta">Depto. ' + r.depto + ' · ' + r.tipo + ' (' + r.detalle + ') · ' + r.fecha + '</div>' +
+      '</div>' +
+      '<div class="item-actions">' +
+      (r.pdfUrl && r.pdfUrl !== '—' ? '<a class="bicon" href="' + r.pdfUrl + '" target="_blank" title="Ver PDF">⬇</a>' : '') +
+      '<button class="bicon danger" title="Eliminar" onclick="delReciboSheets(\"' + r.id + '\")">🗑</button>' +
+      '</div></div>'
+    ).join('') + '</div>';
+    return;
+  }
+
+  // Fallback: localStorage
+  cnt.textContent = recibos.length + ' recibo' + (recibos.length !== 1 ? 's' : '');
+  if (!recibos.length) {
+    el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay recibos. Crea el primero.</p></div></div>';
+    return;
+  }
+  el.innerHTML = '<div class="item-list">' + recibos.map(r =>
+    '<div class="item">' +
+    '<div class="item-badge badge-' + r.tipo + '">' + (r.tipo === 'llaves' ? '🔑' : '📡') + '</div>' +
+    '<div class="item-info">' +
+    '<strong>' + r.nombre + '</strong>' +
+    '<div class="item-meta">Depto. ' + r.depto + ' · ' + (r.tipo === 'llaves' ? 'Llave' : 'Control') + ' · ' + r.fecha + '</div>' +
+    '</div>' +
+    '<div class="item-actions">' +
+    '<button class="bicon" title="Ver" onclick="verRecibo(' + r.id + ')">👁</button>' +
+    '<button class="bicon" title="PDF" onclick="pdfReciboById(' + r.id + ')">⬇</button>' +
+    '<button class="bicon danger" title="Eliminar" onclick="delRecibo(' + r.id + ')">🗑</button>' +
+    '</div></div>'
+  ).join('') + '</div>';
+}
+
+async function delReciboSheets(id) {
+  if (!confirm('¿Eliminar este recibo?')) return;
+  const ok = await borrarDeSheets('Recibos', id);
+  if (ok) { toast('Recibo eliminado ✓', 'success'); renderRecibos(); }
+  else toast('Error al eliminar', 'error');
+}
+
+function getRById(id) { return recibos.find(r => r.id === id); }
+
+function delRecibo(id) {
+  if (!confirm('¿Eliminar este recibo?')) return;
+  recibos = recibos.filter(r => r.id !== id);
+  localStorage.setItem('recibos_v2', JSON.stringify(recibos));
+  renderRecibos(); toast('Recibo eliminado', '');
+}
+
+function verRecibo(id) {
+  const r = getRById(id);
+  if (!r) return;
+  currentR = r;
+  document.getElementById('rdoc').innerHTML = buildReciboHTML(r);
+  document.getElementById('modal-r').classList.add('open');
+}
+
+function buildReciboHTML(r) {
+  const titulo = r.tipo === 'llaves' ? 'RECIBO CONFORME DE ENTREGA DE LLAVES' : 'RECIBO CONFORME DE ENTREGA DE SEGUNDO CONTROL REMOTO';
+  const tipoLlaveStr = r.tipoLlave ? ` correspondiente a <strong>${r.tipoLlave}</strong>` : '';
+  const cuerpo = r.tipo === 'llaves'
+    ? `Por medio del presente documento, yo, <strong>${r.nombre}</strong>, RUT/Cédula de Identidad N° <strong>${r.rut}</strong> residente del domicilio <strong>${r.dir}</strong>, departamento N° <strong>${r.depto}</strong>, Viña del Mar, Valparaíso, declaro haber recibido de parte de la Administración una llave de acceso${tipoLlaveStr}.<br><br>La llave que se entrega ha sido probada en mi presencia, confirmando su correcto funcionamiento.`
+    : `Por medio del presente documento, yo, <strong>${r.nombre}</strong>, RUT/Cédula de Identidad N° <strong>${r.rut}</strong> residente del domicilio <strong>${r.dir}</strong>, departamento N° <strong>${r.depto}</strong>, Viña del Mar, Valparaíso, declaro haber recibido de parte de la Administración <strong>${r.numControl} control remoto</strong> para el acceso vehicular.<br><br>El dispositivo se entrega nuevo, en perfectas condiciones y ha sido probado en mi presencia, confirmando su correcto funcionamiento.`;
+  return `
+    <div class="dt">${titulo}</div>
+    <p><strong>Fecha:</strong> ${r.fecha}</p><br>
+    <p>${cuerpo}</p><br>
+    <p>Firmo en señal de total conformidad con lo aquí estipulado.</p>
+    <br><br>
+    <div><strong>Recibe Conforme:</strong><br><br>
+      ${r.firma ? '<img class="sig-img" src="' + r.firma + '" alt="Firma">' : ''}
+      <div class="firma-line">Firma</div>
+    </div>`;
+}
+
+function rPDF() { if (currentR) pdfReciboById(currentR.id); }
+function rEmail() { if (currentR) emailRecibo(currentR); }
+
+function pdfReciboById(id) {
+  const r = getRById(id);
+  if (!r) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+  const M = 25, W = doc.internal.pageSize.getWidth() - M*2;
+  doc.setFont('times','bold'); doc.setFontSize(13);
+  const tit = r.tipo === 'llaves' ? 'RECIBO CONFORME DE ENTREGA DE LLAVES' : 'RECIBO CONFORME DE ENTREGA DE SEGUNDO CONTROL REMOTO';
+  const st = doc.splitTextToSize(tit, W);
+  doc.text(st, doc.internal.pageSize.getWidth()/2, 28, {align:'center'});
+  let y = 28 + st.length*7 + 8;
+  doc.setFont('times','normal'); doc.setFontSize(12);
+  doc.text(`Fecha: ${r.fecha}`, M, y); y += 10;
+  const tipoLlaveStr = r.tipoLlave ? ` correspondiente a ${r.tipoLlave}` : '';
+  const tx = r.tipo === 'llaves'
+    ? `Por medio del presente documento, yo, ${r.nombre}, RUT/Cédula de Identidad N° ${r.rut} residente del domicilio ${r.dir}, departamento N° ${r.depto}, Viña del Mar, Valparaíso, declaro haber recibido de parte de la Administración una llave de acceso${tipoLlaveStr}.\n\nLa llave que se entrega ha sido probada en mi presencia, confirmando su correcto funcionamiento.\n\nFirmo en señal de total conformidad con lo aquí estipulado.`
+    : `Por medio del presente documento, yo, ${r.nombre}, RUT/Cédula de Identidad N° ${r.rut} residente del domicilio ${r.dir}, departamento N° ${r.depto}, Viña del Mar, Valparaíso, declaro haber recibido de parte de la Administración ${r.numControl} control remoto para el acceso vehicular.\n\nEl dispositivo se entrega nuevo, en perfectas condiciones y ha sido probado en mi presencia, confirmando su correcto funcionamiento.\n\nFirmo en señal de total conformidad con lo aquí estipulado.`;
+  const sb = doc.splitTextToSize(tx, W);
+  doc.text(sb, M, y); y += sb.length*7 + 14;
+  doc.setFont('times','bold'); doc.text('Recibe Conforme:', M, y); y += 8; doc.setFont('times','normal');
+  if (r.firma) { doc.addImage(r.firma,'PNG',M,y,50,20); y+=24; } else y+=18;
+  doc.line(M, y, M+70, y); y+=5; doc.text('Firma', M, y);
+  doc.save(`Recibo_${r.tipo}_Depto${r.depto}_${r.nombre.replace(/ /g,'_')}.pdf`);
+  toast('PDF descargado ✓', 'success');
+}
+
+function emailRecibo(r) {
+  if (!r.email) { toast('No hay email registrado', 'error'); return; }
+  const tipoStr = r.tipo === 'llaves' ? 'llave de acceso hacia la calle' : `${r.numControl} control remoto para acceso vehicular`;
+  const su = encodeURIComponent(`Recibo Conforme — Depto. ${r.depto} — ${r.tipo === 'llaves' ? 'Llave' : 'Control Remoto'}`);
+  const body = encodeURIComponent(`Estimado/a ${r.nombre},\n\nPor medio de este correo le informamos que el día ${r.fecha} se realizó la entrega de ${tipoStr} correspondiente al departamento N° ${r.depto}, ubicado en ${r.dir}.\n\nEl recibo conforme fue firmado en señal de conformidad en la fecha indicada.\n\nAnte cualquier consulta, no dude en contactarnos.\n\nSaludos,\nComunidad Edificio 12 Norte de Viña del Mar`);
+  window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(r.email)}&cc=${encodeURIComponent(ADMIN_EMAIL)}&su=${su}&body=${body}`, '_blank');
+  toast('Abriendo Gmail ✓', 'success');
+}
+
+// ════════════════════════════════════════
+// INFORME EXPANDIBLE
+// ════════════════════════════════════════
+function toggleInforme() {
+  const body = document.getElementById('informe-body');
+  const chev = document.getElementById('informe-chevron');
+  const tog  = document.getElementById('informe-toggle');
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+  tog.style.borderRadius = open ? '8px' : '8px 8px 0 0';
+  tog.style.borderBottom = open ? '1px solid var(--border)' : 'none';
+  if (!open) ['or','ot'].forEach(k => { if (!sigCtx[k]) initCanvas(k); });
+}
+
+function selEstadoSel(val) {
+  estadoOT = val;
+}
+
+// ════════════════════════════════════════
+// ÓRDENES DE TRABAJO
+// ════════════════════════════════════════
+function validarOT() {
+  let ok = true;
+  ['o-nombre','o-rut','o-depto','o-desc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.classList.add('err'); ok = false; }
+    else el.classList.remove('err');
+  });
+  if (!ok) { toast('Completa los campos obligatorios', 'error'); return false; }
+  if (!tipoFalla) { toast('Selecciona el tipo de falla', 'error'); return false; }
+  if (!sigStates['or']) { toast('Se requiere la firma del residente', 'error'); return false; }
+  return true;
+}
+
+async function guardarOT() {
+  if (!validarOT()) return;
+  const btn = document.getElementById('btn-ot');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
+  const num = 'OT-' + String(ordenes.length + 1).padStart(4, '0');
+  const fallaLabel = document.querySelector(`.falla-opt[data-f="${tipoFalla}"] span`)?.textContent || tipoFalla;
+
+  const ot = {
+    id: Date.now(), numero: num,
+    nombre: document.getElementById('o-nombre').value.trim(),
+    rut: document.getElementById('o-rut').value.trim(),
+    dir: document.getElementById('o-dir').value.trim(),
+    depto: document.getElementById('o-depto').value.trim(),
+    tel: document.getElementById('o-tel').value.trim(),
+    email: document.getElementById('o-email').value.trim(),
+    fechaRep: fmtFecha(document.getElementById('o-fecha-rep').value),
+    hora: document.getElementById('o-hora').value || '—',
+    falla: tipoFalla, fallaLabel,
+    desc: document.getElementById('o-desc').value.trim(),
+    fotos: [...fotosData],
+    fechaVis: fmtFecha(document.getElementById('o-fecha-vis').value),
+    tecnico: document.getElementById('o-tecnico').value.trim(),
+    proveedor: document.getElementById('o-proveedor').value.trim(),
+    prioridad: document.getElementById('o-prioridad').value,
+    diag: document.getElementById('o-diag').value.trim(),
+    trabajo: document.getElementById('o-trabajo').value.trim(),
+    repuestos: document.getElementById('o-rep').value.trim(),
+    estado: estadoOT,
+    firmaRes: getSig('or'),
+    firmaTec: getSig('ot'),
+    creado: new Date().toLocaleString('es-CL')
+  };
+
+  ordenes.unshift(ot);
+  localStorage.setItem('ot_citofonia_v2', JSON.stringify(ordenes));
+
+  if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_APPS_SCRIPT') {
+    btn.innerHTML = '<span class="spinner"></span> Guardando en Drive...';
+    const otPayload = {
+      tipo: 'ot',
+      numero: ot.numero,
+      nombre: ot.nombre,
+      rut: ot.rut,
+      dir: ot.dir,
+      depto: ot.depto,
+      tel: ot.tel,
+      email: ot.email,
+      fechaRep: ot.fechaRep,
+      hora: ot.hora,
+      fallaLabel: ot.fallaLabel,
+      desc: ot.desc,
+      fechaVis: ot.fechaVis,
+      tecnico: ot.tecnico,
+      diag: ot.diag,
+      trabajo: ot.trabajo,
+      repuestos: ot.repuestos,
+      estado: ot.estado,
+      firmaRes: ot.firmaRes,
+      firmaTec: ot.firmaTec
+    };
+    const res = await enviarAlScript(otPayload);
+    if (res.ok) {
+      toast(`${num} guardada en Drive ✓` + (res.emailEnviado ? ' · Email enviado ✓' : ''), 'success');
+    } else {
+      toast('Error Drive/Gmail: ' + res.error, 'error');
+    }
+  } else {
+    toast(`${num} guardada localmente ✓`, 'success');
+  }
+
+  btn.disabled = false; btn.innerHTML = '<span>💾</span> Guardar Orden de Trabajo';
+  resetOT();
+  nav('ot-hist');
+}
+
+function resetOT() {
+  tipoFalla = null; estadoOT = 'ingresado'; fotosData = [];
+  document.querySelectorAll('.falla-opt').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.estado-opt').forEach(o => o.classList.remove('selected'));
+  document.querySelector('.estado-opt[data-e="ingresado"]').classList.add('selected');
+  ['o-nombre','o-rut','o-tel','o-email','o-desc','o-tecnico','o-proveedor','o-diag','o-trabajo','o-rep'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('err'); }
+  });
+  ['o-dir','o-depto'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).classList.remove('err'); });
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('foto-preview').innerHTML = '';
+  document.getElementById('foto-input').value = '';
+  clrSig('or'); clrSig('ot');
+  const ib=document.getElementById('informe-body'); if(ib) ib.style.display='none';
+  const ic=document.getElementById('informe-chevron'); if(ic) ic.style.transform='rotate(0deg)';
+  document.getElementById('o-estado-sel').value='ingresado'; estadoOT='ingresado';
+  document.getElementById('o-prioridad').value='normal';
+}
+
+function setFil(btn) {
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  otFil = btn.dataset.fil;
+  renderOTs();
+}
+
+async function renderOTs() {
+  const el = document.getElementById('olist');
+  const cnt = document.getElementById('ocount');
+  el.innerHTML = '<div class="empty"><div class="ei">⏳</div><p>Cargando registros...</p></div>';
+
+  const sheetsData = await cargarDesdeSheets('OT Citofonia');
+  if (sheetsData && sheetsData.length > 0) {
+    const fil = otFil === 'todas' ? sheetsData : sheetsData.filter(o => {
+      return o.estadoKey === otFil;
+    });
+    cnt.textContent = sheetsData.length + ' OT';
+    if (!fil.length) { el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>No hay OT con este estado.</p></div></div>'; return; }
+    const estadoClass = {'Ingresado':'be-ingresado','En Revisión':'be-revision','En Reparación':'be-reparacion','Cerrado':'be-cerrado'};
+    el.innerHTML = '<div class="item-list">' + fil.map(o => `
+      <div class="item">
+        <div class="item-num">${o.numero||'—'}</div>
+        <div class="item-info">
+          <strong>${o.nombre} <span class="badge-e ${estadoClass[o.estado]||''}">${o.estado}</span></strong>
+          <div class="item-meta">Depto. ${o.depto} · ${o.fallaLabel} · ${o.fechaRep}${o.tecnico&&o.tecnico!=='—'?' · 🔧 '+o.tecnico:''}</div>
+        </div>
+        <div class="item-actions">
+          ${o.pdfUrl ? '<a class="bicon" href="' + o.pdfUrl + '" target="_blank" title="Ver PDF">⬇</a>' : ''}
+          <button class="bicon danger" title="Eliminar" onclick="delOTSheets('${o.id}')">🗑</button>
+        </div>
+      </div>`).join('') + '</div>';
+  } else {
+    const fil = otFil === 'todas' ? ordenes : ordenes.filter(o => o.estado === otFil);
+    cnt.textContent = ordenes.length + ' OT';
+    if (!fil.length) { el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay órdenes.</p></div></div>'; return; }
+    const eMap = { ingresado:'Ingresado', revision:'En Revisión', reparacion:'En Reparación', cerrado:'Cerrado' };
+    el.innerHTML = '<div class="item-list">' + fil.map(o => `
+      <div class="item">
+        <div class="item-num">${o.numero}</div>
+        <div class="item-info">
+          <strong>${o.nombre} <span class="badge-e be-${o.estado}">${eMap[o.estado]}</span></strong>
+          <div class="item-meta">Depto. ${o.depto} · ${o.fallaLabel} · ${o.fechaRep}</div>
+        </div>
+        <div class="item-actions">
+          <button class="bicon" title="Ver" onclick="verOT(${o.id})">👁</button>
+          <button class="bicon danger" title="Eliminar" onclick="delOT(${o.id})">🗑</button>
+        </div>
+      </div>`).join('') + '</div>';
+  }
+}
+
+async function delOTSheets(id) {
+  if (!confirm('¿Eliminar esta OT?')) return;
+  const ok = await borrarDeSheets('OT Citofonia', id);
+  if (ok) { toast('OT eliminada ✓', 'success'); renderOTs(); }
+  else toast('Error al eliminar', 'error');
+}
+
+function getOById(id) { return ordenes.find(o => o.id === id); }
+
+function delOT(id) {
+  if (!confirm('¿Eliminar esta orden?')) return;
+  ordenes = ordenes.filter(o => o.id !== id);
+  localStorage.setItem('ot_citofonia_v2', JSON.stringify(ordenes));
+  renderOTs(); toast('Orden eliminada', '');
+}
+
+function verOT(id) {
+  const o = getOById(id);
+  if (!o) return;
+  currentO = o;
+  document.getElementById('modal-o-title').textContent = `Vista Previa — ${o.numero}`;
+  document.getElementById('odoc').innerHTML = buildOTHTML(o);
+  document.getElementById('modal-o').classList.add('open');
+}
+
+function buildOTHTML(o) {
+  const eMap = { ingresado:'INGRESADO', revision:'EN REVISIÓN', reparacion:'EN REPARACIÓN', cerrado:'CERRADO' };
+  return `
+    <div class="dt">ORDEN DE TRABAJO — REPARACIÓN DE CITOFONÍA</div>
+    <div class="ds">${o.numero} · ${o.creado}</div>
+    <div class="sh">1. Datos del Residente</div>
+    <table>
+      <tr><td>Nombre</td><td>${o.nombre}</td></tr>
+      <tr><td>RUT / Cédula</td><td>${o.rut}</td></tr>
+      <tr><td>Dirección</td><td>${o.dir}</td></tr>
+      <tr><td>Departamento</td><td>${o.depto}</td></tr><tr><td>Ciudad</td><td>Viña del Mar, Valparaíso</td></tr>
+      ${o.tel ? '<tr><td>Teléfono</td><td>${o.tel}</td></tr>' : ''}
+      ${o.email ? '<tr><td>Email</td><td>${o.email}</td></tr>' : ''}
+    </table>
+    <div class="sh">2. Reporte del Problema</div>
+    <table>
+      <tr><td>Fecha de Reporte</td><td>${o.fechaRep}</td></tr>
+      <tr><td>Hora aprox.</td><td>${o.hora}</td></tr>
+      <tr><td>Tipo de Falla</td><td>${o.fallaLabel}</td></tr>
+      <tr><td>Descripción</td><td>${o.desc}</td></tr>
+    </table>
+    <div class="sh">3. Atención Técnica</div>
+    <table>
+      <tr><td>Fecha de Visita</td><td>${o.fechaVis}</td></tr>
+      <tr><td>Técnico</td><td>${o.tecnico || '—'}</td></tr>
+      <tr><td>Diagnóstico</td><td>${o.diag || '—'}</td></tr>
+      <tr><td>Trabajo Realizado</td><td>${o.trabajo || '—'}</td></tr>
+      <tr><td>Repuestos</td><td>${o.repuestos || '—'}</td></tr>
+      <tr><td>Estado Final</td><td><strong>${eMap[o.estado]}</strong></td></tr>
+    </table>
+    <div class="sh">4. Firmas</div>
+    <div class="sig-row">
+      <div class="sig-col">
+        ${o.firmaRes ? '<img src="${o.firmaRes}" alt="Firma Residente">' : '<div style="height:50px"></div>'}
+        <div class="sig-line">Firma del Residente<br><small>${o.nombre}</small></div>
+      </div>
+      <div class="sig-col">
+        ${o.firmaTec ? '<img src="${o.firmaTec}" alt="Firma Técnico">' : '<div style="height:50px"></div>'}
+        <div class="sig-line">Firma del Técnico<br><small>${o.tecnico || '—'}</small></div>
+      </div>
+    </div>`;
+}
+
+function oPDF() { if (currentO) pdfOTById(currentO.id); }
+function oEmail() { if (currentO) emailOT(currentO); }
+
+function pdfOTById(id) {
+  const o = getOById(id);
+  if (!o) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'letter' });
+  const M = 22, W = doc.internal.pageSize.getWidth() - M*2;
+  doc.setFont('times','bold'); doc.setFontSize(14);
+  doc.text('ORDEN DE TRABAJO — REPARACIÓN DE CITOFONÍA', doc.internal.pageSize.getWidth()/2, 25, {align:'center'});
+  doc.setFont('times','normal'); doc.setFontSize(10);
+  doc.text(`${o.numero} · ${o.creado}`, doc.internal.pageSize.getWidth()/2, 31, {align:'center'});
+  let y = 42;
+  const sec = t => { doc.setFont('times','bold'); doc.setFontSize(11); doc.text(t,M,y); doc.line(M,y+1.5,M+W,y+1.5); y+=8; doc.setFont('times','normal'); doc.setFontSize(10.5); };
+  const row = (l,v) => { if(!v) return; const ls=doc.splitTextToSize(`${l}: ${v}`,W); doc.text(ls,M,y); y+=ls.length*6; };
+  sec('1. Datos del Residente');
+  row('Nombre',o.nombre); row('RUT',o.rut); row('Dirección',o.dir); row('Departamento',o.depto); row('Ciudad','Viña del Mar, Valparaíso');
+  if(o.tel) row('Teléfono',o.tel); if(o.email) row('Email',o.email); y+=4;
+  sec('2. Reporte del Problema');
+  row('Fecha de Reporte',o.fechaRep); row('Hora',o.hora); row('Tipo de Falla',o.fallaLabel);
+  const dl=doc.splitTextToSize(`Descripción: ${o.desc}`,W); doc.text(dl,M,y); y+=dl.length*6+4;
+  sec('3. Atención Técnica');
+  row('Fecha de Visita',o.fechaVis); row('Técnico',o.tecnico||'—');
+  if(o.diag){const l=doc.splitTextToSize(`Diagnóstico: ${o.diag}`,W);doc.text(l,M,y);y+=l.length*6;}
+  if(o.trabajo){const l=doc.splitTextToSize(`Trabajo: ${o.trabajo}`,W);doc.text(l,M,y);y+=l.length*6;}
+  if(o.repuestos) row('Repuestos',o.repuestos);
+  const em={ingresado:'INGRESADO',revision:'EN REVISIÓN',reparacion:'EN REPARACIÓN',cerrado:'CERRADO'};
+  row('Estado',em[o.estado]); y+=4;
+  sec('4. Firmas');
+  if(o.firmaRes) doc.addImage(o.firmaRes,'PNG',M,y,55,22);
+  if(o.firmaTec) doc.addImage(o.firmaTec,'PNG',M+80,y,55,22);
+  y+=26; doc.line(M,y,M+55,y); doc.line(M+80,y,M+80+55,y); y+=5;
+  doc.setFontSize(9.5);
+  doc.text(`Firma del Residente\n${o.nombre}`,M,y);
+  doc.text(`Firma del Técnico\n${o.tecnico||'—'}`,M+80,y);
+  doc.save(`${o.numero}_${o.nombre.replace(/ /g,'_')}.pdf`);
+  toast('PDF descargado ✓', 'success');
+}
+
+function emailOT(o) {
+  if (!o.email) { toast('No hay email registrado', 'error'); return; }
+  const eMap = { ingresado:'Ingresado', revision:'En Revisión', reparacion:'En Reparación', cerrado:'Cerrado' };
+  const su = encodeURIComponent(`${o.numero} — Reparación de Citofonía — Depto. ${o.depto}`);
+  const body = encodeURIComponent(`Estimado/a ${o.nombre},\n\nLe informamos que se ha registrado una orden de trabajo por falla de citofonía en el departamento N° ${o.depto}.\n\nDetalle:\n• Número de Orden: ${o.numero}\n• Tipo de Falla: ${o.fallaLabel}\n• Fecha de Reporte: ${o.fechaRep}\n• Técnico Responsable: ${o.tecnico || 'Por asignar'}\n• Estado Actual: ${eMap[o.estado]}${o.diag ? '\n• Diagnóstico: ' + o.diag : ''}${o.trabajo ? '\n• Trabajo Realizado: ' + o.trabajo : ''}\n\nAnte cualquier consulta, no dude en contactarnos.\n\nSaludos,\nComunidad Edificio 12 Norte de Viña del Mar`);
+  window.open(`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(o.email)}&cc=${encodeURIComponent(ADMIN_EMAIL)}&su=${su}&body=${body}`, '_blank');
+  toast('Abriendo Gmail ✓', 'success');
+}
+
+// ════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════
+function closeOverlay(id, e) {
+  if (e && e.target !== document.getElementById(id)) return;
+  document.getElementById(id).classList.remove('open');
+  if (id === 'modal-r') currentR = null;
+  if (id === 'modal-o') currentO = null;
+}
+
+
+// ════════════════════════════════════════
+// PROVEEDORES
+// ════════════════════════════════════════
+let pagos = JSON.parse(localStorage.getItem('pagos_v1') || '[]');
+let currentP = null;
+
+function calcularTotales() {
+  const neto = parseFloat(document.getElementById('p-neto').value) || 0;
+  const desc = parseFloat(document.getElementById('p-descuento').value) || 0;
+  const iva  = Math.round(neto * 0.19);
+  const total = neto + iva - desc;
+  document.getElementById('p-iva').value   = iva;
+  document.getElementById('p-total').value = total;
+}
+
+function fmtMonto(n) {
+  return '$' + Number(n||0).toLocaleString('es-CL');
+}
+
+function validarPago() {
+  let ok = true;
+  ['p-nombre','p-rut','p-concepto','p-desc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.classList.add('err'); ok = false; }
+    else el.classList.remove('err');
+  });
+  if (!ok) { toast('Completa los campos obligatorios', 'error'); return false; }
+  if (!sigStates['p']) { toast('Se requiere la firma de quien autoriza', 'error'); return false; }
+  return true;
+}
+
+async function guardarPago() {
+  if (!validarPago()) return;
+  const btn = document.getElementById('btn-p');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Guardando...';
+
+  const num = 'CP-' + String(pagos.length + 1).padStart(4, '0');
+  const neto = parseFloat(document.getElementById('p-neto').value) || 0;
+  const iva  = Math.round(neto * 0.19);
+  const desc = parseFloat(document.getElementById('p-descuento').value) || 0;
+  const total = neto + iva - desc;
+
+  const pago = {
+    id: Date.now(), numero: num,
+    nombre:     document.getElementById('p-nombre').value.trim(),
+    rut:        document.getElementById('p-rut').value.trim(),
+    giro:       document.getElementById('p-giro').value.trim(),
+    email:      document.getElementById('p-email').value.trim(),
+    banco:      document.getElementById('p-banco').value.trim(),
+    fecha:      fmtFecha(document.getElementById('p-fecha').value),
+    periodo:    document.getElementById('p-periodo').value.trim(),
+    concepto:   document.getElementById('p-concepto').value,
+    desc:       document.getElementById('p-desc').value.trim(),
+    factura:    document.getElementById('p-factura').value.trim(),
+    cotizacion: document.getElementById('p-cotizacion').value.trim(),
+    neto, iva, descuento: desc, total,
+    forma:      document.getElementById('p-forma').value,
+    operacion:  document.getElementById('p-operacion').value.trim(),
+    obs:        document.getElementById('p-obs').value.trim(),
+    firma:      getSig('p'),
+    creado:     new Date().toLocaleString('es-CL')
+  };
+
+  pagos.unshift(pago);
+  localStorage.setItem('pagos_v1', JSON.stringify(pagos));
+
+  if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'TU_URL_APPS_SCRIPT') {
+    btn.innerHTML = '<span class="spinner"></span> Guardando en Drive...';
+    const res = await enviarAlScript({ ...pago, tipo: 'pago' });
+    if (res.ok) {
+      toast(num + ' guardado en Drive ✓' + (res.emailEnviado ? ' · Email enviado ✓' : ''), 'success');
+    } else {
+      toast('Error: ' + res.error, 'error');
+    }
+  } else {
+    toast(num + ' guardado ✓', 'success');
+  }
+
+  btn.disabled = false; btn.innerHTML = '<span>💾</span> Guardar Comprobante';
+  resetPago();
+  nav('pago-hist');
+}
+
+function resetPago() {
+  ['p-nombre','p-rut','p-giro','p-email','p-banco','p-periodo','p-desc','p-factura','p-cotizacion','p-operacion','p-obs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.classList.remove('err'); }
+  });
+  document.getElementById('p-concepto').value = '';
+  document.getElementById('p-forma').value = 'Transferencia Bancaria';
+  document.getElementById('p-neto').value = '';
+  document.getElementById('p-descuento').value = '';
+  document.getElementById('p-fecha').value = new Date().toISOString().split('T')[0];
+  calcularTotales();
+  clrSig('p');
+}
+
+async function renderPagos() {
+  const el = document.getElementById('plist');
+  const cnt = document.getElementById('pcount');
+  el.innerHTML = '<div class="empty"><div class="ei">⏳</div><p>Cargando registros...</p></div>';
+
+  const sheetsData = await cargarDesdeSheets('Pagos Proveedores');
+  if (sheetsData && sheetsData.length > 0) {
+    cnt.textContent = sheetsData.length + ' pago' + (sheetsData.length !== 1 ? 's' : '');
+    el.innerHTML = '<div class="item-list">' + sheetsData.map(p => `
+      <div class="item">
+        <div class="item-num">${p.numero||'—'}</div>
+        <div class="item-info">
+          <strong>${p.nombre}</strong>
+          <div class="item-meta">${p.concepto} · $${Number(p.total||0).toLocaleString('es-CL')} · ${p.fecha} · ${p.forma}</div>
+        </div>
+        <div class="item-actions">
+          ${p.pdfUrl ? '<a class="bicon" href="' + p.pdfUrl + '" target="_blank" title="Ver PDF">⬇</a>' : ''}
+          <button class="bicon danger" title="Eliminar" onclick="delPagoSheets('${p.id}')">🗑</button>
+        </div>
+      </div>`).join('') + '</div>';
+  } else {
+    cnt.textContent = pagos.length + ' pago' + (pagos.length !== 1 ? 's' : '');
+    if (!pagos.length) {
+      el.innerHTML = '<div class="card"><div class="empty"><div class="ei">📭</div><p>Aún no hay comprobantes de pago.</p></div></div>';
+      return;
+    }
+    el.innerHTML = '<div class="item-list">' + pagos.map(p => `
+    <div class="item">
+      <div class="item-num">${p.numero}</div>
+      <div class="item-info">
+        <strong>${p.nombre}</strong>
+        <div class="item-meta">${p.concepto} · ${fmtMonto(p.total)} · ${p.fecha} · ${p.forma}</div>
+      </div>
+      <div class="item-actions">
+        <button class="bicon" title="Ver" onclick="verPago(${p.id})">👁</button>
+        <button class="bicon" title="PDF" onclick="pdfPagoById(${p.id})">⬇</button>
+        <button class="bicon danger" title="Eliminar" onclick="delPago(${p.id})">🗑</button>
+      </div>
+    </div>`).join('') + '</div>';
+  }
+}
+
+async function delPagoSheets(id) {
+  if (!confirm('¿Eliminar este comprobante?')) return;
+  const ok = await borrarDeSheets('Pagos Proveedores', id);
+  if (ok) { toast('Comprobante eliminado ✓', 'success'); renderPagos(); }
+  else toast('Error al eliminar', 'error');
+}
+
+function getPById(id) { return pagos.find(p => p.id === id); }
+
+function delPago(id) {
+  if (!confirm('¿Eliminar este comprobante?')) return;
+  pagos = pagos.filter(p => p.id !== id);
+  localStorage.setItem('pagos_v1', JSON.stringify(pagos));
+  renderPagos(); toast('Comprobante eliminado', '');
+}
+
+function verPago(id) {
+  const p = getPById(id);
+  if (!p) return;
+  currentP = p;
+  document.getElementById('modal-p-title').textContent = 'Vista Previa — ' + p.numero;
+  document.getElementById('pdoc').innerHTML = buildPagoHTML(p);
+  document.getElementById('modal-p').classList.add('open');
+}
+
+function buildPagoHTML(p) {
+  const firmaImg = p.firma ? '<img class="sig-img" src="' + p.firma + '" alt="Firma">' : '';
+  return `
+    <div class="dt">COMPROBANTE DE PAGO A PROVEEDOR</div>
+    <div class="ds">${p.numero} · ${p.creado}</div>
+    <div class="sh">Datos del Proveedor</div>
+    <table>
+      <tr><td>Razón Social</td><td>${p.nombre}</td></tr>
+      <tr><td>RUT</td><td>${p.rut}</td></tr>
+      ${p.giro ? '<tr><td>Giro</td><td>' + p.giro + '</td></tr>' : ''}
+      ${p.email ? '<tr><td>Email</td><td>' + p.email + '</td></tr>' : ''}
+      ${p.banco ? '<tr><td>Cuenta Bancaria</td><td>' + p.banco + '</td></tr>' : ''}
+    </table>
+    <div class="sh">Detalle del Servicio</div>
+    <table>
+      <tr><td>Fecha de Pago</td><td>${p.fecha}</td></tr>
+      <tr><td>Período</td><td>${p.periodo || '—'}</td></tr>
+      <tr><td>Concepto</td><td>${p.concepto}</td></tr>
+      <tr><td>Descripción</td><td>${p.desc}</td></tr>
+      ${p.factura ? '<tr><td>N° Factura/Boleta</td><td>' + p.factura + '</td></tr>' : ''}
+      ${p.cotizacion ? '<tr><td>N° Cotización</td><td>' + p.cotizacion + '</td></tr>' : ''}
+    </table>
+    <div class="sh">Montos</div>
+    <table>
+      <tr><td>Monto Neto</td><td>${fmtMonto(p.neto)}</td></tr>
+      <tr><td>IVA (19%)</td><td>${fmtMonto(p.iva)}</td></tr>
+      ${p.descuento ? '<tr><td>Descuento</td><td>- ' + fmtMonto(p.descuento) + '</td></tr>' : ''}
+      <tr><td><strong>TOTAL PAGADO</strong></td><td><strong>${fmtMonto(p.total)}</strong></td></tr>
+    </table>
+    <div class="sh">Forma de Pago</div>
+    <table>
+      <tr><td>Forma</td><td>${p.forma}</td></tr>
+      ${p.operacion ? '<tr><td>N° Operación</td><td>' + p.operacion + '</td></tr>' : ''}
+      ${p.obs ? '<tr><td>Observaciones</td><td>' + p.obs + '</td></tr>' : ''}
+    </table>
+    <div class="sh">Autorización</div>
+    <div class="sig-row" style="margin-top:16px">
+      <div class="sig-col">
+        ${firmaImg}
+        <div class="sig-line">Firma Administración<br><small>Comunidad Edificio 12 Norte de Viña del Mar</small></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:20px;font-size:22px;font-weight:900;color:#DC2626;border:3px solid #DC2626;display:inline-block;padding:4px 24px;border-radius:6px;transform:rotate(-5deg);letter-spacing:.1em">PAGADO</div>`;
+}
+
+function pPDF() { if (currentP) pdfPagoById(currentP.id); }
+function pEmail() { if (currentP) emailPago(currentP); }
+
+function pdfPagoById(id) {
+  const p = getPById(id);
+  if (!p) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'letter' });
+  const M = 22, W = doc.internal.pageSize.getWidth() - M*2;
+  doc.setFont('times','bold'); doc.setFontSize(14);
+  doc.text('COMPROBANTE DE PAGO A PROVEEDOR', doc.internal.pageSize.getWidth()/2, 25, {align:'center'});
+  doc.setFont('times','normal'); doc.setFontSize(10);
+  doc.text(p.numero + ' · ' + p.creado, doc.internal.pageSize.getWidth()/2, 31, {align:'center'});
+  let y = 40;
+  const sec = t => { doc.setFont('times','bold'); doc.setFontSize(11); doc.text(t,M,y); doc.line(M,y+1.5,M+W,y+1.5); y+=8; doc.setFont('times','normal'); doc.setFontSize(10.5); };
+  const row = (l,v) => { if(!v) return; const ls=doc.splitTextToSize(l+': '+v,W); doc.text(ls,M,y); y+=ls.length*6; };
+  sec('Datos del Proveedor');
+  row('Razón Social',p.nombre); row('RUT',p.rut);
+  if(p.giro) row('Giro',p.giro); if(p.email) row('Email',p.email);
+  if(p.banco) row('Cuenta Bancaria',p.banco); y+=4;
+  sec('Detalle del Servicio');
+  row('Fecha de Pago',p.fecha); row('Período',p.periodo||'—');
+  row('Concepto',p.concepto);
+  const dl=doc.splitTextToSize('Descripción: '+p.desc,W); doc.text(dl,M,y); y+=dl.length*6;
+  if(p.factura) row('N° Factura/Boleta',p.factura);
+  if(p.cotizacion) row('N° Cotización',p.cotizacion); y+=4;
+  sec('Montos');
+  row('Monto Neto',fmtMonto(p.neto)); row('IVA (19%)',fmtMonto(p.iva));
+  if(p.descuento) row('Descuento','- '+fmtMonto(p.descuento));
+  doc.setFont('times','bold'); row('TOTAL PAGADO',fmtMonto(p.total)); doc.setFont('times','normal'); y+=4;
+  sec('Forma de Pago');
+  row('Forma',p.forma); if(p.operacion) row('N° Operación',p.operacion);
+  if(p.obs) row('Observaciones',p.obs); y+=4;
+  sec('Autorización');
+  if(p.firma) { doc.addImage(p.firma,'PNG',M,y,55,22); y+=26; }
+  else y+=10;
+  doc.line(M,y,M+70,y); y+=5;
+  doc.setFontSize(9.5); doc.text('Firma Administración\nComunidad Edificio 12 Norte de Viña del Mar',M,y);
+  // Sello PAGADO
+  doc.setFont('times','bold'); doc.setFontSize(28);
+  doc.setTextColor(220,38,38);
+  doc.text('PAGADO', doc.internal.pageSize.getWidth()/2, y+20, {align:'center', angle:345});
+  doc.setTextColor(0,0,0);
+  doc.save(p.numero + '_' + p.nombre.replace(/ /g,'_') + '.pdf');
+  toast('PDF descargado ✓', 'success');
+}
+
+function emailPago(p) {
+  if (!p.email) { toast('No hay email del proveedor', 'error'); return; }
+  const su = encodeURIComponent(p.numero + ' — Comprobante de Pago — ' + p.concepto);
+  const body = encodeURIComponent('Estimado/a ' + p.nombre + ',\n\nAdjuntamos el comprobante de pago ' + p.numero + ' por el servicio de ' + p.concepto + ' correspondiente al período ' + (p.periodo||p.fecha) + '.\n\nDetalle:\n• Monto Neto: ' + fmtMonto(p.neto) + '\n• IVA: ' + fmtMonto(p.iva) + (p.descuento ? '\n• Descuento: -' + fmtMonto(p.descuento) : '') + '\n• TOTAL PAGADO: ' + fmtMonto(p.total) + '\n• Forma de Pago: ' + p.forma + (p.operacion ? '\n• N° Operación: ' + p.operacion : '') + '\n\nSaludos,\nComunidad Edificio 12 Norte de Viña del Mar\nRUT: 56.028.260-5\ncom12norte@gmail.com');
+  window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(p.email) + '&cc=' + encodeURIComponent(ADMIN_EMAIL) + '&su=' + su + '&body=' + body, '_blank');
+  toast('Abriendo Gmail ✓', 'success');
+}
+
+// ════════════════════════════════════════
+
+// ════════════════════════════════════════
+// CONTROLES REMOTOS
+// ════════════════════════════════════════
+const URL_SOLICITUD = 'https://com12norte.github.io/administracion-edificio/solicitud.html';
+const COSTO_CTRL    = 15000;
+const PLAZO_CTRL    = 20;
+
+// Limpiar localStorage si tiene datos corruptos
+(function() {
+  const raw = localStorage.getItem('ctrl_listado');
+  if (raw) {
+    try {
+      const d = JSON.parse(raw);
+      if (!d || !d.length || d[0].n === undefined || d[0].n === null) {
+        localStorage.removeItem('ctrl_listado');
+      }
+    } catch(e) { localStorage.removeItem('ctrl_listado'); }
+  }
+})();
+
+let ctrlListado = JSON.parse(localStorage.getItem('ctrl_listado') || 'null') || [
+  {n:1,dir:'4 Oriente 1081',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:2,dir:'4 Oriente 1081',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:3,dir:'4 Oriente 1081',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:4,dir:'4 Oriente 1081',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:5,dir:'4 Oriente 1081',depto:'E6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:6,dir:'4 Oriente 1081',depto:'F5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:7,dir:'4 Oriente 1081',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:8,dir:'4 Oriente 1081',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:9,dir:'4 Oriente 1061',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:10,dir:'4 Oriente 1061',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:11,dir:'4 Oriente 1061',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:12,dir:'4 Oriente 1061',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:13,dir:'4 Oriente 1061',depto:'E6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:14,dir:'4 Oriente 1061',depto:'F5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:15,dir:'4 Oriente 1061',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:16,dir:'4 Oriente 1061',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:17,dir:'12 Norte 1052',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:18,dir:'12 Norte 1052',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:19,dir:'12 Norte 1052',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:20,dir:'12 Norte 1052',depto:'D4',estado:'Vigente',entrega:'No iniciada',fecha:'',notas:''},
+  {n:21,dir:'12 Norte 1052',depto:'E5',estado:'Bloqueado',entrega:'Sin comprobante',fecha:'',notas:''},
+  {n:22,dir:'12 Norte 1052',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:23,dir:'12 Norte 1052',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:24,dir:'12 Norte 1052',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:25,dir:'12 Norte 1054',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:26,dir:'12 Norte 1054',depto:'B2',estado:'Bloqueado',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:27,dir:'12 Norte 1054',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:28,dir:'12 Norte 1054',depto:'D4',estado:'Vigente',entrega:'Sin comprobante',fecha:'',notas:''},
+  {n:29,dir:'12 Norte 1054',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:30,dir:'12 Norte 1054',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:31,dir:'12 Norte 1054',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:32,dir:'12 Norte 1054',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:33,dir:'12 Norte 1036',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:34,dir:'12 Norte 1036',depto:'B2',estado:'Vigente',entrega:'En curso',fecha:'',notas:''},
+  {n:35,dir:'12 Norte 1036',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:36,dir:'12 Norte 1036',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:37,dir:'12 Norte 1036',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:38,dir:'12 Norte 1036',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:39,dir:'12 Norte 1036',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:40,dir:'12 Norte 1036',depto:'H8',estado:'Bloqueado',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:41,dir:'12 Norte 1038',depto:'A1',estado:'Vigente',entrega:'Sin comprobante',fecha:'',notas:''},
+  {n:42,dir:'12 Norte 1038',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:43,dir:'12 Norte 1038',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:44,dir:'12 Norte 1038',depto:'D4',estado:'Vigente',entrega:'No iniciada',fecha:'',notas:''},
+  {n:45,dir:'12 Norte 1038',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:46,dir:'12 Norte 1038',depto:'F6',estado:'Vigente',entrega:'No iniciada',fecha:'',notas:''},
+  {n:47,dir:'12 Norte 1038',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:48,dir:'12 Norte 1038',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:49,dir:'3 Oriente 1080',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:50,dir:'3 Oriente 1060',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:51,dir:'3 Oriente 1080',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:52,dir:'3 Oriente 1080',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'2/07/2025',notas:''},
+  {n:53,dir:'3 Oriente 1080',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:54,dir:'3 Oriente 1080',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:55,dir:'3 Oriente 1080',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:56,dir:'3 Oriente 1080',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:57,dir:'3 Oriente 1060',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:58,dir:'3 Oriente 1080',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:59,dir:'3 Oriente 1060',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:60,dir:'3 Oriente 1060',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:61,dir:'3 Oriente 1060',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:62,dir:'3 Oriente 1060',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:63,dir:'3 Oriente 1060',depto:'G7',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:64,dir:'3 Oriente 1060',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:''},
+  {n:65,dir:'Administración',depto:'—',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:'Tomas Ulibarry'},
+  {n:66,dir:'Administración',depto:'—',estado:'Vigente',entrega:'Completada',fecha:'22/11/2024',notas:'Francisco Ibáñez'},
+  {n:67,dir:'3 Oriente 1080',depto:'F6',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:68,dir:'12 Norte 1054',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:69,dir:'12 Norte 1052',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'10/07/2025',notas:''},
+  {n:70,dir:'3 Oriente 1060',depto:'D4',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:71,dir:'4 Oriente 1081',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:72,dir:'4 Oriente 1061',depto:'D4',estado:'Bloqueado',entrega:'—',fecha:'',notas:''},
+  {n:73,dir:'12 Norte 1054',depto:'B2',estado:'Vigente',entrega:'Completada',fecha:'10/07/2025',notas:''},
+  {n:74,dir:'12 Norte 1038',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:75,dir:'3 Oriente 1080',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'10/07/2025',notas:''},
+  {n:76,dir:'3 Oriente 1080',depto:'E5',estado:'Vigente',entrega:'Completada',fecha:'10/07/2025',notas:''},
+  {n:77,dir:'12 Norte 1052',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:78,dir:'12 Norte 1036',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'11/07/2025',notas:''},
+  {n:79,dir:'3 Oriente 1060',depto:'A1',estado:'Vigente',entrega:'Completada',fecha:'13/08/2025',notas:''},
+  {n:80,dir:'3 Oriente 1080',depto:'C3',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:81,dir:'4 Oriente 1081',depto:'F6',estado:'Bloqueado',entrega:'En curso',fecha:'',notas:''},
+  {n:82,dir:'12 Norte 1036',depto:'E5',estado:'Vigente',entrega:'En curso',fecha:'',notas:''},
+  {n:83,dir:'3 Oriente 1060',depto:'H8',estado:'Vigente',entrega:'Completada',fecha:'',notas:''},
+  {n:85,dir:'12 Norte 1036',depto:'H8',estado:'Vigente',entrega:'En curso',fecha:'',notas:''},
+  {n:86,dir:'4 Oriente 1061',depto:'D4',estado:'Vigente',entrega:'—',fecha:'',notas:''},
+  {n:87,dir:'12 Norte 1038',depto:'A1',estado:'Vigente',entrega:'—',fecha:'',notas:''},
+  {n:88,dir:'12 Norte 1036',depto:'H8',estado:'Vigente',entrega:'En curso',fecha:'',notas:''},
+  {n:89,dir:'12 Norte 1054',depto:'C3',estado:'Vigente',entrega:'—',fecha:'',notas:''},
+  {n:90,dir:'4 Oriente 1081',depto:'F6',estado:'Vigente',entrega:'—',fecha:'',notas:''}
+];
+
+let ctrlSols     = [];
+let ctrlTabActual= 'listado';
+let ctrlFil      = 'todos';
+let ctrlSolFil   = 'todas';
+let ctrlEditIdx  = -1;
+let ctrlSolAct   = null;
+let ctrlTipoLink = 'perdida';
+
+function setCtrlTab(btn) {
+  document.querySelectorAll('[data-ct]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ctrlTabActual = btn.dataset.ct;
+  document.getElementById('ct-listado').style.display    = ctrlTabActual === 'listado'    ? 'block' : 'none';
+  document.getElementById('ct-enviar').style.display     = ctrlTabActual === 'enviar'     ? 'block' : 'none';
+  document.getElementById('ct-solicitudes').style.display= ctrlTabActual === 'solicitudes'? 'block' : 'none';
+  if (ctrlTabActual === 'solicitudes') cargarSolCtrl();
+}
+
+function setCF(btn) {
+  document.querySelectorAll('[data-cf]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ctrlFil = btn.dataset.cf;
+  renderCtrls();
+}
+
+function ctrlDeptoCount(dir, depto) {
+  return ctrlListado.filter(c => c.dir === dir && c.depto === depto && c.estado === 'Vigente').length;
+}
+
+function renderCtrls() {
+  const q  = (document.getElementById('ctrl-search') ? document.getElementById('ctrl-search').value : '').toLowerCase();
+  const tb = document.getElementById('ctrl-tbody');
+  if (!tb) return;
+  const data = ctrlListado.filter(c => {
+    if (ctrlFil === 'Vigente'   && c.estado !== 'Vigente')   return false;
+    if (ctrlFil === 'Bloqueado' && c.estado !== 'Bloqueado') return false;
+    if (ctrlFil === '2ctrl' && ctrlDeptoCount(c.dir, c.depto) < 2) return false;
+    if (q && !(String(c.n) + c.dir + c.depto + (c.notas||'')).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  tb.innerHTML = data.map(c => {
+    const cnt = ctrlDeptoCount(c.dir, c.depto);
+    const bE  = c.estado === 'Vigente'
+      ? '<span style="background:#D1FAE5;color:#065F46;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700">Vigente</span>'
+      : '<span style="background:#FEE2E2;color:#991B1B;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700">Bloqueado</span>';
+    const bC = cnt >= 2
+      ? '<span style="background:#DBEAFE;color:#1D4ED8;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700">' + cnt + ' ⚠️</span>'
+      : '<span style="font-size:11px;color:var(--muted)">' + cnt + '</span>';
+    return '<tr style="' + (ctrlListado.indexOf(c) % 2 === 0 ? '' : 'background:var(--surface2)') + '">' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border)"><strong>' + c.n + '</strong></td>' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border)">' + c.dir + '</td>' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border)"><strong>' + c.depto + '</strong></td>' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border)">' + bE + '</td>' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border)">' + bC + '</td>' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)">' + (c.entrega||'—') + '</td>' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)">' + (c.fecha||'—') + '</td>' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)">' + (c.notas||'—') + '</td>' +
+      '<td style="padding:8px 12px;border-bottom:1px solid var(--border);white-space:nowrap">' +
+      (c.dir !== 'Administración' ? '<button onclick="verHistorialDepto(this)" data-dir="' + c.dir.replace(/"/g,'&quot;') + '" data-dep="' + c.depto + '" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;margin-right:4px" title="Ver historial">📂</button>' : '') +
+      '<button onclick="abrirCtrl(' + ctrlListado.indexOf(c) + ')" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px" title="Editar">✏️</button></td>' +
+      '</tr>';
+  }).join('');
+  // Stats
+  document.getElementById('cst-total').textContent = ctrlListado.filter(c=>c.dir!=='Administración').length;
+  document.getElementById('cst-vig').textContent   = ctrlListado.filter(c=>c.estado==='Vigente'&&c.dir!=='Administración').length;
+  document.getElementById('cst-bloq').textContent  = ctrlListado.filter(c=>c.estado==='Bloqueado').length;
+  document.getElementById('cst-pend').textContent  = ctrlSols.filter(s=>s.estado==='pendiente').length;
+  localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+}
+
+// Poblar selects del modal de edición
+function poblarMCE() {
+  const sd = document.getElementById('mce-dir');
+  const sp = document.getElementById('mce-depto');
+  if (sd.children.length > 0) return; // Ya poblado
+  const dirs = ['3 Oriente 1080','3 Oriente 1060','12 Norte 1054','12 Norte 1052','12 Norte 1036','12 Norte 1038','4 Oriente 1061','4 Oriente 1081','Administración'];
+  const deps = ['A1','B2','C3','D4','E5','E6','F5','F6','G7','H8','—'];
+  dirs.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; sd.appendChild(o); });
+  deps.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; sp.appendChild(o); });
+}
+
+function abrirCtrl(idx) {
+  poblarMCE();
+  ctrlEditIdx = idx;
+  const c = ctrlListado[idx];
+  document.getElementById('mce-title').textContent = 'Editar Control N° ' + c.n;
+  document.getElementById('mce-n').value      = c.n;
+  document.getElementById('mce-estado').value = c.estado;
+  document.getElementById('mce-dir').value    = c.dir;
+  document.getElementById('mce-depto').value  = c.depto;
+  document.getElementById('mce-entrega').value= c.entrega || '—';
+  document.getElementById('mce-fecha').value  = c.fecha || '';
+  document.getElementById('mce-notas').value  = c.notas || '';
+  document.getElementById('modal-ctrl-edit').classList.add('open');
+}
+
+async function guardarCtrl() {
+  if (ctrlEditIdx < 0) return;
+  ctrlListado[ctrlEditIdx] = {
+    n:       parseInt(document.getElementById('mce-n').value),
+    estado:  document.getElementById('mce-estado').value,
+    dir:     document.getElementById('mce-dir').value,
+    depto:   document.getElementById('mce-depto').value,
+    entrega: document.getElementById('mce-entrega').value,
+    fecha:   document.getElementById('mce-fecha').value,
+    notas:   document.getElementById('mce-notas').value
+  };
+  localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+  closeMCtrl();
+  renderCtrls();
+  const ok = await subirListadoDrive();
+  toast(ok ? 'Control guardado ✓' : 'Guardado local — sin conexión', ok ? 'success' : 'warning');
+}
+
+async function elimCtrl() {
+  if (!confirm('¿Eliminar este control del listado?')) return;
+  ctrlListado.splice(ctrlEditIdx, 1);
+  localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+  closeMCtrl();
+  renderCtrls();
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+    });
+    toast('Control eliminado ✓', 'warning');
+  } catch(e) {
+    toast('Eliminado localmente — sin conexión', 'warning');
+  }
+}
+
+function agregarCtrl() {
+  poblarMCE();
+  const nv = Math.max(...ctrlListado.map(c => c.n)) + 1;
+  ctrlListado.push({ n: nv, dir: '', depto: '', estado: 'Vigente', entrega: 'No iniciada', fecha: '', notas: '' });
+  ctrlEditIdx = ctrlListado.length - 1;
+  abrirCtrl(ctrlEditIdx);
+}
+
+function closeMCtrl() {
+  document.getElementById('modal-ctrl-edit').classList.remove('open');
+  ctrlEditIdx = -1;
+}
+
+// ── ENVIAR LINK ────────────────────────────────────────
+function selLinkTipo(t) {
+  ctrlTipoLink = t;
+  ['perdida','segundo'].forEach(x => {
+    const el = document.getElementById('lnk-' + x);
+    el.style.border     = t === x ? '2px solid var(--accent)' : '2px solid var(--border)';
+    el.style.background = t === x ? 'var(--accent-bg)' : 'var(--surface2)';
+  });
+  const url = URL_SOLICITUD + '?tipo=' + t;
+  document.getElementById('link-url-ctrl').textContent = url;
+  document.getElementById('link-box-ctrl').style.display = 'block';
+}
+
+function copiarLinkCtrl() {
+  const url = URL_SOLICITUD + '?tipo=' + ctrlTipoLink;
+  navigator.clipboard.writeText(url).then(() => toast('Link copiado ✓', 'success'));
+}
+
+async function enviarLinkCtrl() {
+  const email  = document.getElementById('lnk-email').value.trim();
+  const nombre = document.getElementById('lnk-nombre').value.trim() || 'Residente';
+  if (!email) { toast('Ingresa el email del residente', 'error'); return; }
+  const solId = 'SOL-' + String(Math.floor(Math.random()*9000)+1000);
+  const url   = URL_SOLICITUD + '?tipo=' + ctrlTipoLink + '&id=' + solId;
+  const tl    = ctrlTipoLink === 'perdida' ? 'Perdida/Falla de Control' : '2 Control Remoto';
+  const btn   = document.querySelector('[onclick="enviarLinkCtrl()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '...Enviando'; }
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        tipo: 'enviar_link_ctrl', id: solId, tipoSol: ctrlTipoLink,
+        nombre, email, url, tipoLabel: tl,
+        estado: 'link_enviado', creado: new Date().toLocaleString('es-CL')
+      })
+    });
+    const json = await res.json();
+    if (json.ok) {
+      toast('Link enviado a ' + email + ' ✓', 'success');
+      document.getElementById('lnk-email').value  = '';
+      document.getElementById('lnk-nombre').value = '';
+      cargarSolCtrl();
+    } else { toast('Error: ' + (json.error||'Sin respuesta'), 'error'); }
+  } catch(e) {
+    toast('Sin conexion — abriendo Gmail...', 'warning');
+    const su   = encodeURIComponent('Solicitud Control Remoto — ' + NOMBRE_COMUNIDAD);
+    const body = encodeURIComponent('Estimado/a ' + nombre + ',\n\nLink para su solicitud ' + solId + ':\n\n' + url + '\n\nAtentamente,\n' + NOMBRE_COMUNIDAD);
+    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(email) + '&su=' + su + '&body=' + body, '_blank');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '✉ Enviar por Email'; }
+}
+
+// ── SOLICITUDES ────────────────────────────────────────
+async function cargarSolCtrl() {
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?accion=listar&hoja=Controles');
+    const json = await res.json();
+    ctrlSols = json.ok ? (json.data || []) : [];
+  } catch(e) {
+    ctrlSols = JSON.parse(localStorage.getItem('ctrl_sols') || '[]');
+  }
+  renderSolCtrl();
+  actualizarBadgeCtrl();
+  // Actualizar badge en nav
+  const navBadge = document.getElementById('ctrl-nav-badge');
+  if (navBadge) {
+    const p = ctrlSols.filter(s => s.estado === 'pendiente').length;
+    navBadge.style.display = p ? 'inline' : 'none';
+    navBadge.textContent = p;
+  }
+}
+
+function setSF2(btn) {
+  document.querySelectorAll('[data-sf2]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ctrlSolFil = btn.dataset.sf2;
+  renderSolCtrl();
+}
+
+function renderSolCtrl() {
+  const el  = document.getElementById('ctrl-sol-list');
+  const fil = ctrlSolFil === 'todas' ? ctrlSols : ctrlSols.filter(s => s.estado === ctrlSolFil);
+  if (!fil.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">' + (ctrlSols.length ? 'No hay solicitudes con este estado' : '📭 No hay solicitudes') + '</div>';
+    return;
+  }
+  const em = { datos_enviados:['📋','Datos recibidos'], declaracion:['📝','Declaración firmada'], pendiente:['⏳','Comprobante pendiente'], aprobado:['✅','Aprobado'], listo:['📦','Listo para entrega'], entregado:['🎉','Entregado'] };
+  el.innerHTML = fil.map(s => {
+    const [ic, lb] = em[s.estado] || ['❓','—'];
+    const tl = s.tipo === 'perdida' ? '🚨 Pérdida' : '➕ 2° Control';
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:10px">' +
+      '<div style="font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-bg);border-radius:7px;padding:7px 10px;white-space:nowrap">' + (s.id||'—') + '</div>' +
+      '<div style="flex:1;min-width:0"><strong style="font-size:14px">' + (s.nombre||'—') + ' — Depto. ' + (s.depto||'—') + '</strong>' +
+      '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + (s.dir||'—') + ' · ' + tl + (s.ctrlN?' · N°'+s.ctrlN:'') + ' · ' + ic + ' ' + lb + '</div></div>' +
+      '<div style="display:flex;gap:7px">' +
+      '<button onclick="verSolCtrl(&quot;' + s.id + '&quot;)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px">👁</button>' +
+      (s.estado==='pendiente' ? '<button onclick="aprobarCtrl(&quot;' + s.id + '&quot;)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--success);background:#D1FAE5;color:var(--success);cursor:pointer;font-size:13px">✓</button>' : '') +
+      (s.estado==='aprobado'  ? '<button onclick="marcarListoCtrl(&quot;' + s.id + '&quot;)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px">📦</button>' : '') +
+      '</div></div>';
+  }).join('');
+}
+
+function actualizarBadgeCtrl() {
+  const p = ctrlSols.filter(s => s.estado === 'pendiente').length;
+  const b = document.getElementById('ctrl-badge');
+  b.style.display = p ? 'inline' : 'none';
+  b.textContent   = p;
+  document.getElementById('cst-pend').textContent = p;
+}
+
+function verSolCtrl(id) {
+  ctrlSolAct = ctrlSols.find(s => s.id === id);
+  if (!ctrlSolAct) return;
+  const em = { datos_enviados:'📋 Datos recibidos', declaracion:'📝 Declaración firmada', pendiente:'⏳ Comprobante en revisión', aprobado:'✅ Aprobado', listo:'📦 Listo para entrega', entregado:'🎉 Entregado' };
+  const tl  = ctrlSolAct.tipo === 'perdida' ? '🚨 Pérdida/Falla' : '➕ 2° Control';
+  document.getElementById('mcs-title').textContent = (ctrlSolAct.id||'—') + ' — ' + (ctrlSolAct.nombre||'—');
+  document.getElementById('mcs-body').innerHTML =
+    '<div style="background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;display:flex;gap:10px"><div><strong>' + tl + '</strong><br>Estado: <strong>' + (em[ctrlSolAct.estado]||ctrlSolAct.estado) + '</strong></div></div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px">' +
+    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2);width:35%">Nombre</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (ctrlSolAct.nombre||'—') + '</td></tr>' +
+    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">RUT</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (ctrlSolAct.rut||'—') + '</td></tr>' +
+    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Dirección</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (ctrlSolAct.dir||'—') + '</td></tr>' +
+    '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Departamento</td><td style="padding:6px 10px;border:1px solid var(--border)">' + (ctrlSolAct.depto||'—') + '</td></tr>' +
+    (ctrlSolAct.email ? '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Email</td><td style="padding:6px 10px;border:1px solid var(--border)">' + ctrlSolAct.email + '</td></tr>' : '') +
+    (ctrlSolAct.ctrlN ? '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Control Afectado</td><td style="padding:6px 10px;border:1px solid var(--border)">N° ' + ctrlSolAct.ctrlN + '</td></tr>' : '') +
+    (ctrlSolAct.motivo ? '<tr><td style="padding:6px 10px;border:1px solid var(--border);font-weight:700;background:var(--surface2)">Motivo</td><td style="padding:6px 10px;border:1px solid var(--border)">' + ctrlSolAct.motivo + '</td></tr>' : '') +
+    '</table>' +
+    (ctrlSolAct.comprobante && ctrlSolAct.comprobante.startsWith('data:image')
+      ? '<strong style="font-size:11px;color:var(--muted)">COMPROBANTE:</strong><br><img src="' + ctrlSolAct.comprobante + '" style="width:100%;max-width:400px;margin-top:8px;border-radius:8px;border:1px solid var(--border)">'
+      : ctrlSolAct.comprobanteLink ? '<a href="' + ctrlSolAct.comprobanteLink + '" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;margin-top:8px">📎 Ver comprobante en Drive</a>' : '');
+
+  const ft = document.getElementById('mcs-ft');
+  ft.innerHTML = '<button class="btn btn-secondary" onclick="closeMSol()">Cerrar</button>';
+  if (ctrlSolAct.estado === 'pendiente') {
+    ft.innerHTML += '<button class="btn btn-danger" style="padding:9px 14px;font-size:12px" onclick="rechazarCtrl()">✗ Rechazar</button>';
+    ft.innerHTML += '<button class="btn btn-success" onclick="aprobarCtrlModal()">✓ Aprobar y Notificar</button>';
+  }
+  if (ctrlSolAct.estado === 'aprobado') {
+    ft.innerHTML += '<button class="btn btn-primary" onclick="marcarListoCtrl(&quot;' + ctrlSolAct.id + '&quot;)">📦 Marcar Listo</button>';
+  }
+  document.getElementById('modal-ctrl-sol').classList.add('open');
+}
+
+async function aprobarCtrl(id) {
+  ctrlSolAct = ctrlSols.find(s => s.id === id);
+  if (ctrlSolAct) await aprobarCtrlModal();
+}
+
+async function aprobarCtrlModal() {
+  if (!ctrlSolAct) return;
+  await cambiarEstadoCtrl(ctrlSolAct.id, 'aprobado');
+  if (ctrlSolAct.tipo === 'perdida' && ctrlSolAct.ctrlN) {
+    const c = ctrlListado.find(x => x.n == ctrlSolAct.ctrlN);
+    if (c) { c.estado = 'Bloqueado'; localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado)); }
+  }
+  if (ctrlSolAct.email) {
+    const su   = encodeURIComponent((ctrlSolAct.id||'SOL') + ' — Pago Aprobado — ' + NOMBRE_COMUNIDAD);
+    const body = encodeURIComponent('Estimado/a ' + (ctrlSolAct.nombre||'') + ',\n\nSu pago ha sido verificado. Solicitud ' + (ctrlSolAct.id||'') + ' APROBADA.\n\nEl plazo de entrega es de ' + PLAZO_CTRL + ' días hábiles. Le avisaremos cuando su control esté disponible.\n\n' + NOMBRE_COMUNIDAD + '\n' + ADMIN_EMAIL);
+    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(ctrlSolAct.email) + '&cc=' + encodeURIComponent(ADMIN_EMAIL) + '&su=' + su + '&body=' + body, '_blank');
+  }
+  closeMSol(); renderSolCtrl(); renderCtrls(); toast('Aprobado ✓ — Email enviado', 'success');
+}
+
+async function rechazarCtrl() {
+  if (!confirm('¿Rechazar esta solicitud?')) return;
+  await cambiarEstadoCtrl(ctrlSolAct.id, 'rechazado');
+  closeMSol(); renderSolCtrl(); toast('Solicitud rechazada', 'warning');
+}
+
+async function marcarListoCtrl(id) {
+  await cambiarEstadoCtrl(id, 'listo');
+  const s = ctrlSols.find(x => x.id === id);
+  if (s && s.email) {
+    const su   = encodeURIComponent((s.id||'SOL') + ' — Control Disponible — ' + NOMBRE_COMUNIDAD);
+    const body = encodeURIComponent('Estimado/a ' + (s.nombre||'') + ',\n\nSu control remoto ya está disponible para retiro en la administración.\n\nSolicitud: ' + (s.id||'') + '\nDepartamento: ' + (s.depto||'') + ' — ' + (s.dir||'') + '\n\nPase a retirarlo en el horario de atención.\n\n' + NOMBRE_COMUNIDAD + '\n' + ADMIN_EMAIL);
+    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(s.email) + '&cc=' + encodeURIComponent(ADMIN_EMAIL) + '&su=' + su + '&body=' + body, '_blank');
+  }
+  closeMSol(); renderSolCtrl(); toast('Marcado como listo ✓', 'success');
+}
+
+async function cambiarEstadoCtrl(id, estado) {
+  const s = ctrlSols.find(x => x.id === id);
+  if (s) s.estado = estado;
+  localStorage.setItem('ctrl_sols', JSON.stringify(ctrlSols));
+  try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...s }) }); } catch(e) {}
+  actualizarBadgeCtrl();
+}
+
+function closeMSol() {
+  document.getElementById('modal-ctrl-sol').classList.remove('open');
+  ctrlSolAct = null;
+}
+
+// ════════════════════════════════════════
+// SINCRONIZACIÓN LISTADO CON DRIVE
+// ════════════════════════════════════════
+let syncTimeout = null;
+
+async function sincronizarDriveManual() {
+  toast('Sincronizando...', '');
+  const bajado = await sincronizarListado();
+  if (bajado) {
+    renderCtrls();
+    toast('Listado cargado desde Drive ✓', 'success');
+  } else {
+    const subido = await subirListadoDrive();
+    toast(subido ? 'Listado subido a Drive ✓' : 'Sin conexión con Drive', subido ? 'success' : 'error');
+  }
+}
+
+function resetListado() {
+  if (!confirm('¿Resetear el listado a los datos originales de la app?')) return;
+  localStorage.removeItem('ctrl_listado');
+  location.reload();
+}
+
+async function subirListadoDrive() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+    });
+    const json = await res.json();
+    if (json.ok) return true;
+  } catch(e) {}
+  return false;
+}
+
+async function sincronizarListado() {
+  try {
+    const res  = await fetch(APPS_SCRIPT_URL + '?accion=listar&hoja=Listado');
+    const json = await res.json();
+    if (json.ok && json.data && json.data.length > 0) {
+      const normalizado = json.data
+        .map(c => ({ n: parseInt(c.n)||0, dir: c.dir||'', depto: c.depto||'', estado: c.estado||'Vigente', entrega: c.entrega||'—', fecha: c.fecha||'', notas: c.notas||'' }))
+        .filter(c => c.n > 0 && c.dir);
+      if (normalizado.length >= 10) { // Solo reemplazar si Drive tiene datos válidos
+        ctrlListado = normalizado;
+        localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+        return true;
+      }
+    }
+  } catch(e) {}
+  return false;
+}
+
+function sincronizarListadoDrive() {
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(async () => {
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+      });
+    } catch(e) {}
+  }, 2000);
+}
+
+// ════════════════════════════════════════
+// HISTORIAL POR DEPARTAMENTO
+// ════════════════════════════════════════
+async function verHistorialDepto(btn) {
+  const dir   = btn.dataset.dir;
+  const depto = btn.dataset.dep;
+  const recibos = await cargarDesdeSheets('Recibos') || [];
+  const pagos   = await cargarDesdeSheets('Pagos') || [];
+  const sols    = await cargarDesdeSheets('Controles') || [];
+  const ctrls   = ctrlListado.filter(c => c.dir === dir && c.depto === depto);
+  const recs    = recibos.filter(r => r.dir === dir && r.depto === depto);
+  const solsDep = sols.filter(s => s.dir === dir && s.depto === depto);
+
+  const modal = document.getElementById('modal-hist-depto');
+  document.getElementById('mhd-title').textContent = 'Historial — ' + depto + ' · ' + dir;
+  document.getElementById('mhd-body').innerHTML =
+    '<div class="divider"><span>Controles Asignados</span></div>' +
+    (ctrls.length ? ctrls.map(c =>
+      '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">' +
+      '<span style="font-weight:800;color:var(--accent);background:var(--accent-bg);padding:4px 10px;border-radius:6px">N° ' + c.n + '</span>' +
+      '<span>' + (c.estado==='Vigente'?'<span style="background:#D1FAE5;color:#065F46;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">Vigente</span>':'<span style="background:#FEE2E2;color:#991B1B;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">Bloqueado</span>') + '</span>' +
+      '<span style="font-size:12px;color:var(--muted)">' + (c.fecha||'Sin fecha') + '</span>' +
+      '</div>'
+    ).join('') : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Sin controles registrados</div>') +
+
+    '<div class="divider"><span>Recibos</span></div>' +
+    (recs.length ? recs.map(r =>
+      '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">' +
+      '<span style="font-size:18px">' + (r.tipo==='Llave'?'🔑':'📡') + '</span>' +
+      '<div><div style="font-size:13px;font-weight:600">' + r.nombre + '</div>' +
+      '<div style="font-size:11px;color:var(--muted)">' + r.tipo + ' · ' + r.fecha + '</div></div>' +
+      (r.pdfUrl ? '<a href="' + r.pdfUrl + '" target="_blank" style="margin-left:auto;font-size:11px;color:var(--accent)">📄 PDF</a>' : '') +
+      '</div>'
+    ).join('') : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Sin recibos</div>') +
+
+    '<div class="divider"><span>Solicitudes de Control</span></div>' +
+    (solsDep.length ? solsDep.map(s => {
+      const em = { datos_enviados:'📋 Datos', declaracion:'📝 Declarado', pendiente:'⏳ Pendiente', aprobado:'✅ Aprobado', listo:'📦 Listo', entregado:'🎉 Entregado', rechazado:'✗ Rechazado' };
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">' +
+        '<span style="font-weight:700;color:var(--accent);font-size:12px">' + (s.id||'—') + '</span>' +
+        '<div><div style="font-size:13px;font-weight:600">' + (s.tipo==='perdida'?'Pérdida/Falla':'2° Control') + '</div>' +
+        '<div style="font-size:11px;color:var(--muted)">' + (em[s.estado]||s.estado) + ' · ' + (s.creado||'—') + '</div></div>' +
+        '</div>';
+    }).join('') : '<div style="color:var(--muted);font-size:13px;padding:8px 0">Sin solicitudes</div>');
+
+  modal.classList.add('open');
+}
+
+// ════════════════════════════════════════
+// RECIBO DE ENTREGA DESDE SOLICITUDES
+// ════════════════════════════════════════
+function abrirReciboEntrega(id) {
+  const sol = ctrlSols.find(s => s.id === id);
+  if (!sol) { toast('Solicitud no encontrada', 'error'); return; }
+  closeMSol();
+
+  const modalEnt = document.getElementById('modal-entrega-ctrl');
+  if (!modalEnt) { toast('Error: modal no encontrado', 'error'); return; }
+  modalEnt.classList.add('open');
+  document.getElementById('ent-nombre').value  = sol.nombre || '';
+  document.getElementById('ent-rut').value     = sol.rut    || '';
+  document.getElementById('ent-dir').value     = sol.dir    || '';
+  document.getElementById('ent-depto').value   = sol.depto  || '';
+  document.getElementById('ent-tipo').value    = sol.tipo === 'perdida' ? 'Reposición por Pérdida/Falla' : '2° Control Remoto';
+  document.getElementById('ent-fecha').value   = new Date().toISOString().split('T')[0];
+  document.getElementById('ent-sol-id').value  = sol.id;
+  document.getElementById('ent-num-ctrl').value= '';
+  clrSig('ent');
+  if (!sigCtx['ent']) setTimeout(() => initCanvas('ent'), 100);
+}
+
+async function generarReciboEntrega() {
+  const nombre  = document.getElementById('ent-nombre').value;
+  const rut     = document.getElementById('ent-rut').value;
+  const dir     = document.getElementById('ent-dir').value;
+  const depto   = document.getElementById('ent-depto').value;
+  const tipo    = document.getElementById('ent-tipo').value;
+  const fecha   = document.getElementById('ent-fecha').value;
+  const numCtrl = document.getElementById('ent-num-ctrl').value;
+  const solId   = document.getElementById('ent-sol-id').value;
+
+  if (!numCtrl)        { toast('Ingresa el N° de control asignado', 'error'); return; }
+  if (!sigStates['ent']) { toast('Se requiere la firma del residente', 'error'); return; }
+
+  const [yr,mo,dy] = fecha.split('-');
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const fechaTxt = dy + ' de ' + meses[parseInt(mo)-1] + ' de ' + yr;
+  const firma    = getSig('ent');
+
+  // Actualizar control en listado
+  const ctrl = ctrlListado.find(c => c.n == numCtrl);
+  if (ctrl) { ctrl.estado='Vigente'; ctrl.entrega='Completada'; ctrl.fecha=dy+'/'+mo+'/'+yr; }
+  else ctrlListado.push({ n:parseInt(numCtrl), dir, depto, estado:'Vigente', entrega:'Completada', fecha:dy+'/'+mo+'/'+yr, notas:'' });
+  localStorage.setItem('ctrl_listado', JSON.stringify(ctrlListado));
+  // Subir inmediatamente a Drive
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+    });
+  } catch(e) {}
+
+  // Marcar solicitud como entregada
+  const sol = ctrlSols.find(s => s.id === solId);
+  if (sol) {
+    sol.estado       = 'entregado';
+    sol.numCtrlNuevo = parseInt(numCtrl);
+    sol.fechaEntrega = fecha;
+    await cambiarEstadoCtrl(solId, 'entregado');
+  }
+
+  // Guardar en db_recibos (historial de Recibos)
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        tipo:       'recibo',
+        tipoRecibo: 'control',
+        numControl: '1',
+        nombre, rut, dir, depto,
+        fecha:      fecha.split('-').reverse().join('/'),
+        email:      sol ? (sol.email || '') : '',
+        firma,
+        notaExtra:  tipo
+      })
+    });
+  } catch(e) {}
+
+  // Generar PDF para descarga
+  generarPDFReciboCtrl({ nombre, rut, dir, depto, tipo, fechaTxt, numCtrl, firma });
+  document.getElementById('modal-entrega-ctrl').classList.remove('open');
+  renderCtrls();
+  renderSolCtrl();
+  toast('Entrega registrada ✓ — Control N° ' + numCtrl + ' asignado', 'success');
+
+  // Email al residente
+  const email = sol ? sol.email : null;
+  if (email && email !== '—') {
+    const su   = encodeURIComponent(solId + ' — Control Entregado — ' + NOMBRE_COMUNIDAD);
+    const body = encodeURIComponent('Estimado/a ' + nombre + ',\n\nSe ha realizado la entrega del control remoto N° ' + numCtrl + ' para el departamento ' + depto + ', ' + dir + '.\n\nFecha de entrega: ' + fechaTxt + '\nTipo: ' + tipo + '\n\nAtentamente,\n' + NOMBRE_COMUNIDAD + '\n' + ADMIN_EMAIL);
+    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(email) + '&cc=' + encodeURIComponent(ADMIN_EMAIL) + '&su=' + su + '&body=' + body, '_blank');
+  }
+}
+
+function generarPDFReciboCtrl(d) {
+  const numWord = d.tipo.includes('2°') ? 'un segundo' : 'un';
+  const html = `
+    <html><head><meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+      body{font-family:Georgia,serif;font-size:13px;color:#111;padding:20mm 22mm;line-height:1.85}
+      .hdr{border-bottom:2.5px solid #1E3A5F;padding-bottom:10px;margin-bottom:20px}
+      h1{font-size:13px;font-weight:700;color:#1E3A5F;margin:0}
+      p.rut{font-size:11px;color:#555;margin:3px 0 0}
+      h2{text-align:center;font-size:14px;text-decoration:underline;text-transform:uppercase;margin:18px 0}
+      .fecha{text-align:right;margin-bottom:14px}
+      .fl{border-top:1.5px solid #333;padding-top:6px;font-size:11px;display:inline-block;min-width:200px;text-align:center;margin-top:30px}
+      .ft{margin-top:50px;border-top:1px solid #ddd;padding-top:8px;display:flex;justify-content:space-between;font-size:10px;color:#999}
+    </style></head><body>
+    <div class="hdr"><h1>${NOMBRE_COMUNIDAD}</h1><p class="rut">RUT: ${RUT_COMUNIDAD} &bull; ${ADMIN_EMAIL}</p></div>
+    <h2>RECIBO CONFORME DE ENTREGA DE CONTROL REMOTO</h2>
+    <div class="fecha">Viña del Mar, <strong>${d.fechaTxt}</strong></div>
+    <p>Por medio del presente documento, yo, <strong>${d.nombre}</strong>, RUT N° <strong>${d.rut}</strong> residente del domicilio <strong>${d.dir}</strong>, departamento N° <strong>${d.depto}</strong>, Viña del Mar, Valparaíso, declaro haber recibido de parte de la Administración ${numWord} control remoto (N° <strong>${d.numCtrl}</strong>) para el acceso vehicular (<strong>${d.tipo}</strong>).</p>
+    <br><p>El dispositivo se entrega nuevo y fue probado en mi presencia, confirmando su correcto funcionamiento.</p>
+    <br><p>Firmo en señal de total conformidad con lo aquí estipulado.</p>
+    <br><br><p><strong>Recibe Conforme:</strong></p><br>
+    ${d.firma ? '<img src="' + d.firma + '" style="max-height:65px;display:block;margin-bottom:6px;">' : '<div style="height:65px"></div>'}
+    <div class="fl">Firma<br><small><strong>${d.nombre}</strong></small><br><small>RUT: ${d.rut}</small></div>
+    <div class="ft"><span>${NOMBRE_COMUNIDAD} · RUT ${RUT_COMUNIDAD}</span><span>${new Date().toLocaleDateString('es-CL')}</span></div>
+    </body></html>`;
+
+  const blob   = new Blob([html], { type: 'text/html' });
+  const url    = URL.createObjectURL(blob);
+  const link   = document.createElement('a');
+  link.href    = url;
+  link.download = 'Recibo_Control_' + d.numCtrl + '_Depto' + d.depto + '.html';
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+// ════════════════════════════════════════
+// MODO OSCURO
+// ════════════════════════════════════════
+function toggleDark() {
+  const dark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('dark_mode', dark ? '1' : '0');
+  document.getElementById('btn-dark').textContent = dark ? '☀️' : '🌙';
+}
+
 // TOAST
-// ══════════════════════════════════════════════
+// ════════════════════════════════════════
 function toast(msg, type='') {
   const c = document.getElementById('toasts');
   const t = document.createElement('div');
-  t.className = 'toast ' + type; t.textContent = msg;
-  c.appendChild(t); setTimeout(()=>t.remove(), 3500);
+  t.className = `toast ${type}`; t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
 }
 </script>
 </body>
