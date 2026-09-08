@@ -607,7 +607,7 @@ async function enviarDatos() {
 // ══════════════════════════════════════════════
 // PASO 2 — DECLARACIÓN + FIRMA
 // ══════════════════════════════════════════════
-function cargarPaso2() {
+async function cargarPaso2() {
   document.getElementById('sol-num-p2').textContent = 'N° ' + solId;
   if (tipo === 'perdida') {
     document.getElementById('decl-perdida').style.display = 'block';
@@ -617,14 +617,35 @@ function cargarPaso2() {
     document.getElementById('decl-depto').textContent  = solicitud.depto;
     document.getElementById('decl-dir').textContent    = solicitud.dir;
   } else {
-    document.getElementById('decl-perdida').style.display = 'none';
-    document.getElementById('decl-segundo').style.display = 'block';
+    // Para 2° control: verificar aptitud primero
     const ctrls = CONTROLES.filter(c => c.dir === solicitud.dir && c.depto === solicitud.depto && c.estado === 'Vigente');
     if (ctrls.length >= 2) {
-      document.getElementById('aptitud-box').innerHTML = '<div class="notice notice-danger">🚫 <div><strong>No puede continuar.</strong> El departamento <strong>' + solicitud.depto + '</strong> ya tiene <strong>' + ctrls.length + ' controles vigentes</strong> (N° ' + ctrls.map(c=>c.n).join(', ') + '). El máximo permitido es 2.<br><br>Si tiene consultas escríbanos a <strong>com12norte@gmail.com</strong></div></div>';
+      // BLOQUEADO — mostrar mensaje y no avanzar
+      document.getElementById('decl-perdida').style.display = 'none';
+      document.getElementById('decl-segundo').style.display = 'block';
+      document.getElementById('aptitud-box').innerHTML =
+        '<div class="notice notice-danger" style="border-radius:10px;padding:18px;font-size:14px;line-height:1.7">🚫 <div>' +
+        '<strong>No puede continuar.</strong> El departamento <strong>' + solicitud.depto + '</strong> ya tiene ' +
+        '<strong>' + ctrls.length + ' controles vigentes</strong> (N° ' + ctrls.map(c=>c.n).join(', ') + '). ' +
+        'El máximo permitido es 2.<br><br>' +
+        'Si tiene consultas escríbanos a <strong>com12norte@gmail.com</strong>' +
+        '</div></div>';
+      // Ocultar firma y botón de continuar
       document.querySelector('[onclick="enviarDeclaracion()"]').style.display = 'none';
+      document.querySelector('[onclick="volver(1)"]').style.display = 'none';
+      const sigWrap = document.getElementById('sig-decl') && document.getElementById('sig-decl').closest('.f');
+      if (sigWrap) sigWrap.style.display = 'none';
+      const sigLabel = document.querySelector('label[for="sig-decl"]');
+      if (sigLabel) sigLabel.style.display = 'none';
     } else {
-      document.getElementById('aptitud-box').innerHTML = '<div class="notice notice-success">✅ <div>El departamento <strong>' + solicitud.depto + '</strong> tiene <strong>' + ctrls.length + ' control vigente</strong> (N° ' + ctrls.map(c=>c.n).join(', ') + '). Puede solicitar un 2° control.</div></div>';
+      // APTO — saltar declaración, ir directo al pago
+      solicitud.motivo  = 'Solicitud 2° Control';
+      solicitud.estado  = 'declaracion';
+      solicitud.fechaDecl = new Date().toLocaleDateString('es-CL');
+      try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) }); } catch(e) {}
+      cargarPaso3();
+      showView('paso3');
+      return;
     }
   }
   initCanvas();
@@ -671,6 +692,11 @@ async function enviarDeclaracion() {
 function cargarPaso3() {
   document.getElementById('sol-num-p3').textContent = 'N° ' + solId;
   document.getElementById('asunto-trans').textContent = 'Pago Control ' + solId;
+  // Para 2° control, el step de Declaración ya fue completado automáticamente
+  if (tipo === 'segundo') {
+    const steps = document.querySelectorAll('#view-paso3 .step');
+    if (steps[1]) { steps[1].classList.add('done'); steps[1].classList.remove('locked'); }
+  }
 }
 
 function handleFile(input) {
