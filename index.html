@@ -1991,7 +1991,7 @@ function renderSolCtrl() {
     return;
   }
   const em = { datos_enviados:['📋','Datos recibidos'], declaracion:['📝','Declaración firmada'], pendiente:['⏳','Comprobante pendiente'], aprobado:['✅','Aprobado'], listo:['📦','Listo para entrega'], entregado:['🎉','Entregado'] };
-  el.innerHTML = fil.map(s => {
+  el.innerHTML = fil.filter(s => s.id && (s.nombre || s.email)).map(s => {
     const [ic, lb] = em[s.estado] || ['❓','—'];
     const tl = s.tipo === 'perdida' ? '🚨 Pérdida' : '➕ 2° Control';
     return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:10px">' +
@@ -2000,8 +2000,9 @@ function renderSolCtrl() {
       '<div style="font-size:12px;color:var(--muted);margin-top:3px">' + (s.dir||'—') + ' · ' + tl + (s.ctrlN?' · N°'+s.ctrlN:'') + ' · ' + ic + ' ' + lb + '</div></div>' +
       '<div style="display:flex;gap:7px">' +
       '<button onclick="verSolCtrl(&quot;' + s.id + '&quot;)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px" title="Ver">👁</button>' +
-      (s.estado==='pendiente' ? '<button onclick="aprobarCtrl(&quot;' + s.id + '&quot;)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--success);background:#D1FAE5;color:var(--success);cursor:pointer;font-size:13px" title="Aprobar">✓</button>' : '') +
-      (s.estado==='aprobado'  ? '<button onclick="marcarListoCtrl(&quot;' + s.id + '&quot;)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px" title="Listo">📦</button>' : '') +
+      (s.estado==='pendiente' ? '<button onclick="aprobarCtrl(&quot;' + s.id + '&quot;)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--success);background:#D1FAE5;color:var(--success);cursor:pointer;font-size:13px" title="Aprobar comprobante">✓</button>' : '') +
+      (s.estado==='declaracion' || s.estado==='datos_enviados' || s.estado==='link_enviado' ? '<span style="font-size:10px;color:var(--muted);padding:0 4px">En proceso</span>' : '') +
+      (s.estado==='aprobado'  ? '<button onclick="marcarListoCtrl(&quot;' + s.id + '&quot;)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px" title="Marcar listo">📦</button>' : '') +
       (s.estado==='listo'     ? '<button onclick="abrirReciboEntrega(&quot;' + s.id + '&quot;)" style="width:28px;height:28px;border-radius:6px;border:1px solid #059669;background:#D1FAE5;color:#059669;cursor:pointer;font-size:13px" title="Entregar">🎉</button>' : '') +
       '<button onclick="eliminarSolCtrl(&quot;' + s.id + '&quot;)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--danger);background:#FEE2E2;color:var(--danger);cursor:pointer;font-size:13px" title="Eliminar">🗑</button>' +
       '</div></div>';
