@@ -467,8 +467,11 @@ async function cargarSolicitud() {
     const tipoReal = solicitud.tipoSol || (solicitud.tipo === 'segundo' || solicitud.tipo === 'perdida' ? solicitud.tipo : null);
     tipo = tipoReal || tipo || 'perdida'; // fallback al ?tipo= de la URL que ya está en tipo
     // Mostrar vista según estado
-    if (solicitud.estado === 'link_enviado')         { showView('paso1'); configurarTipo(); return; } // El residente completa sus datos por primera vez
-    if (solicitud.estado === 'datos_enviados')       { showView('paso2'); cargarPaso2(); }
+    if (solicitud.estado === 'link_enviado')         { showView('paso1'); configurarTipo(); return; }
+    if (solicitud.estado === 'datos_enviados')       {
+      if (tipo === 'segundo') { cargarPaso3(); showView('paso3'); }
+      else { await cargarPaso2(); showView('paso2'); }
+    }
     else if (solicitud.estado === 'declaracion')    { showView('paso3'); cargarPaso3(); }
     else if (solicitud.estado === 'pendiente')      { showView('revision'); document.getElementById('sol-num-revision').textContent = solId; }
     else if (solicitud.estado === 'aprobado')       { showView('aprobado'); document.getElementById('sol-num-aprobado').textContent = solId; }
@@ -598,11 +601,20 @@ async function enviarDatos() {
   );
   window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(email) + '&su=' + asunto + '&body=' + body, '_blank');
 
-  // Avanzar a paso 2
+  // Avanzar: para 2° control saltar declaración
   window.history.replaceState({}, '', '?tipo=' + tipo + '&id=' + solId);
   btn.disabled = false; btn.innerHTML = 'Continuar →';
-  cargarPaso2();
-  showView('paso2');
+  if (tipo === 'segundo') {
+    solicitud.motivo   = 'Solicitud 2° Control';
+    solicitud.estado   = 'declaracion';
+    solicitud.fechaDecl= new Date().toLocaleDateString('es-CL');
+    try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) }); } catch(e) {}
+    cargarPaso3();
+    showView('paso3');
+  } else {
+    cargarPaso2();
+    showView('paso2');
+  }
   toast('Solicitud ' + solId + ' creada ✓ — Revise su email', 'success');
 }
 
