@@ -645,7 +645,7 @@ textarea{resize:vertical;min-height:76px}
 const ADMIN_EMAIL      = 'com12norte@gmail.com';
 const NOMBRE_COMUNIDAD = 'Comunidad Edificio 12 Norte de Vina del Mar';
 const RUT_COMUNIDAD    = '56.028.260-5';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyy2z27AOGeg9LMLiUtQljS-z3ohujyFGgmTceKTTl5LkCILrpGSU24OE6Q_BMBKVs4/exec'; // ← Pega aquí la URL tras implementar
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwSWtHNitcig5dFa2V7Xg1cF05VYT12vzp7ETznO0GWCil3tkGHMCoWOOKmYGkildp/exec'; // ← Pega aquí la URL tras implementar
 
 async function enviarAlScript(payload) {
   try {
@@ -1877,7 +1877,7 @@ async function elimCtrl() {
   try {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+      body: JSON.stringify({ accion: 'guardar_listado', listado: Array.isArray(ctrlListado) ? ctrlListado : [] })
     });
     toast('Control eliminado ✓', 'warning');
   } catch(e) {
@@ -2180,7 +2180,7 @@ async function subirListadoDrive() {
   try {
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+      body: JSON.stringify({ accion: 'guardar_listado', listado: Array.isArray(ctrlListado) ? ctrlListado : [] })
     });
     const json = await res.json();
     if (json.ok) return true;
@@ -2212,7 +2212,7 @@ function sincronizarListadoDrive() {
     try {
       await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+        body: JSON.stringify({ accion: 'guardar_listado', listado: Array.isArray(ctrlListado) ? ctrlListado : [] })
       });
     } catch(e) {}
   }, 2000);
@@ -2316,7 +2316,7 @@ async function generarReciboEntrega() {
   try {
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      body: JSON.stringify({ accion: 'guardar_listado', listado: ctrlListado })
+      body: JSON.stringify({ accion: 'guardar_listado', listado: Array.isArray(ctrlListado) ? ctrlListado : [] })
     });
   } catch(e) {}
 
