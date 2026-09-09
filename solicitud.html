@@ -640,10 +640,11 @@ async function enviarDatos() {
   }
   const ctrlN = document.getElementById('d-ctrl').value || '';
 
-  solicitud = { id: solId, tipo, nombre, rut, tel, email, dir, depto, ctrlN, estado: 'datos_enviados', creado: new Date().toLocaleString('es-CL') };
+  if (!solId) { toast('Error: no se pudo generar ID de solicitud', 'error'); btn.disabled=false; btn.innerHTML='Continuar →'; return; }
+  solicitud = { id: solId, tipoSol: tipo, tipo, nombre, rut, tel, email, dir, depto, ctrlN, estado: 'datos_enviados', creado: new Date().toLocaleString('es-CL') };
 
   try {
-    const postRes  = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) });
+    const postRes  = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...solicitud, tipo: 'solicitud_ctrl' }) });
     const postJson = await postRes.json();
     if (!postJson.ok) { toast('Error al guardar: ' + (postJson.error||'sin detalle'), 'error'); btn.disabled=false; btn.innerHTML='Continuar →'; return; }
   } catch(e) {
@@ -661,10 +662,10 @@ async function enviarDatos() {
   btn.disabled = false; btn.innerHTML = 'Continuar →';
   if (tipo === 'segundo') {
     solicitud.motivo   = 'Solicitud 2° Control';
-    solicitud.estado   = 'declaracion';
-    solicitud.fechaDecl= new Date().toLocaleDateString('es-CL');
+    solicitud.estado   = 'pago_pendiente';
+    solicitud.fechaPago= new Date().toLocaleDateString('es-CL');
     try {
-      const r2 = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) });
+      const r2 = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...solicitud, tipo: 'solicitud_ctrl' }) });
       const j2 = await r2.json();
       if (!j2.ok) toast('Advertencia: ' + (j2.error||'error al actualizar estado'), 'warning');
     } catch(e) { toast('Error conexión: ' + e.message, 'error'); }
@@ -715,7 +716,7 @@ async function cargarPaso2() {
       solicitud.motivo  = 'Solicitud 2° Control';
       solicitud.estado  = 'declaracion';
       solicitud.fechaDecl = new Date().toLocaleDateString('es-CL');
-      try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) }); } catch(e) {}
+      try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...solicitud, tipo: 'solicitud_ctrl' }) }); } catch(e) {}
       cargarPaso3();
       showView('paso3');
       return;
@@ -740,7 +741,7 @@ async function enviarDeclaracion() {
   solicitud.estado   = 'declaracion';
   solicitud.fechaDecl= new Date().toLocaleDateString('es-CL');
 
-  try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) }); } catch(e) {}
+  try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ ...solicitud, tipo: 'solicitud_ctrl' }) }); } catch(e) {}
 
   // El Apps Script notifica al admin automáticamente
   cargarPaso3();
