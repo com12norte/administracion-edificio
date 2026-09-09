@@ -787,14 +787,13 @@ async function enviarComprobante() {
   solicitud.fechaComp       = new Date().toLocaleDateString('es-CL');
 
   try {
-    // Enviar sin el base64 grande para evitar timeout — solo el link si existe
-    const payload = { tipo: 'solicitud_ctrl', ...solicitud };
-    if (payload.comprobante && payload.comprobante.length > 500000) {
-      payload.comprobante = null; // imagen muy grande, no enviar por POST
-      payload.comprobanteAdjunto = true;
+    const payload = { ...solicitud, tipo: 'solicitud_ctrl' };
+    const res  = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const json = await res.json();
+    if (json.ok && json.resultado && json.resultado.comprobanteLink) {
+      solicitud.comprobanteLink = json.resultado.comprobanteLink;
     }
-    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-  } catch(e) {}
+  } catch(e) { toast('Error al enviar: ' + e.message, 'error'); }
 
   btn.disabled = false; btn.innerHTML = '<span>📤</span> Enviar Comprobante';
   document.getElementById('sol-num-revision').textContent = solId;
