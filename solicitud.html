@@ -756,7 +756,6 @@ function cargarPaso3() {
   document.getElementById('sol-num-p3').textContent = 'N° ' + solId;
   document.getElementById('asunto-trans').textContent = 'Pago Control ' + solId;
   if (tipo === 'segundo') {
-    // Ocultar step Declaración y cambiar título
     const stepDecl = document.getElementById('step-decl-p3');
     if (stepDecl) stepDecl.style.display = 'none';
     const titulo = document.getElementById('titulo-paso3');
@@ -764,6 +763,42 @@ function cargarPaso3() {
   } else {
     const titulo = document.getElementById('titulo-paso3');
     if (titulo) titulo.textContent = 'Pago de Reposición';
+  }
+
+  // Enviar email con instrucciones de pago (solo una vez)
+  if (solicitud && solicitud.email && !solicitud._emailPagoEnviado) {
+    solicitud._emailPagoEnviado = true;
+    const tipoLabel = tipo === 'segundo' ? '2° Control Remoto' : 'Reposición por Pérdida/Falla';
+    const asunto = encodeURIComponent('Instrucciones de Pago — ' + solId + ' — ' + NOMBRE_COMUNIDAD);
+    const cuerpo = encodeURIComponent(
+      'Estimado/a ' + solicitud.nombre + ',\n\n' +
+      'Le informamos que el pago correspondiente a su solicitud ' + solId + ' (' + tipoLabel + ') ' +
+      'debe realizarse a la siguiente cuenta:\n\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+      'MONTO A PAGAR: $15.000\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      'DATOS DE TRANSFERENCIA\n' +
+      '  Nombre:         Oscar Ibáñez\n' +
+      '  RUT:            13.229.630-8\n' +
+      '  Banco:          Falabella\n' +
+      '  Tipo de Cuenta: Cuenta Corriente\n' +
+      '  N° de Cuenta:   1-999-872607-0\n' +
+      '  Asunto:         Pago Control ' + solId + '\n\n' +
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+      'Una vez realizado el pago, vuelva al link de su solicitud y adjunte el comprobante.\n' +
+      'El plazo de entrega es de 20 días hábiles contados desde la aprobación del pago.\n\n' +
+      'Link de su solicitud:\n' +
+      window.location.href + '\n\n' +
+      'Atentamente,\n' + NOMBRE_COMUNIDAD + '\nRUT: ' + RUT_COMUNIDAD + '\n' + ADMIN_EMAIL
+    );
+    window.open(
+      'https://mail.google.com/mail/?view=cm' +
+      '&to=' + encodeURIComponent(solicitud.email) +
+      '&cc=' + encodeURIComponent(ADMIN_EMAIL) +
+      '&su=' + asunto +
+      '&body=' + cuerpo,
+      '_blank'
+    );
   }
 }
 
@@ -793,19 +828,15 @@ async function enviarComprobante() {
   solicitud.estado          = 'pendiente';
   solicitud.fechaComp       = new Date().toLocaleDateString('es-CL');
 
-  try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) }); } catch(e) {}
-
-  // Email a administración con comprobante
-  const asunto = encodeURIComponent(solId + ' — Comprobante de Pago — Depto. ' + solicitud.depto);
-  const body   = encodeURIComponent(
-    'Estimada Administración,\n\n' +
-    solicitud.nombre + ' ha enviado el comprobante de pago de $15.000 para la solicitud ' + solId + '.\n\n' +
-    'Tipo: ' + (tipo === 'perdida' ? 'Reposición por ' + solicitud.motivo : '2° Control Remoto') + '\n' +
-    'Departamento: ' + solicitud.depto + ' — ' + solicitud.dir + '\n' +
-    (link ? 'Comprobante Drive: ' + link + '\n' : '') +
-    '\nRevise y apruebe en la aplicación de administración.\n\n' + NOMBRE_COMUNIDAD
-  );
-  window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(ADMIN_EMAIL) + '&su=' + asunto + '&body=' + body, '_blank');
+  try {
+    // Enviar sin el base64 grande para evitar timeout — solo el link si existe
+    const payload = { tipo: 'solicitud_ctrl', ...solicitud };
+    if (payload.comprobante && payload.comprobante.length > 500000) {
+      payload.comprobante = null; // imagen muy grande, no enviar por POST
+      payload.comprobanteAdjunto = true;
+    }
+    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+  } catch(e) {}
 
   btn.disabled = false; btn.innerHTML = '<span>📤</span> Enviar Comprobante';
   document.getElementById('sol-num-revision').textContent = solId;
