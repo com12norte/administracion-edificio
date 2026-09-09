@@ -283,14 +283,6 @@ textarea{resize:vertical;min-height:80px}
           <div><div class="fn" id="file-name"></div><div class="fs" id="file-size"></div></div>
         </div>
 
-        <div class="divider-or">o bien</div>
-
-        <div class="f">
-          <label>Link del comprobante en Drive (opcional)</label>
-          <input type="url" id="comp-link" placeholder="https://drive.google.com/file/...">
-          <small style="color:var(--muted);font-size:11px;margin-top:4px">Si el comprobante está en Google Drive, pega el link aquí</small>
-        </div>
-
         <button class="btn btn-primary" id="btn-enviar-comp" onclick="enviarComprobante()"><span>📤</span> Enviar Comprobante</button>
         <button class="btn btn-secondary" onclick="volver(2)">← Volver</button>
       </div>
@@ -363,7 +355,7 @@ textarea{resize:vertical;min-height:80px}
 const ADMIN_EMAIL      = 'com12norte@gmail.com';
 const NOMBRE_COMUNIDAD = 'Comunidad de Edificios 12 Norte de Viña del Mar';
 const RUT_COMUNIDAD    = '56.028.260-5';
-const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbyVklttcniiPgb_Iok1jMLhSnUvc9nKd1bYW6aCVT3h-n_-4BlbRj2QCt7Xq-jMswuW/exec';
+const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbwVtdLOXPPuQ1W_I9Gcp-FEY8F3Yn233ZGkmVBHlo3Ik1oTnjRsklwBEkJN1626rJ4_/exec';
 
 const DIRECCIONES = ['3 Oriente 1080','3 Oriente 1060','12 Norte 1054','12 Norte 1052','12 Norte 1036','12 Norte 1038','4 Oriente 1061','4 Oriente 1081'];
 const DEPTOS      = ['A1','B2','C3','D4','E5','E6','F5','F6','G7','H8'];
@@ -783,8 +775,8 @@ function handleFile(input) {
 }
 
 async function enviarComprobante() {
-  const link = document.getElementById('comp-link').value.trim();
-  if (!fileData && !link) { toast('Adjunta el comprobante o pega el link de Drive', 'error'); return; }
+  const link = '';
+  if (!fileData) { toast('Adjunta el comprobante de pago', 'error'); return; }
 
   const btn = document.getElementById('btn-enviar-comp');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Enviando...';
