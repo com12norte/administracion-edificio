@@ -473,6 +473,7 @@ async function cargarSolicitud() {
       else { await cargarPaso2(); showView('paso2'); }
     }
     else if (solicitud.estado === 'declaracion')    { showView('paso3'); cargarPaso3(); }
+    else if (solicitud.estado === 'pago_pendiente') { showView('paso3'); cargarPaso3(); }
     else if (solicitud.estado === 'pendiente')      { showView('revision'); document.getElementById('sol-num-revision').textContent = solId; }
     else if (solicitud.estado === 'aprobado')       { showView('aprobado'); document.getElementById('sol-num-aprobado').textContent = solId; }
     else if (solicitud.estado === 'listo')          { showView('listo'); document.getElementById('sol-num-listo').textContent = solId; document.getElementById('listo-texto').textContent = 'Su control remoto (N° ' + (solicitud.numCtrl||'') + ') está listo para retiro en la administración del edificio. Por favor pase a buscarlo en el horario de atención.'; }
@@ -605,7 +606,7 @@ async function enviarDatos() {
   const dir    = document.getElementById('d-dir').value;
   const depto  = document.getElementById('d-depto').value;
 
-  if (!nombre || !rut || !email || !dir || !depto) { toast('Completa todos los campos', 'error'); return; }
+  if (!nombre || !rut || !tel || !email || !dir || !depto) { toast('Completa todos los campos obligatorios', 'error'); return; }
   if (!validarRUT(rut)) { toast('RUT inválido — verifica el formato', 'error'); document.getElementById('d-rut').classList.add('err'); return; }
   if (!email.includes('@')) { toast('Email inválido', 'error'); return; }
 
@@ -642,9 +643,14 @@ async function enviarDatos() {
   solicitud = { id: solId, tipo, nombre, rut, tel, email, dir, depto, ctrlN, estado: 'datos_enviados', creado: new Date().toLocaleString('es-CL') };
 
   try {
-    // Guardar en Drive
-    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) });
-  } catch(e) {}
+    const postRes  = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) });
+    const postJson = await postRes.json();
+    if (!postJson.ok) { toast('Error al guardar: ' + (postJson.error||'sin detalle'), 'error'); btn.disabled=false; btn.innerHTML='Continuar →'; return; }
+  } catch(e) {
+    toast('Error de conexión con el servidor: ' + e.message, 'error');
+    btn.disabled=false; btn.innerHTML='Continuar →';
+    return;
+  }
 
   // Email al residente con link
   // Solo enviar email si la solicitud es nueva (no llegó con ?id= del admin)
@@ -657,7 +663,11 @@ async function enviarDatos() {
     solicitud.motivo   = 'Solicitud 2° Control';
     solicitud.estado   = 'declaracion';
     solicitud.fechaDecl= new Date().toLocaleDateString('es-CL');
-    try { await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) }); } catch(e) {}
+    try {
+      const r2 = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ tipo: 'solicitud_ctrl', ...solicitud }) });
+      const j2 = await r2.json();
+      if (!j2.ok) toast('Advertencia: ' + (j2.error||'error al actualizar estado'), 'warning');
+    } catch(e) { toast('Error conexión: ' + e.message, 'error'); }
     cargarPaso3();
     showView('paso3');
   } else {
