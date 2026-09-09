@@ -521,9 +521,9 @@ textarea{resize:vertical;min-height:76px}
       <div class="card-body">
         <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap">
           <button class="fbtn active" data-sf2="todas" onclick="setSF2(this)">Todas</button>
-          <button class="fbtn" data-sf2="pendiente" onclick="setSF2(this)">⏳ Pendientes</button>
+          <button class="fbtn" data-sf2="link_enviado" onclick="setSF2(this)">📨 Link Enviado</button>
+          <button class="fbtn" data-sf2="pago" onclick="setSF2(this)">💳 Pago</button>
           <button class="fbtn" data-sf2="aprobado" onclick="setSF2(this)">✅ Aprobadas</button>
-          <button class="fbtn" data-sf2="listo" onclick="setSF2(this)">📦 Listas</button>
           <button class="fbtn" data-sf2="entregado" onclick="setSF2(this)">🎉 Entregadas</button>
         </div>
         <div id="ctrl-sol-list"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Cargando...</div></div>
@@ -645,7 +645,7 @@ textarea{resize:vertical;min-height:76px}
 const ADMIN_EMAIL      = 'com12norte@gmail.com';
 const NOMBRE_COMUNIDAD = 'Comunidad Edificio 12 Norte de Vina del Mar';
 const RUT_COMUNIDAD    = '56.028.260-5';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwSWtHNitcig5dFa2V7Xg1cF05VYT12vzp7ETznO0GWCil3tkGHMCoWOOKmYGkildp/exec'; // ← Pega aquí la URL tras implementar
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVklttcniiPgb_Iok1jMLhSnUvc9nKd1bYW6aCVT3h-n_-4BlbRj2QCt7Xq-jMswuW/exec'; // ← Pega aquí la URL tras implementar
 
 async function enviarAlScript(payload) {
   try {
@@ -2000,12 +2000,15 @@ function setSF2(btn) {
 
 function renderSolCtrl() {
   const el  = document.getElementById('ctrl-sol-list');
-  const fil = ctrlSolFil === 'todas' ? ctrlSols : ctrlSols.filter(s => s.estado === ctrlSolFil);
+  const ESTADOS_PAGO = ['datos_enviados','pago_pendiente','declaracion','pendiente'];
+  const fil = ctrlSolFil === 'todas' ? ctrlSols
+    : ctrlSolFil === 'pago' ? ctrlSols.filter(s => ESTADOS_PAGO.includes(s.estado))
+    : ctrlSols.filter(s => s.estado === ctrlSolFil);
   if (!fil.length) {
     el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">' + (ctrlSols.length ? 'No hay solicitudes con este estado' : '📭 No hay solicitudes') + '</div>';
     return;
   }
-  const em = { datos_enviados:['📋','Datos recibidos'], declaracion:['📝','Declaración firmada'], pendiente:['⏳','Comprobante pendiente'], aprobado:['✅','Aprobado'], listo:['📦','Listo para entrega'], entregado:['🎉','Entregado'] };
+  const em = { link_enviado:['📨','Link enviado'], datos_enviados:['📋','Datos recibidos'], pago_pendiente:['💳','En pago'], declaracion:['📝','Declaración firmada'], pendiente:['⏳','Comprobante adjunto'], aprobado:['✅','Aprobado'], listo:['📦','Listo para entrega'], entregado:['🎉','Entregado'] };
   el.innerHTML = fil.filter(s => s.id && (s.nombre || s.email)).map(s => {
     const [ic, lb] = em[s.estado] || ['❓','—'];
     const tl = s.tipo === 'perdida' ? '🚨 Pérdida' : '➕ 2° Control';
