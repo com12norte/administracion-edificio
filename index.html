@@ -235,6 +235,8 @@ textarea{resize:vertical;min-height:76px}
     <button onclick="nav('pago-hist')" id="tab-pago-hist">📋 Pagos</button>
     <div class="sep"></div>
     <button onclick="nav('controles')" id="tab-controles">📡 Controles <span id='ctrl-nav-badge' style='background:#DC2626;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:2px;display:none'>0</span></button>
+    <div class="sep"></div>
+    <button onclick="nav('coprop')" id="tab-coprop">👥 Copropietarios</button>
   </nav>
   <button id="btn-dark" onclick="toggleDark()" style="background:rgba(255,255,255,.1);border:none;color:#fff;width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer;flex-shrink:0">🌙</button>
 </header>
@@ -533,7 +535,55 @@ textarea{resize:vertical;min-height:76px}
 
 </div>
 
+<!-- VISTA COPROPIETARIOS -->
+<div id="view-coprop" class="view">
+  <div class="card">
+    <div class="card-hd"><div class="card-hd-icon">👥</div><div><h2>Registro de Copropietarios</h2><p>Actualización anual obligatoria · datos sensibles (acceso con clave)</p></div></div>
+    <div class="card-body">
+      <div id="cp-login" style="display:flex;gap:8px;max-width:420px">
+        <input type="password" id="cp-clave" placeholder="Clave de administración" onkeydown="if(event.key==='Enter')cpLogin()">
+        <button class="btn btn-primary" onclick="cpLogin()">Entrar</button>
+      </div>
+      <div id="cp-main" style="display:none">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="cpCopiarLink()">🔗 Copiar link público</button>
+          <button class="btn btn-primary" onclick="document.getElementById('cp-csv').click()">📥 Importar CSV del Form</button>
+          <button class="btn btn-primary" onclick="cpRecordarTodos()">📧 Recordar a los que deben</button>
+          <button class="btn btn-primary" onclick="cpCargar()">↻ Actualizar</button>
+          <input type="file" id="cp-csv" accept=".csv" style="display:none" onchange="cpImportar(this)">
+        </div>
+        <div id="cp-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="cp-filtros">
+          <button class="fbtn active" data-cf="todos" onclick="cpFiltro(this)">Todos</button>
+          <button class="fbtn" data-cf="vigente" onclick="cpFiltro(this)">✅ Al día</button>
+          <button class="fbtn" data-cf="revisar" onclick="cpFiltro(this)">🕐 Por validar</button>
+          <button class="fbtn" data-cf="devuelto" onclick="cpFiltro(this)">↩️ Devueltos</button>
+          <button class="fbtn" data-cf="debe" onclick="cpFiltro(this)">❗ Deben actualizar</button>
+          <button class="fbtn" data-cf="sincorreo" onclick="cpFiltro(this)">✉️ Sin correo</button>
+        </div>
+        <input id="cp-buscar" placeholder="Buscar por dirección, depto, nombre o RUT…" oninput="cpRender()" style="margin-bottom:10px">
+        <div id="cp-lista" style="overflow-x:auto"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /container -->
+
+<!-- MODAL COPROPIETARIO -->
+<div class="overlay" id="modal-cp" onclick="closeOverlay('modal-cp',event)">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="cp-m-title">Registro</h3><button class="mclose" onclick="closeOverlay('modal-cp')">✕</button></div>
+    <div class="modal-body" id="cp-m-body"></div>
+    <div class="modal-ft" style="flex-wrap:wrap;gap:8px">
+      <input id="cp-motivo" placeholder="Motivo si lo devuelve (obligatorio para devolver)" style="flex:1 1 100%">
+      <button class="btn btn-primary" onclick="cpValidar('aprobado')">✅ Aprobar</button>
+      <button class="btn btn-primary" style="background:#D97706" onclick="cpValidar('devuelto')">↩️ Devolver</button>
+      <button class="btn btn-primary" style="background:#6B7280" onclick="cpRecordarUno()">📧 Reenviar link</button>
+      <button class="btn btn-primary" style="background:#6B7280" onclick="cpCopiarPersonal()">🔗 Copiar link personal</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL RECIBO -->
 <div class="overlay" id="modal-r" onclick="closeOverlay('modal-r',event)">
@@ -645,7 +695,7 @@ textarea{resize:vertical;min-height:76px}
 const ADMIN_EMAIL      = 'com12norte@gmail.com';
 const NOMBRE_COMUNIDAD = 'Comunidad Edificio 12 Norte de Vina del Mar';
 const RUT_COMUNIDAD    = '56.028.260-5';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVklttcniiPgb_Iok1jMLhSnUvc9nKd1bYW6aCVT3h-n_-4BlbRj2QCt7Xq-jMswuW/exec'; // ← Pega aquí la URL tras implementar
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwVtdLOXPPuQ1W_I9Gcp-FEY8F3Yn233ZGkmVBHlo3Ik1oTnjRsklwBEkJN1626rJ4_/exec'; // ← Pega aquí la URL tras implementar
 
 async function enviarAlScript(payload) {
   try {
@@ -742,6 +792,7 @@ function nav(name) {
     sincronizarListado().then(ok => { if (ok) renderCtrls(); });
   }
   if (name === 'pago-hist') renderPagos();
+  if (name === 'coprop' && cpClave() && !cpData.length) cpCargar();
 }
 
 // ════════════════════════════════════════
@@ -2418,6 +2469,153 @@ function toast(msg, type='') {
   t.className = `toast ${type}`; t.textContent = msg;
   c.appendChild(t);
   setTimeout(() => t.remove(), 3200);
+}
+
+// ════════════════════════════════════════
+// REGISTRO DE COPROPIETARIOS
+// ════════════════════════════════════════
+const CP_URL_PUBLICO = 'https://com12norte.github.io/administracion-edificio/copropietario.html';
+let cpData = [], cpAnio = new Date().getFullYear(), cpFil = 'todos', cpActual = null;
+const cpClave = () => { try { return sessionStorage.getItem('cpk') || ''; } catch(e) { return window._cpk || ''; } };
+async function cpPost(accion, extra) {
+  const r = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ accion, clave: cpClave(), ...(extra||{}) }) });
+  return r.json();
+}
+async function cpLogin() {
+  const v = document.getElementById('cp-clave').value.trim(); if (!v) return;
+  try { sessionStorage.setItem('cpk', v); } catch(e) { window._cpk = v; }
+  const ok = await cpCargar();
+  if (!ok) { try { sessionStorage.removeItem('cpk'); } catch(e) { window._cpk = ''; } }
+}
+async function cpCargar() {
+  try {
+    const j = await cpPost('coprop_listar');
+    const res = j.resultado || j;
+    if (!res.ok) { toast(res.error || 'Error', 'error'); return false; }
+    cpData = res.data || []; cpAnio = res.anio || cpAnio;
+    document.getElementById('cp-login').style.display = 'none';
+    document.getElementById('cp-main').style.display = 'block';
+    cpRender(); return true;
+  } catch(e) { toast('Sin conexión: ' + e.message, 'error'); return false; }
+}
+function cpMail(r) { const d = r.datos || {}; return (d.prop_mail || d.res_mail || '').trim(); }
+function cpEstado(r) {
+  if (r.anio === cpAnio && r.estado === 'aprobado') return 'vigente';
+  if (r.anio === cpAnio && r.estado === 'pendiente_revision') return 'revisar';
+  if (r.estado === 'devuelto') return 'devuelto';
+  return 'debe';
+}
+const CP_BADGE = { vigente:['✅ Al día','#D1FAE5','#065F46'], revisar:['🕐 Por validar','#DBEAFE','#1E40AF'], devuelto:['↩️ Devuelto','#FEF3C7','#92400E'], debe:['❗ Debe actualizar','#FEE2E2','#991B1B'] };
+function cpFiltro(b) { cpFil = b.dataset.cf; document.querySelectorAll('#cp-filtros .fbtn').forEach(x => x.classList.toggle('active', x === b)); cpRender(); }
+function cpRender() {
+  const cnt = { vigente:0, revisar:0, devuelto:0, debe:0, sincorreo:0 };
+  cpData.forEach(r => { cnt[cpEstado(r)]++; if (!cpMail(r)) cnt.sincorreo++; });
+  const k = (t, n, c) => `<div style="background:var(--surface2);border:1px solid var(--border);border-left:4px solid ${c};border-radius:8px;padding:10px"><div style="font-size:22px;font-weight:700">${n}</div><div style="font-size:11px;color:var(--muted)">${t}</div></div>`;
+  document.getElementById('cp-kpis').innerHTML = k('Unidades', cpData.length, '#1E3A5F') + k('Al día ' + cpAnio, cnt.vigente, '#059669') + k('Por validar', cnt.revisar, '#2563EB') + k('Devueltos', cnt.devuelto, '#D97706') + k('Deben actualizar', cnt.debe, '#DC2626') + k('Sin correo', cnt.sincorreo, '#6B7280');
+  const q = (document.getElementById('cp-buscar').value || '').toLowerCase().replace(/[.\-]/g, '');
+  const fil = cpData.filter(r => {
+    if (cpFil === 'sincorreo' ? !!cpMail(r) : (cpFil !== 'todos' && cpEstado(r) !== cpFil)) return false;
+    if (!q) return true;
+    const d = r.datos || {};
+    return (r.direccion + ' ' + r.depto + ' ' + (d.prop_nombre||'') + ' ' + (d.prop_rut||'')).toLowerCase().replace(/[.\-]/g, '').includes(q);
+  }).sort((a, b) => (a.direccion + a.depto).localeCompare(b.direccion + b.depto, 'es', { numeric: true }));
+  if (!fil.length) { document.getElementById('cp-lista').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Sin resultados</div>'; return; }
+  document.getElementById('cp-lista').innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="text-align:left;color:var(--muted)"><th style="padding:6px">Unidad</th><th>Propietario</th><th>Estado</th><th>Año</th><th>Docs</th><th></th></tr></thead><tbody>' +
+    fil.map(r => { const b = CP_BADGE[cpEstado(r)], d = r.datos || {};
+      return `<tr style="border-top:1px solid var(--border)"><td style="padding:8px 6px;white-space:nowrap"><b>${cpEsc(r.direccion)}</b> · ${cpEsc(r.depto)}</td><td>${cpEsc(d.prop_nombre || '—')}${cpMail(r) ? '' : ' <span title="Sin correo" style="color:#DC2626">✉️✗</span>'}</td><td><span style="background:${b[1]};color:${b[2]};padding:2px 9px;border-radius:12px;font-weight:700;font-size:11px;white-space:nowrap">${b[0]}</span></td><td>${r.anio || ''}</td><td>${(r.docs||[]).length}</td><td><button class="fbtn" onclick="cpAbrir('${r.id}')">Revisar</button></td></tr>`; }).join('') + '</tbody></table>';
+}
+function cpEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c])); }
+const CP_ETIQ = [['Propietario',null],['prop_nombre','Nombre'],['prop_rut','RUT'],['prop_fnac','Nacimiento'],['prop_nac','Nacionalidad'],['prop_tel','Teléfono'],['prop_mail','Correo'],['conyuge_nombre','Cónyuge/pareja'],['conyuge_rut','RUT cónyuge'],['uso','Uso de la residencia'],['resid_principal','Residencia principal del dueño'],
+  ['Residente principal',null],['res_nombre','Nombre'],['res_rut','RUT'],['res_fnac','Nacimiento'],['res_nac','Nacionalidad'],['res_tel','Teléfono'],['res_mail','Correo'],
+  ['Unidad',null],['n_res','Residentes'],['n_disc','Con discapacidad'],['n_movred','Movilidad reducida'],['n_nohisp','No hispanoparlantes'],['n_electro','Electrodependientes'],['n_menores','Menores'],['n_adultos','Adultos mayores'],['mascota','Mascota'],['masc_tipo','Tipo'],['masc_det','Nombre y color'],['masc_reg','Reg. Nacional'],
+  ['Emergencia',null],['em_nombre','Contacto'],['em_par','Parentesco'],['em_tel','Teléfono']];
+function cpAbrir(id) {
+  cpActual = cpData.find(r => r.id === id); if (!cpActual) return;
+  const r = cpActual, d = r.datos || {}, b = CP_BADGE[cpEstado(r)];
+  document.getElementById('cp-m-title').textContent = r.direccion + ' · depto ' + r.depto;
+  let h = `<p style="margin-bottom:8px"><span style="background:${b[1]};color:${b[2]};padding:2px 9px;border-radius:12px;font-weight:700;font-size:11px">${b[0]}</span> <span style="color:var(--muted);font-size:12px">Año ${r.anio || '—'}${r.origen === 'importado' ? ' · importado del Form' : ''}</span></p>`;
+  if (r.motivo) h += `<p style="background:#FEF3C7;padding:8px;border-radius:6px;font-size:12px;margin-bottom:8px">Motivo devolución: ${cpEsc(r.motivo)}</p>`;
+  CP_ETIQ.forEach(([k, l]) => {
+    if (l === null) { h += `<div style="font-weight:700;color:var(--accent);margin:12px 0 4px;font-size:13px">${k}</div>`; return; }
+    if (d[k] !== undefined && d[k] !== '') h += `<div style="display:flex;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed var(--border)"><span style="flex:0 0 40%;color:var(--muted)">${l}</span><span>${cpEsc(d[k])}</span></div>`;
+  });
+  h += '<div style="font-weight:700;color:var(--accent);margin:12px 0 4px;font-size:13px">Documentos</div>' + ((r.docs||[]).length ? r.docs.map(x => `<div style="font-size:12px"><a href="${cpEsc(x.url)}" target="_blank" rel="noopener">📎 ${cpEsc(x.tipo)} — ${cpEsc(x.nombre)}</a> <span style="color:var(--muted)">${cpEsc(x.fecha||'')}</span></div>`).join('') : '<div style="font-size:12px;color:var(--muted)">Sin documentos</div>');
+  h += '<div style="font-weight:700;color:var(--accent);margin:12px 0 4px;font-size:13px">Avisos enviados</div><div style="font-size:12px;color:var(--muted)">' + ((r.envios||[]).length ? r.envios.map(e => cpEsc(e.tipo) + ' (' + cpEsc(e.fecha) + ')').join(', ') : 'Ninguno') + '</div>';
+  document.getElementById('cp-m-body').innerHTML = h;
+  document.getElementById('cp-motivo').value = '';
+  document.getElementById('modal-cp').classList.add('open');
+}
+async function cpValidar(decision) {
+  if (!cpActual) return;
+  const motivo = document.getElementById('cp-motivo').value.trim();
+  if (decision === 'devuelto' && !motivo) { toast('Escribe el motivo de la devolución', 'error'); return; }
+  const j = await cpPost('coprop_validar', { id: cpActual.id, decision, motivo });
+  const res = j.resultado || j;
+  if (!res.ok) { toast(res.error || 'Error', 'error'); return; }
+  toast(decision === 'aprobado' ? 'Aprobado' + (res.correoEnviado ? ' · correo enviado' : ' · sin correo registrado') : 'Devuelto' + (res.correoEnviado ? ' · correo enviado' : ' · sin correo registrado'), 'success');
+  closeOverlay('modal-cp'); cpCargar();
+}
+async function cpRecordarUno() {
+  if (!cpActual) return;
+  const res = await cpPost('coprop_recordar', { ids: [cpActual.id] });
+  toast(res.ok ? (res.enviados ? 'Link reenviado' : 'No se envió (sin correo)') : (res.error || 'Error'), res.ok && res.enviados ? 'success' : 'error');
+}
+async function cpRecordarTodos() {
+  if (!confirm('¿Enviar recordatorio con link personal a las unidades que deben actualizar? (máx. 40 correos por día)')) return;
+  const res = await cpPost('coprop_recordar', { ids: 'morosos' });
+  toast(res.ok ? `Enviados: ${res.enviados} · sin correo: ${res.sinCorreo}` : (res.error || 'Error'), res.ok ? 'success' : 'error');
+  if (res.ok) cpCargar();
+}
+function cpCopiar(t, msg) { (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast(msg, 'success')).catch(() => prompt('Copia el link:', t)); }
+function cpCopiarLink() { cpCopiar(CP_URL_PUBLICO, 'Link público copiado'); }
+function cpCopiarPersonal() { if (cpActual) cpCopiar(CP_URL_PUBLICO + '?t=' + cpActual.token, 'Link personal copiado'); }
+
+// ── Importación CSV (respuestas del Google Form) ──
+function cpParseCSV(t) {
+  const rows = []; let row = [], c = '', q = false;
+  for (let i = 0; i < t.length; i++) { const ch = t[i];
+    if (q) { if (ch === '"') { if (t[i+1] === '"') { c += '"'; i++; } else q = false; } else c += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ',') { row.push(c); c = ''; }
+    else if (ch === '\n') { row.push(c); rows.push(row); row = []; c = ''; }
+    else if (ch !== '\r') c += ch; }
+  if (c || row.length) { row.push(c); rows.push(row); }
+  return rows;
+}
+const cpN = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+function cpKeyDe(h) {
+  const n = cpN(h), res = n.includes('copropietario o residente');
+  const t = [
+    [n.startsWith('direccion de unidad'), '_dir'], [n.startsWith('letra y numero'), '_depto'],
+    [n.startsWith('direccion de la residencia'), 'resid_principal'],
+    [n.startsWith('nombre completo del conyuge'), 'conyuge_nombre'], [n.startsWith('rut') && n.includes('conyuge'), 'conyuge_rut'],
+    [n.startsWith('nombre completo') && res, 'res_nombre'], [n.startsWith('rut') && res, 'res_rut'], [n.startsWith('fecha de nacimiento') && res, 'res_fnac'], [n.startsWith('nacionalidad') && res, 'res_nac'], [n.startsWith('numero de telefono') && res, 'res_tel'], [n.startsWith('mail') && res, 'res_mail'],
+    [n.startsWith('nombre completo del propietario'), 'prop_nombre'], [n.startsWith('rut') && n.includes('propietario'), 'prop_rut'], [n.startsWith('fecha de nacimiento') && n.includes('propietario'), 'prop_fnac'], [n.startsWith('nacionalidad') && n.includes('propietario'), 'prop_nac'], [n.startsWith('numero de telefono del propietario'), 'prop_tel'], [n.startsWith('mail') && n.includes('propietario'), 'prop_mail'],
+    [n.startsWith('uso de la residencia'), 'uso'],
+    [n.startsWith('numero de residente'), 'n_res'], [n.includes('con discapacidad'), 'n_disc'], [n.includes('movilidad reducida'), 'n_movred'], [n.includes('no hispano'), 'n_nohisp'], [n.includes('electrodependiente'), 'n_electro'], [n.includes('menores de edad'), 'n_menores'], [n.includes('adultos mayores'), 'n_adultos'],
+    [n.startsWith('tiene mascota'), 'mascota'], [n.startsWith('tipo de mascota'), 'masc_tipo'], [n.startsWith('senale nombre'), 'masc_det'], [n.startsWith('esta registrada'), 'masc_reg'],
+    [n.startsWith('nombre de la persona'), 'em_nombre'], [n.startsWith('tipo de parentesco'), 'em_par'], [n.startsWith('numero de telefono de la persona'), 'em_tel']
+  ];
+  const f = t.find(x => x[0]); return f ? f[1] : null;
+}
+function cpFecha(v) { v = String(v||'').trim(); let m = v.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/); if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`; return v; }
+function cpRutFmt(v) { v = String(v||'').replace(/[^0-9kK]/g, '').toUpperCase(); if (v.length < 2) return v; return v.slice(0,-1).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '-' + v.slice(-1); }
+async function cpImportar(inp) {
+  const f = inp.files[0]; inp.value = ''; if (!f) return;
+  const rows = cpParseCSV(await f.text()).filter(r => r.some(x => x.trim()));
+  if (rows.length < 2) { toast('CSV vacío', 'error'); return; }
+  const keys = rows[0].map(cpKeyDe), faltan = ['_dir', '_depto', 'prop_nombre', 'prop_rut'].filter(k => !keys.includes(k));
+  if (faltan.length) { toast('No reconozco columnas: ' + faltan.join(', ') + '. ¿Es el CSV de respuestas del Form?', 'error'); return; }
+  const regs = rows.slice(1).map(r => { const d = {}; keys.forEach((k, i) => { if (k && !k.startsWith('_') && r[i] !== undefined) d[k] = r[i].trim(); });
+    ['prop_fnac','res_fnac'].forEach(k => { if (d[k]) d[k] = cpFecha(d[k]); });
+    ['prop_rut','res_rut','conyuge_rut'].forEach(k => { if (d[k]) d[k] = cpRutFmt(d[k]); });
+    if (d.mascota) d.mascota = /^s/i.test(d.mascota) ? 'Sí' : 'No';
+    return { direccion: (r[keys.indexOf('_dir')]||'').trim(), depto: (r[keys.indexOf('_depto')]||'').trim(), datos: d }; }).filter(x => x.direccion && x.depto);
+  if (!regs.length) { toast('Sin filas válidas', 'error'); return; }
+  if (!confirm(`Se importarán ${regs.length} respuestas como Registro ${cpAnio} (quedan "Al día"). Si una unidad aparece repetida, queda la última fila. ¿Continuar?`)) return;
+  const res = await cpPost('coprop_importar', { registros: regs, anio: cpAnio });
+  toast(res.ok ? `Importado: ${res.nuevos} nuevas, ${res.actualizados} actualizadas` : (res.error || 'Error'), res.ok ? 'success' : 'error');
+  if (res.ok) cpCargar();
 }
 </script>
 </body>

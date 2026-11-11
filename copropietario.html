@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Registro de Copropietarios - Edificio 12 Norte</title>
+<link rel="icon" href="favicon.svg">
+<style>
+:root{--bg:#F0F2F5;--s:#fff;--b:#E2E5EA;--t:#1A1D23;--m:#6B7280;--a:#1E3A5F;--a2:#2E5490;--ok:#059669;--err:#DC2626}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--t);line-height:1.45}
+header{background:var(--a);color:#fff;padding:18px 16px;text-align:center}
+header h1{font-size:18px}header p{font-size:12px;opacity:.75;margin-top:2px}
+main{max-width:720px;margin:0 auto;padding:16px}
+.card{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:18px;margin-bottom:16px}
+.card h2{font-size:15px;color:var(--a);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--b)}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.g{grid-template-columns:1fr}}
+label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
+label i{color:var(--err);font-style:normal}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--b);border-radius:7px;font-size:14px;font-family:inherit;background:#fff;color:var(--t)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--a2);border-color:var(--a2)}
+.f{margin-bottom:2px}.f.bad input,.f.bad select{border-color:var(--err)}
+.hint{font-size:11px;color:var(--m);margin-top:3px}.er{font-size:11px;color:var(--err);margin-top:3px;display:none}.f.bad .er{display:block}
+.full{grid-column:1/-1}
+button{background:var(--a);color:#fff;border:0;border-radius:8px;padding:12px 22px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
+button:disabled{opacity:.5;cursor:not-allowed}
+.note{font-size:12px;color:var(--m);background:#F7F8FA;border:1px solid var(--b);border-radius:8px;padding:10px 12px;margin-bottom:16px}
+.alert{border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px}
+.alert.warn{background:#FEF3C7;border:1px solid #F59E0B}.alert.okk{background:#D1FAE5;border:1px solid var(--ok)}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:12px;font-weight:400}.chk input{width:auto;margin-top:2px}
+#done{display:none;text-align:center;padding:40px 16px}#done h2{border:0;font-size:20px;color:var(--ok)}
+.docs small{color:var(--m)}
+</style></head><body>
+<header><h1>Registro de Copropietarios</h1><p>Comunidad Edificio 12 Norte de Viña del Mar</p></header>
+<main>
+<div id="loading" class="card">Cargando…</div>
+<div id="done" class="card"><h2>✅ Registro enviado</h2><p>Gracias. La administración lo revisará y, si todo está correcto, quedará validado. Si hay algo que corregir le llegará un correo.</p><p class="hint" style="margin-top:12px">Ya puede cerrar esta ventana.</p></div>
+<form id="frm" style="display:none" novalidate>
+<div id="aviso"></div>
+<div class="note">🔒 Sus datos son de uso exclusivo de la administración y el comité (Ley 21.442, Res. Exenta 721/2023 MINVU y Ley 19.628). Solo podrán usarse para actualizar el plan de evacuación, ingreso forzoso a una unidad o emergencias. Este registro debe actualizarse <b>cada año</b>.</div>
+
+<div class="card"><h2>1. Unidad</h2><div class="g">
+ <div class="f"><label>Dirección <i>*</i></label><select id="direccion"></select><input id="direccion_otra" placeholder="Escriba la dirección" style="display:none;margin-top:6px"><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Letra y número de la unidad <i>*</i></label><select id="depto"></select><input id="depto_otro" placeholder="Ej: 305" style="display:none;margin-top:6px"><div class="er">Obligatorio</div></div>
+</div></div>
+
+<div class="card"><h2>2. Datos del propietario</h2><div class="g">
+ <div class="f full"><label>Nombre completo <i>*</i></label><input data-k="prop_nombre" data-req placeholder="Ej: Pedro Pablo Pérez Poblete"><div class="er">Obligatorio</div></div>
+ <div class="f"><label>RUT / DNI <i>*</i></label><input data-k="prop_rut" data-req data-rut placeholder="15254365-8"><div class="er">RUT inválido</div></div>
+ <div class="f"><label>Fecha de nacimiento <i>*</i></label><input type="date" data-k="prop_fnac" data-req><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Nacionalidad <i>*</i></label><select data-k="prop_nac" data-req data-nac></select><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Teléfono <i>*</i></label><input data-k="prop_tel" data-req data-tel placeholder="+56 9 1234 5678"><div class="er">Teléfono inválido</div></div>
+ <div class="f full"><label>Correo electrónico <i>*</i></label><input type="email" data-k="prop_mail" data-req data-mail><div class="hint">Aquí le llegarán los avisos anuales y su enlace personal.</div><div class="er">Correo inválido</div></div>
+ <div class="f"><label>Nombre del cónyuge o pareja</label><input data-k="conyuge_nombre"></div>
+ <div class="f"><label>RUT / DNI del cónyuge o pareja</label><input data-k="conyuge_rut" data-rut><div class="er">RUT inválido</div></div>
+ <div class="f full"><label>Uso de la residencia del propietario <i>*</i></label><select data-k="uso" data-req><option value="">Seleccione…</option><option>Residencia principal del propietario</option><option>Arrendada</option><option>Segunda vivienda / uso esporádico</option><option>Prestada a familiar</option><option>Desocupada</option><option>Otro</option></select><div class="er">Obligatorio</div></div>
+</div></div>
+
+<div class="card"><h2>3. Residencia principal del dueño</h2><div class="g"><div class="f full"><label>Dirección (calle, número, depto, comuna, región) <i>*</i></label><input data-k="resid_principal" data-req placeholder="Ej: Olga Salas 7000, Recoleta, Región Metropolitana"><div class="er">Obligatorio</div></div></div></div>
+
+<div class="card"><h2>4. Copropietario o residente principal del departamento</h2>
+<label class="chk full" style="margin-bottom:10px"><input type="checkbox" id="igual"> Es el mismo propietario (copiar datos)</label>
+<div class="g">
+ <div class="f full"><label>Nombre completo <i>*</i></label><input data-k="res_nombre" data-req><div class="er">Obligatorio</div></div>
+ <div class="f"><label>RUT / DNI <i>*</i></label><input data-k="res_rut" data-req data-rut><div class="er">RUT inválido</div></div>
+ <div class="f"><label>Fecha de nacimiento <i>*</i></label><input type="date" data-k="res_fnac" data-req><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Nacionalidad <i>*</i></label><select data-k="res_nac" data-req data-nac></select><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Teléfono <i>*</i></label><input data-k="res_tel" data-req data-tel><div class="er">Teléfono inválido</div></div>
+ <div class="f full"><label>Correo electrónico</label><input type="email" data-k="res_mail" data-mail><div class="er">Correo inválido</div></div>
+</div></div>
+
+<div class="card"><h2>5. Descripción de la unidad</h2><div class="g">
+ <div class="f"><label>Residentes que habitan la unidad <i>*</i></label><input type="number" min="0" data-k="n_res" data-req data-num><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Ocupantes con discapacidad <i>*</i></label><input type="number" min="0" data-k="n_disc" data-req data-num><div class="hint">Si no hay, escriba 0</div><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Con movilidad reducida <i>*</i></label><input type="number" min="0" data-k="n_movred" data-req data-num><div class="er">Obligatorio</div></div>
+ <div class="f"><label>No hispanoparlantes <i>*</i></label><input type="number" min="0" data-k="n_nohisp" data-req data-num><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Electrodependientes <i>*</i></label><input type="number" min="0" data-k="n_electro" data-req data-num><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Menores de edad <i>*</i></label><input type="number" min="0" data-k="n_menores" data-req data-num><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Adultos mayores <i>*</i></label><input type="number" min="0" data-k="n_adultos" data-req data-num><div class="er">Obligatorio</div></div>
+ <div class="f"><label>¿Tiene mascota? <i>*</i></label><select data-k="mascota" data-req id="mascota"><option value="">Seleccione…</option><option>No</option><option>Sí</option></select><div class="er">Obligatorio</div></div>
+</div></div>
+
+<div class="card" id="sec6" style="display:none"><h2>6. Mascotas</h2><div class="g">
+ <div class="f"><label>Tipo de mascota <i>*</i></label><select data-k="masc_tipo" id="masc_tipo"><option value="">Seleccione…</option><option>Perro</option><option>Gato</option><option>Perro y gato</option><option>Otro</option></select><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Nombre(s) y color <i>*</i></label><input data-k="masc_det" id="masc_det"><div class="er">Obligatorio</div></div>
+ <div class="f full"><label>¿Registrada en el Registro Nacional de Mascotas? <i>*</i></label><select data-k="masc_reg" id="masc_reg"><option value="">Seleccione…</option><option>Sí</option><option>No</option><option>En trámite</option></select><div class="er">Obligatorio</div></div>
+</div></div>
+
+<div class="card"><h2>7. Contacto en caso de emergencia</h2><div class="g">
+ <div class="f full"><label>Nombre de la persona a contactar <i>*</i></label><input data-k="em_nombre" data-req><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Parentesco <i>*</i></label><select data-k="em_par" data-req><option value="">Seleccione…</option><option>Cónyuge / pareja</option><option>Padre / madre</option><option>Hijo(a)</option><option>Hermano(a)</option><option>Otro familiar</option><option>Amigo(a)</option><option>Otro</option></select><div class="er">Obligatorio</div></div>
+ <div class="f"><label>Teléfono <i>*</i></label><input data-k="em_tel" data-req data-tel><div class="er">Teléfono inválido</div></div>
+</div></div>
+
+<div class="card docs"><h2>8. Documentos (opcional)</h2>
+ <div class="g">
+  <div class="f"><label>Cédula de identidad del propietario</label><input type="file" id="doc_cedula" accept=".pdf,.jpg,.jpeg,.png"><small>PDF o imagen, máx. 4 MB</small></div>
+  <div class="f"><label>Escritura / contrato de arriendo</label><input type="file" id="doc_escritura" accept=".pdf,.jpg,.jpeg,.png"><small>PDF o imagen, máx. 4 MB</small></div>
+ </div>
+ <p class="hint" id="docsPrev"></p>
+</div>
+
+<div class="card"><label class="chk"><input type="checkbox" id="acepto"> Declaro que los datos son verdaderos y autorizo su uso por la administración y el comité para los fines señalados.</label><div class="er" id="erAcepto" style="display:block;visibility:hidden">Debe aceptar para enviar</div></div>
+<button type="submit" id="btn">Enviar registro</button>
+<p class="hint" style="text-align:center;margin:10px 0 30px" id="foot"></p>
+</form>
+</main>
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwVtdLOXPPuQ1W_I9Gcp-FEY8F3Yn233ZGkmVBHlo3Ik1oTnjRsklwBEkJN1626rJ4_/exec';
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+const NAC = ['Chilena','Argentina','Boliviana','Brasileña','Colombiana','Cubana','Ecuatoriana','Española','Estadounidense','Haitiana','Peruana','Uruguaya','Venezolana','Otra'];
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+let unidades = [], docsExist = [];
+
+function rutOk(v){ v=String(v).replace(/[^0-9kK]/g,'').toUpperCase(); if(v.length<2) return false; const d=v.slice(-1); let s=0,m=2; for(let i=v.length-2;i>=0;i--){s+=+v[i]*m; m=m===7?2:m+1;} const r=11-s%11; return d===(r===11?'0':r===10?'K':String(r)); }
+function fmtRut(v){ v=String(v).replace(/[^0-9kK]/g,'').toUpperCase(); if(v.length<2) return v; const b=v.slice(0,-1).replace(/\B(?=(\d{3})+(?!\d))/g,'.'); return b+'-'+v.slice(-1); }
+function fmtTel(v){ let d=String(v).replace(/\D/g,''); if(d.startsWith('56')) d=d.slice(2); d=d.slice(0,9); return d?('+56 '+d.replace(/^(\d)(\d{4})(\d{0,4}).*/,(m,a,b,c)=>c?`${a} ${b} ${c}`:`${a} ${b}`)):''; }
+function telOk(v){ return String(v).replace(/\D/g,'').replace(/^56/,'').length===9; }
+function mailOk(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+$$('[data-nac]').forEach(s=>{ s.innerHTML='<option value="">Seleccione…</option>'+NAC.map(n=>`<option>${n}</option>`).join(''); });
+$$('[data-rut]').forEach(i=>i.addEventListener('input',()=>{ i.value=fmtRut(i.value); }));
+$$('[data-tel]').forEach(i=>i.addEventListener('input',()=>{ i.value=fmtTel(i.value); }));
+$('#mascota').addEventListener('change',()=>{ $('#sec6').style.display=$('#mascota').value==='Sí'?'block':'none'; });
+$('#igual').addEventListener('change',e=>{ if(!e.target.checked) return;
+  const m={res_nombre:'prop_nombre',res_rut:'prop_rut',res_fnac:'prop_fnac',res_nac:'prop_nac',res_tel:'prop_tel',res_mail:'prop_mail'};
+  for(const k in m){ $(`[data-k="${k}"]`).value=$(`[data-k="${m[k]}"]`).value; } });
+
+function fillUnits(){
+  const ds=$('#direccion'), dp=$('#depto');
+  ds.innerHTML='<option value="">Seleccione…</option>'+unidades.map(u=>`<option>${u.direccion}</option>`).join('')+'<option value="__otra">Otra (no aparece)</option>';
+  const upd=()=>{ const u=unidades.find(x=>x.direccion===ds.value);
+    dp.innerHTML='<option value="">Seleccione…</option>'+(u?u.deptos.map(d=>`<option>${d}</option>`).join(''):'')+'<option value="__otro">Otro (no aparece)</option>';
+    $('#direccion_otra').style.display=ds.value==='__otra'?'block':'none';
+    $('#depto_otro').style.display='none'; };
+  ds.addEventListener('change',upd); dp.addEventListener('change',()=>{ $('#depto_otro').style.display=dp.value==='__otro'?'block':'none'; });
+  upd();
+}
+function unitVal(){ const d=$('#direccion').value==='__otra'?$('#direccion_otra').value.trim():$('#direccion').value; const p=$('#depto').value==='__otro'?$('#depto_otro').value.trim():$('#depto').value; return {direccion:d,depto:p}; }
+
+function fillData(d){ $$('[data-k]').forEach(el=>{ if(d[el.dataset.k]!==undefined) el.value=d[el.dataset.k]; }); $('#mascota').dispatchEvent(new Event('change')); }
+function readData(){ const o={}; $$('[data-k]').forEach(el=>{ o[el.dataset.k]=el.value.trim(); }); if(o.mascota!=='Sí'){o.masc_tipo=o.masc_det=o.masc_reg='';} return o; }
+
+function validate(){
+  let bad=null;
+  $$('.f').forEach(f=>f.classList.remove('bad'));
+  const mark=el=>{ const f=el.closest('.f'); if(f) f.classList.add('bad'); if(!bad) bad=el; };
+  const u=unitVal(); if(!u.direccion) mark($('#direccion')); if(!u.depto) mark($('#depto'));
+  $$('[data-k]').forEach(el=>{
+    if(el.closest('#sec6') && $('#mascota').value!=='Sí') return;
+    const v=el.value.trim(); const req=el.hasAttribute('data-req')||(el.closest('#sec6'));
+    if(req && !v) return mark(el);
+    if(v && el.hasAttribute('data-rut') && !rutOk(v)) return mark(el);
+    if(v && el.hasAttribute('data-tel') && !telOk(v)) return mark(el);
+    if(v && el.hasAttribute('data-mail') && !mailOk(v)) return mark(el);
+  });
+  const ac=$('#acepto').checked; $('#erAcepto').style.visibility=ac?'hidden':'visible'; if(!ac && !bad) bad=$('#acepto');
+  if(bad){ bad.scrollIntoView({behavior:'smooth',block:'center'}); bad.focus&&bad.focus(); }
+  return !bad;
+}
+
+function leerArchivo(inp,tipo){ return new Promise((res,rej)=>{ const f=inp.files[0]; if(!f) return res(null);
+  if(f.size>4*1024*1024) return rej(new Error('El archivo "'+f.name+'" supera 4 MB'));
+  const r=new FileReader(); r.onload=()=>res({tipo,nombre:f.name,mime:f.type,b64:String(r.result).split(',')[1]}); r.onerror=()=>rej(new Error('No se pudo leer el archivo')); r.readAsDataURL(f); }); }
+
+$('#frm').addEventListener('submit',async e=>{
+  e.preventDefault(); if(!validate()) return;
+  const btn=$('#btn'); btn.disabled=true; btn.textContent='Enviando…';
+  try{
+    const documentos=(await Promise.all([leerArchivo($('#doc_cedula'),'cedula'),leerArchivo($('#doc_escritura'),'escritura')])).filter(Boolean);
+    const u=unitVal();
+    const r=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({accion:'coprop_guardar',token:TOKEN,direccion:u.direccion,depto:u.depto,datos:readData(),documentos})});
+    const j=await r.json(); const res=j.ok===false?j:j; 
+    if(!res.ok){ throw new Error(res.error||'No se pudo guardar'); }
+    $('#frm').style.display='none'; $('#done').style.display='block'; window.scrollTo(0,0);
+  }catch(err){ alert('Error: '+err.message); btn.disabled=false; btn.textContent='Enviar registro'; }
+});
+
+(async function init(){
+  try{
+    if(TOKEN){
+      const j=await (await fetch(APPS_SCRIPT_URL+'?accion=coprop_obtener&t='+encodeURIComponent(TOKEN))).json();
+      if(!j.ok) throw new Error(j.error);
+      const r=j.registro; unidades=[{direccion:r.direccion,deptos:[r.depto]}]; fillUnits();
+      $('#direccion').value=r.direccion; $('#direccion').dispatchEvent(new Event('change')); $('#depto').value=r.depto;
+      $('#direccion').disabled=true; $('#depto').disabled=true;
+      fillData(r.datos||{});
+      const yr=new Date().getFullYear();
+      let h='';
+      if(r.estado==='devuelto') h='<div class="alert warn"><b>Su registro fue devuelto.</b> Motivo: '+(r.motivo||'')+'</div>';
+      else if(r.estado==='aprobado'&&r.anio===yr) h='<div class="alert okk">Su registro '+yr+' ya está validado. Puede modificarlo si hubo cambios.</div>';
+      else h='<div class="alert warn"><b>Actualización anual '+yr+'.</b> Sus datos del año anterior están cargados: revíselos, corrija lo que cambió y envíe.</div>';
+      $('#aviso').innerHTML=h;
+      if((r.docs||[]).length) $('#docsPrev').textContent='Documentos ya guardados: '+r.docs.map(d=>d.tipo).join(', ')+'. Suba uno nuevo solo si desea reemplazarlo.';
+    } else {
+      const j=await (await fetch(APPS_SCRIPT_URL+'?accion=coprop_unidades')).json();
+      unidades=j.data||[]; fillUnits();
+      $('#aviso').innerHTML='<div class="alert warn">Si su unidad ya está registrada, use el <b>enlace personal</b> que le llegó por correo (trae sus datos cargados). Si usa este enlace general, deberá escribir el mismo RUT del propietario registrado.</div>';
+    }
+    $('#loading').style.display='none'; $('#frm').style.display='block';
+  }catch(err){ $('#loading').innerHTML='⚠️ '+err.message+'<br><small>Si el problema persiste escriba a com12norte@gmail.com</small>'; }
+})();
+</script></body></html>
