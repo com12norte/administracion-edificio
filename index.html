@@ -550,8 +550,8 @@ textarea{resize:vertical;min-height:76px}
           <button class="btn btn-primary" onclick="document.getElementById('cp-csv').click()">📥 Importar CSV del Form</button>
           <button class="btn btn-primary" onclick="cpRecordarTodos()">📧 Recordar a los que deben</button>
           <button class="btn btn-primary" onclick="cpSincDocs()">📂 Sincronizar documentos</button>
-          <button class="btn btn-primary" onclick="cpBuscarCorreo()">✉️ Buscar docs en correo (CSV)</button>
-          <button class="btn btn-primary" onclick="cpListarArchivos()">📁 Listar archivos (CSV)</button>
+          <button class="btn btn-primary" onclick="cpIndexar()">🗂️ Indexar carpetas de Drive</button>
+          <button class="btn btn-primary" onclick="cpTraerCorreo()">✉️ Traer adjuntos del correo</button>
           <button class="btn btn-primary" onclick="cpDescargarFaltantes()">⬇️ Faltantes (CSV)</button>
           <button class="btn btn-primary" onclick="cpCargar()">↻ Actualizar</button>
           <input type="file" id="cp-csv" accept=".csv" style="display:none" onchange="cpImportar(this)">
@@ -2530,7 +2530,7 @@ function cpRender() {
   if (!fil.length) { document.getElementById('cp-lista').innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted)">Sin resultados</div>'; return; }
   document.getElementById('cp-lista').innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="text-align:left;color:var(--muted)"><th style="padding:6px">Unidad</th><th>Propietario</th><th>Estado</th><th>Año</th><th>Documentos</th><th></th></tr></thead><tbody>' +
     fil.map(r => { const b = CP_BADGE[cpEstado(r)], d = r.datos || {};
-      return `<tr style="border-top:1px solid var(--border)"><td style="padding:8px 6px;white-space:nowrap"><b>${cpEsc(r.direccion)}</b> · ${cpEsc(r.depto)}</td><td>${cpEsc(d.prop_nombre || '—')}${cpMail(r) ? '' : ' <span title="Sin correo" style="color:#DC2626">✉️✗</span>'}</td><td><span style="background:${b[1]};color:${b[2]};padding:2px 9px;border-radius:12px;font-weight:700;font-size:11px;white-space:nowrap">${b[0]}</span></td><td>${r.anio || ''}</td><td style="font-size:11px">${(r.faltan||[]).length ? '<span style="color:#B45309">Falta: ' + r.faltan.map(t => cpEsc(CP_DOC[t]||t)).join(', ') + '</span>' : '<span style="color:#059669">✓ Completos</span>'}</td><td><button class="fbtn" onclick="cpAbrir('${r.id}')">Revisar</button></td></tr>`; }).join('') + '</tbody></table>';
+      return `<tr style="border-top:1px solid var(--border)"><td style="padding:8px 6px;white-space:nowrap"><b>${cpEsc(r.direccion)}</b> · ${cpEsc(r.depto)}</td><td>${cpEsc(d.prop_nombre || '—')}${cpMail(r) ? '' : ' <span title="Sin correo" style="color:#DC2626">✉️✗</span>'}</td><td><span style="background:${b[1]};color:${b[2]};padding:2px 9px;border-radius:12px;font-weight:700;font-size:11px;white-space:nowrap">${b[0]}</span></td><td>${r.anio || ''}</td><td style="font-size:11px">${(r.faltan||[]).length ? '<span style="color:#B45309">Falta: ' + r.faltan.map(t => cpEsc(CP_DOC[t]||t)).join(', ') + '</span>' : '<span style="color:#059669">✓ Completos</span>'}${(r.docs||[]).filter(d => d.estado === 'pendiente').length ? '<div style="color:#2563EB">' + (r.docs||[]).filter(d => d.estado === 'pendiente').length + ' por validar</div>' : ''}</td><td><button class="fbtn" onclick="cpAbrir('${r.id}')">Revisar</button></td></tr>`; }).join('') + '</tbody></table>';
 }
 function cpEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c])); }
 const CP_ETIQ = [['Propietario',null],['prop_nombre','Nombre'],['prop_rut','RUT'],['prop_fnac','Nacimiento'],['prop_nac','Nacionalidad'],['prop_tel','Teléfono'],['prop_mail','Correo'],['conyuge_nombre','Cónyuge/pareja'],['conyuge_rut','RUT cónyuge'],['uso','Uso de la residencia'],['resid_principal','Residencia principal del dueño'],
@@ -2547,7 +2547,10 @@ function cpAbrir(id) {
     if (l === null) { h += `<div style="font-weight:700;color:var(--accent);margin:12px 0 4px;font-size:13px">${k}</div>`; return; }
     if (d[k] !== undefined && d[k] !== '') h += `<div style="display:flex;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed var(--border)"><span style="flex:0 0 40%;color:var(--muted)">${l}</span><span>${cpEsc(d[k])}</span></div>`;
   });
-  h += '<div style="font-weight:700;color:var(--accent);margin:12px 0 4px;font-size:13px">Documentos</div>' + ((r.faltan||[]).length ? `<div style="font-size:12px;color:#B45309;margin-bottom:4px">Faltan: ${r.faltan.map(t => cpEsc(CP_DOC[t]||t)).join(', ')}</div>` : '<div style="font-size:12px;color:#059669;margin-bottom:4px">✓ Documentación completa</div>') + (r.docsEstado ? `<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Según Listado: ${Object.entries(r.docsEstado).map(([k,v]) => (CP_DOC[k]||'Ficha') + ': ' + ({ok:'entregado',falta:'pendiente',na:'no corresponde',desconoce:'se desconoce'}[v]||v)).join(' · ')}</div>` : '') + (r.carpetaUrl ? `<div style="font-size:12px"><a href="${cpEsc(r.carpetaUrl)}" target="_blank" rel="noopener">📁 Carpeta en Drive (${r.archivosCarpeta == null ? '?' : r.archivosCarpeta} archivos)</a></div>` : '') + ((r.docs||[]).length ? r.docs.map(x => `<div style="font-size:12px"><a href="${cpEsc(x.url)}" target="_blank" rel="noopener">📎 ${cpEsc(x.tipo)} — ${cpEsc(x.nombre)}</a> <span style="color:var(--muted)">${cpEsc(x.fecha||'')}</span></div>`).join('') : '<div style="font-size:12px;color:var(--muted)">Sin documentos</div>');
+  h += '<div style="font-weight:700;color:var(--accent);margin:12px 0 4px;font-size:13px">Documentos</div>' + ((r.faltan||[]).length ? `<div style="font-size:12px;color:#B45309;margin-bottom:4px">Faltan: ${r.faltan.map(t => cpEsc(CP_DOC[t]||t)).join(', ')}</div>` : '<div style="font-size:12px;color:#059669;margin-bottom:4px">✓ Documentación completa</div>') + (r.docsEstado ? `<div style="font-size:11px;color:var(--muted);margin-bottom:4px">Según Listado: ${Object.entries(r.docsEstado).map(([k,v]) => (CP_DOC[k]||'Ficha') + ': ' + ({ok:'entregado',falta:'pendiente',na:'no corresponde',desconoce:'se desconoce'}[v]||v)).join(' · ')}</div>` : '') + (r.carpetaUrl ? `<div style="font-size:12px"><a href="${cpEsc(r.carpetaUrl)}" target="_blank" rel="noopener">📁 Carpeta en Drive (${r.archivosCarpeta == null ? '?' : r.archivosCarpeta} archivos)</a></div>` : '') + ((r.docs||[]).length ? r.docs.map((x, i) => {
+      const est = x.estado || 'pendiente', col = { validado:'#059669', rechazado:'#DC2626', pendiente:'#2563EB' }[est];
+      const opts = Object.entries({ sin_clasificar:'Sin clasificar', dominio:'Certificado de dominio', ci_dueno:'Cédula propietario', ci_arrendatario:'Cédula arrendatario', contrato:'Contrato arriendo', mandato:'Mandato corredor', otro:'Otro' }).map(([k, v]) => `<option value="${k}" ${x.tipo === k ? 'selected' : ''}>${v}</option>`).join('');
+      return `<div style="border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px"><div><a href="${cpEsc(x.url)}" target="_blank" rel="noopener">📎 ${cpEsc(x.nombre)}</a> <span style="color:var(--muted)">${cpEsc(x.fecha||'')} · ${cpEsc(x.origen||'')}</span></div>${x.asunto ? `<div style="color:var(--muted)">Asunto: ${cpEsc(x.asunto)}</div>` : ''}<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:5px"><select id="cp-dt-${i}" onchange="cpDocAccion(${i}, null)" style="width:auto;padding:4px">${opts}</select><span style="color:${col};font-weight:700">${est}</span>${x.motivo ? `<span style="color:#DC2626">(${cpEsc(x.motivo)})</span>` : ''}<button class="fbtn" onclick="cpDocAccion(${i}, 'validado')">✅ Validar</button><button class="fbtn" onclick="cpDocAccion(${i}, 'rechazado')">❌ Rechazar</button></div></div>`; }).join('') : '<div style="font-size:12px;color:var(--muted)">Sin documentos</div>');
   h += '<div style="font-weight:700;color:var(--accent);margin:12px 0 4px;font-size:13px">Avisos enviados</div><div style="font-size:12px;color:var(--muted)">' + ((r.envios||[]).length ? r.envios.map(e => cpEsc(e.tipo) + ' (' + cpEsc(e.fecha) + ')').join(', ') : 'Ninguno') + '</div>';
   document.getElementById('cp-m-body').innerHTML = h;
   document.getElementById('cp-motivo').value = '';
@@ -2578,6 +2581,27 @@ function cpCopiar(t, msg) { (navigator.clipboard ? navigator.clipboard.writeText
 function cpCopiarLink() { cpCopiar(CP_URL_PUBLICO, 'Link público copiado'); }
 function cpCopiarPersonal() { if (cpActual) cpCopiar(CP_URL_PUBLICO + '?t=' + cpActual.token, 'Link personal copiado'); }
 
+async function cpDocAccion(i, estado) {
+  if (!cpActual) return;
+  const motivo = document.getElementById('cp-motivo').value.trim();
+  if (estado === 'rechazado' && !motivo) { toast('Escribe el motivo en el campo de abajo para rechazar', 'error'); return; }
+  const res = await cpPost('coprop_docvalidar', { id: cpActual.id, idx: i, tipo: document.getElementById('cp-dt-' + i).value, estado, motivo });
+  if (!res.ok) { toast(res.error || 'Error', 'error'); return; }
+  toast(estado ? 'Documento ' + estado : 'Tipo actualizado', 'success');
+  const id = cpActual.id; await cpCargar(); cpAbrir(id);
+}
+async function cpIndexar() {
+  toast('Indexando carpetas de Drive…');
+  const res = await cpPost('coprop_indexar');
+  toast(res.ok ? `${res.archivosIndexados} archivos nuevos en ${res.unidadesRevisadas} carpetas` : (res.error || 'Error'), res.ok ? 'success' : 'error');
+  if (res.ok) cpCargar();
+}
+async function cpTraerCorreo() {
+  toast('Trayendo adjuntos del correo… puede tardar unos minutos');
+  const res = await cpPost('coprop_importarcorreo');
+  toast(res.ok ? `${res.archivosGuardados} archivos guardados · ${res.mensaje}` : (res.error || 'Error'), res.ok ? 'success' : 'error');
+  if (res.ok) cpCargar();
+}
 async function cpSincDocs() {
   toast('Sincronizando con el Listado de Documentos…');
   const res = await cpPost('coprop_sincdocs');
