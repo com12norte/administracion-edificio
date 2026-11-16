@@ -36,7 +36,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <div id="done" class="card"><h2>✅ Registro enviado</h2><p>Gracias. La administración lo revisará y, si todo está correcto, quedará validado. Si hay algo que corregir le llegará un correo.</p><p class="hint" style="margin-top:12px">Ya puede cerrar esta ventana.</p></div>
 <form id="frm" style="display:none" novalidate>
 <div id="aviso"></div>
-<div class="note">🔒 Sus datos son de uso exclusivo de la administración y el comité (Ley 21.442, Res. Exenta 721/2023 MINVU y Ley 19.628). Solo podrán usarse para actualizar el plan de evacuación, ingreso forzoso a una unidad o emergencias. Este registro debe actualizarse <b>cada año</b>.</div>
+<div class="note">🔒 <b>Responsable:</b> Comunidad Edificio 12 Norte de Viña del Mar. Este registro es obligatorio según la Ley 21.442 (arts. 5, 9 y 16) y sus datos se tratan conforme a la <b>Ley 21.719</b> de protección de datos personales. Son de uso exclusivo de la administración y el comité, y solo se usan para mantener el registro de copropietarios, comunicarnos con usted, el plan de emergencia y evacuación (Ley 21.442, art. 40) y emergencias o ingreso forzoso a la unidad. No se venden ni se ceden. Debe actualizarse <b>cada año</b>.<br>Puede pedir acceso, corrección o eliminación de sus datos escribiendo a <a href="mailto:com12norte@gmail.com?subject=Datos%20personales">com12norte@gmail.com</a>. <a href="https://condoadmin-rouge.vercel.app/privacidad.html" target="_blank" rel="noopener">Política de privacidad</a></div>
 
 <div class="card"><h2>1. Unidad</h2><div class="g">
  <div class="f"><label>Dirección <i>*</i></label><select id="direccion"></select><input id="direccion_otra" placeholder="Escriba la dirección" style="display:none;margin-top:6px"><div class="er">Obligatorio</div></div>
@@ -68,12 +68,16 @@ button:disabled{opacity:.5;cursor:not-allowed}
  <div class="f full"><label>Correo electrónico</label><input type="email" data-k="res_mail" data-mail><div class="er">Correo inválido</div></div>
 </div></div>
 
-<div class="card"><h2>5. Descripción de la unidad</h2><div class="g">
+<div class="card"><h2>5. Descripción de la unidad</h2>
+<div class="note" style="margin-bottom:12px">♿ <b>Datos de salud (datos sensibles).</b> El número de ocupantes con discapacidad, movilidad reducida o electrodependencia se usa <b>solo</b> para el plan de evacuación (Ley 21.442, art. 40), para que en una emergencia se les ayude primero. Lo ven únicamente la administración, el comité, las brigadas de emergencia y, dentro del plan de evacuación, Bomberos y Carabineros. Entregarlos es voluntario y puede retirar su autorización cuando quiera.
+<label class="chk" style="margin-top:8px"><input type="checkbox" id="consSalud"> Autorizo expresamente el uso de estos datos de salud para el plan de evacuación (Ley 21.719, art. 16).</label></div>
+<input type="hidden" data-k="consent_salud" id="consent_salud"><input type="hidden" data-k="consent_salud_fecha" id="consent_salud_fecha">
+<div class="g">
  <div class="f"><label>Residentes que habitan la unidad <i>*</i></label><input type="number" min="0" data-k="n_res" data-req data-num><div class="er">Obligatorio</div></div>
- <div class="f"><label>Ocupantes con discapacidad <i>*</i></label><input type="number" min="0" data-k="n_disc" data-req data-num><div class="hint">Si no hay, escriba 0</div><div class="er">Obligatorio</div></div>
- <div class="f"><label>Con movilidad reducida <i>*</i></label><input type="number" min="0" data-k="n_movred" data-req data-num><div class="er">Obligatorio</div></div>
+ <div class="f salud"><label>Ocupantes con discapacidad</label><input type="number" min="0" data-k="n_disc" data-num><div class="hint">Si no hay, escriba 0</div><div class="er">Obligatorio</div></div>
+ <div class="f salud"><label>Con movilidad reducida</label><input type="number" min="0" data-k="n_movred" data-num><div class="er">Obligatorio</div></div>
  <div class="f"><label>No hispanoparlantes <i>*</i></label><input type="number" min="0" data-k="n_nohisp" data-req data-num><div class="er">Obligatorio</div></div>
- <div class="f"><label>Electrodependientes <i>*</i></label><input type="number" min="0" data-k="n_electro" data-req data-num><div class="er">Obligatorio</div></div>
+ <div class="f salud"><label>Electrodependientes</label><input type="number" min="0" data-k="n_electro" data-num><div class="er">Obligatorio</div></div>
  <div class="f"><label>Menores de edad <i>*</i></label><input type="number" min="0" data-k="n_menores" data-req data-num><div class="er">Obligatorio</div></div>
  <div class="f"><label>Adultos mayores <i>*</i></label><input type="number" min="0" data-k="n_adultos" data-req data-num><div class="er">Obligatorio</div></div>
  <div class="f"><label>¿Tiene mascota? <i>*</i></label><select data-k="mascota" data-req id="mascota"><option value="">Seleccione…</option><option>No</option><option>Sí</option></select><div class="er">Obligatorio</div></div>
@@ -99,7 +103,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
  <p class="hint" id="docsPrev"></p>
 </div>
 
-<div class="card"><label class="chk"><input type="checkbox" id="acepto"> Declaro que los datos son verdaderos y autorizo su uso por la administración y el comité para los fines señalados.</label><div class="er" id="erAcepto" style="display:block;visibility:hidden">Debe aceptar para enviar</div></div>
+<div class="card"><label class="chk"><input type="checkbox" id="acepto"> Declaro que los datos son verdaderos y que leí cómo se usarán (<a href="https://condoadmin-rouge.vercel.app/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>).</label><div class="er" id="erAcepto" style="display:block;visibility:hidden">Debe aceptar para enviar</div></div>
 <button type="submit" id="btn">Enviar registro</button>
 <p class="hint" style="text-align:center;margin:10px 0 30px" id="foot"></p>
 </form>
@@ -120,6 +124,12 @@ function mailOk(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 $$('[data-nac]').forEach(s=>{ s.innerHTML='<option value="">Seleccione…</option>'+NAC.map(n=>`<option>${n}</option>`).join(''); });
 $$('[data-rut]').forEach(i=>i.addEventListener('input',()=>{ i.value=fmtRut(i.value); }));
 $$('[data-tel]').forEach(i=>i.addEventListener('input',()=>{ i.value=fmtTel(i.value); }));
+// Consentimiento separado para datos de salud (Ley 21.719, art. 16)
+function syncSalud(){ const ok=$('#consSalud').checked;
+  $$('.f.salud input').forEach(i=>{ i.disabled=!ok; if(!ok) i.value=''; if(ok) i.setAttribute('data-req',''); else i.removeAttribute('data-req'); });
+  $$('.f.salud label').forEach(l=>{ l.querySelector('i')?.remove(); if(ok) l.insertAdjacentHTML('beforeend',' <i>*</i>'); });
+  $('#consent_salud').value=ok?'Sí':'No'; if(!ok) $('#consent_salud_fecha').value=''; else if(!$('#consent_salud_fecha').value) $('#consent_salud_fecha').value=new Date().toISOString(); }
+$('#consSalud').addEventListener('change',syncSalud);
 $('#mascota').addEventListener('change',()=>{ $('#sec6').style.display=$('#mascota').value==='Sí'?'block':'none'; });
 $('#igual').addEventListener('change',e=>{ if(!e.target.checked) return;
   const m={res_nombre:'prop_nombre',res_rut:'prop_rut',res_fnac:'prop_fnac',res_nac:'prop_nac',res_tel:'prop_tel',res_mail:'prop_mail'};
@@ -137,7 +147,7 @@ function fillUnits(){
 }
 function unitVal(){ const d=$('#direccion').value==='__otra'?$('#direccion_otra').value.trim():$('#direccion').value; const p=$('#depto').value==='__otro'?$('#depto_otro').value.trim():$('#depto').value; return {direccion:d,depto:p}; }
 
-function fillData(d){ $$('[data-k]').forEach(el=>{ if(d[el.dataset.k]!==undefined) el.value=d[el.dataset.k]; }); $('#mascota').dispatchEvent(new Event('change')); }
+function fillData(d){ $('#consSalud').checked=d.consent_salud==='Sí'; syncSalud(); $$('[data-k]').forEach(el=>{ if(d[el.dataset.k]!==undefined) el.value=d[el.dataset.k]; }); $('#mascota').dispatchEvent(new Event('change')); }
 function readData(){ const o={}; $$('[data-k]').forEach(el=>{ o[el.dataset.k]=el.value.trim(); }); if(o.mascota!=='Sí'){o.masc_tipo=o.masc_det=o.masc_reg='';} return o; }
 
 function validate(){
@@ -175,6 +185,7 @@ $('#frm').addEventListener('submit',async e=>{
   }catch(err){ alert('Error: '+err.message); btn.disabled=false; btn.textContent='Enviar registro'; }
 });
 
+syncSalud();
 (async function init(){
   try{
     if(TOKEN){
