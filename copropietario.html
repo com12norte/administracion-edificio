@@ -82,7 +82,21 @@ input[type=file]{padding:10px;background:#fff;border-style:dashed}
  <div class="f"><label>Letra y número de la unidad <i>*</i></label><select id="depto"></select><input id="depto_otro" placeholder="Ej: 305" style="display:none;margin-top:6px"><div class="er">Obligatorio</div></div>
 </div></div>
 
-<div class="card"><h2><span class="n">2</span>Datos del propietario</h2><div class="g">
+<div class="card" id="secRol" style="display:none"><h2><span class="n">★</span>¿Quién completa?</h2>
+ <p class="hint" style="margin:0 0 8px">Completas como <b id="rolTxt"></b>. Solo verás y modificarás los datos de ocupación de la unidad; los datos del propietario los completa él con su enlace personal.</p>
+ <div class="g">
+  <div class="f"><label>Ocupas la unidad como <i>*</i></label><select data-k="ocup_tipo" id="ocup_tipo"><option value="">Seleccione…</option><option>Arrendatario</option><option>Familiar del propietario</option><option>Préstamo / otro</option></select><div class="er">Obligatorio</div></div>
+ </div>
+</div>
+<div class="card" id="secDueno" style="display:none"><h2><span class="n">2</span>Contacto del propietario</h2>
+ <p class="hint" style="margin:0 0 8px">Obligatorio: le avisaremos para que complete su parte del registro y sus documentos.</p>
+ <div class="g">
+  <div class="f full"><label>Nombre del propietario <i>*</i></label><input id="du_nombre" data-oreq><div class="er">Obligatorio</div></div>
+  <div class="f"><label>Teléfono del propietario <i>*</i></label><input id="du_tel" data-oreq data-tel placeholder="+56 9 1234 5678"><div class="er">Teléfono inválido</div></div>
+  <div class="f"><label>Correo del propietario <i>*</i></label><input type="email" id="du_mail" data-oreq data-mail><div class="er">Correo inválido</div></div>
+ </div>
+</div>
+<div class="card" id="sec2"><h2><span class="n">2</span>Datos del propietario</h2><div class="g">
  <div class="f full"><label>Nombre completo <i>*</i></label><input data-k="prop_nombre" data-req placeholder="Ej: Pedro Pablo Pérez Poblete"><div class="er">Obligatorio</div></div>
  <div class="f"><label>RUT / DNI <i>*</i></label><input data-k="prop_rut" data-req data-rut placeholder="15254365-8"><div class="er">RUT inválido</div></div>
  <div class="f"><label>Fecha de nacimiento <i>*</i></label><input type="date" data-k="prop_fnac" data-req><div class="er">Obligatorio</div></div>
@@ -94,10 +108,10 @@ input[type=file]{padding:10px;background:#fff;border-style:dashed}
  <div class="f full"><label>Uso de la residencia del propietario <i>*</i></label><select data-k="uso" data-req><option value="">Seleccione…</option><option>Residencia principal del propietario</option><option>Arrendada</option><option>Segunda vivienda / uso esporádico</option><option>Prestada a familiar</option><option>Desocupada</option><option>Otro</option></select><div class="er">Obligatorio</div></div>
 </div></div>
 
-<div class="card"><h2><span class="n">3</span>Residencia principal del dueño</h2><div class="g"><div class="f full"><label>Dirección (calle, número, depto, comuna, región) <i>*</i></label><input data-k="resid_principal" data-req placeholder="Ej: Olga Salas 7000, Recoleta, Región Metropolitana"><div class="er">Obligatorio</div></div></div></div>
+<div class="card" id="sec3"><h2><span class="n">3</span>Residencia principal del dueño</h2><div class="g"><div class="f full"><label>Dirección (calle, número, depto, comuna, región) <i>*</i></label><input data-k="resid_principal" data-req placeholder="Ej: Olga Salas 7000, Recoleta, Región Metropolitana"><div class="er">Obligatorio</div></div></div></div>
 
-<div class="card"><h2><span class="n">4</span>Copropietario o residente principal del departamento</h2>
-<label class="chk full" style="margin-bottom:10px"><input type="checkbox" id="igual"> Es el mismo propietario (copiar datos)</label>
+<div class="card"><h2><span class="n">4</span><span id="t4">Copropietario o residente principal del departamento</span></h2>
+<label class="chk full" style="margin-bottom:10px" id="igualBox"><input type="checkbox" id="igual"> Es el mismo propietario (copiar datos)</label>
 <div class="g">
  <div class="f full"><label>Nombre completo <i>*</i></label><input data-k="res_nombre" data-req><div class="er">Obligatorio</div></div>
  <div class="f"><label>RUT / DNI <i>*</i></label><input data-k="res_rut" data-req data-rut><div class="er">RUT inválido</div></div>
@@ -134,12 +148,16 @@ input[type=file]{padding:10px;background:#fff;border-style:dashed}
  <div class="f"><label>Teléfono <i>*</i></label><input data-k="em_tel" data-req data-tel><div class="er">Teléfono inválido</div></div>
 </div></div>
 
-<div class="card docs"><h2><span class="n">8</span>Documentos (opcional)</h2>
+<div class="card docs"><h2><span class="n">8</span>Documentos</h2>
+ <p class="hint" style="margin:0 0 8px">PDF o imagen, máx. 4 MB cada uno. Si ahora no los tiene, puede enviar igual: el registro queda con <b>documentos pendientes</b> y le recordaremos por correo.</p>
  <div class="g">
-  <div class="f"><label>Cédula de identidad del propietario</label><input type="file" id="doc_cedula" accept=".pdf,.jpg,.jpeg,.png"><small>PDF o imagen, máx. 4 MB</small></div>
-  <div class="f"><label>Escritura / contrato de arriendo</label><input type="file" id="doc_escritura" accept=".pdf,.jpg,.jpeg,.png"><small>PDF o imagen, máx. 4 MB</small></div>
+  <div class="f" data-doc="dominio"><label>Certificado de dominio vigente</label><input type="file" id="doc_dominio" accept=".pdf,.jpg,.jpeg,.png"></div>
+  <div class="f" data-doc="ci_dueno"><label>Cédula de identidad del o los propietarios</label><input type="file" id="doc_ci_dueno" accept=".pdf,.jpg,.jpeg,.png" multiple><small>Puede elegir varios archivos (uno por propietario)</small></div>
+  <div class="f" data-doc="contrato"><label id="lblContrato">Contrato de arriendo vigente y/o declaración del propietario (arrendador)</label><input type="file" id="doc_contrato" accept=".pdf,.jpg,.jpeg,.png"></div>
+  <div class="f" data-doc="ci_arrendatario"><label id="lblCiArr">Cédula de identidad del arrendatario</label><input type="file" id="doc_ci_arrendatario" accept=".pdf,.jpg,.jpeg,.png"></div>
  </div>
  <p class="hint" id="docsPrev"></p>
+ <div class="alert warn" id="docsFaltan" style="display:none;margin-top:8px"></div>
 </div>
 
 <div class="card"><label class="chk"><input type="checkbox" id="acepto"> Declaro que los datos son verdaderos y que leí cómo se usarán (<a href="https://condoadmin-rouge.vercel.app/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>).</label><div class="er" id="erAcepto" style="display:block;visibility:hidden">Debe aceptar para enviar</div></div>
@@ -148,12 +166,13 @@ input[type=file]{padding:10px;background:#fff;border-style:dashed}
 </form>
 </main>
 <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyokAPmufPZdlJU-WfMg9952mCWqlmbzU-vT_8ero8lYXAIsiHmJo85KQRsPA3pxnv_/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyqj3p48Iez2Th-tg6jEkG_gL0gf6cD3jx-AynTQ5tNj4W1m4Fli51m_7nRE5nq_07u/exec';
 let TOKEN = new URLSearchParams(location.search).get('t') || '';
 const API = 'https://condoadmin-rouge.vercel.app/api/residente-codigo';
 const NAC = ['Chilena','Argentina','Boliviana','Brasileña','Colombiana','Cubana','Ecuatoriana','Española','Estadounidense','Haitiana','Peruana','Uruguaya','Venezolana','Otra'];
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
-let unidades = [], docsExist = [];
+let unidades = [], docsExist = [], MODO = 'propietario';
+const NOMDOC={dominio:'Certificado de dominio vigente',ci_dueno:'Cédula del o los propietarios',contrato:'Contrato de arriendo y/o declaración del propietario',ci_arrendatario:'Cédula del arrendatario u ocupante'};
 
 function rutOk(v){ v=String(v).replace(/[^0-9kK]/g,'').toUpperCase(); if(v.length<2) return false; const d=v.slice(-1); let s=0,m=2; for(let i=v.length-2;i>=0;i--){s+=+v[i]*m; m=m===7?2:m+1;} const r=11-s%11; return d===(r===11?'0':r===10?'K':String(r)); }
 function fmtRut(v){ v=String(v).replace(/[^0-9kK]/g,'').toUpperCase(); if(v.length<2) return v; const b=v.slice(0,-1).replace(/\B(?=(\d{3})+(?!\d))/g,'.'); return b+'-'+v.slice(-1); }
@@ -188,14 +207,37 @@ function fillUnits(){
 function unitVal(){ const d=$('#direccion').value==='__otra'?$('#direccion_otra').value.trim():$('#direccion').value; const p=$('#depto').value==='__otro'?$('#depto_otro').value.trim():$('#depto').value; return {direccion:d,depto:p}; }
 
 function fillData(d){ $('#consSalud').checked=d.consent_salud==='Sí'; syncSalud(); $$('[data-k]').forEach(el=>{ if(d[el.dataset.k]!==undefined) el.value=d[el.dataset.k]; }); $('#mascota').dispatchEvent(new Event('change')); }
-function readData(){ const o={}; $$('[data-k]').forEach(el=>{ o[el.dataset.k]=el.value.trim(); }); if(o.mascota!=='Sí'){o.masc_tipo=o.masc_det=o.masc_reg='';} return o; }
+function readData(){ const o={}; $$('[data-k]').forEach(el=>{ if(oculto(el)) return; o[el.dataset.k]=el.value.trim(); }); if(o.mascota!=='Sí'){o.masc_tipo=o.masc_det=o.masc_reg='';}
+  if(MODO==='ocupante'){ o.prop_nombre=$('#du_nombre').value.trim(); o.prop_tel=$('#du_tel').value.trim(); o.prop_mail=$('#du_mail').value.trim().toLowerCase(); }
+  return o; }
+// Un campo está oculto si su tarjeta no se muestra (p. ej. datos del dueño cuando completa el ocupante)
+function oculto(el){ const c=el.closest('.card'); return !!(c && c.style.display==='none'); }
+// Documentos que corresponden según quién completa y el uso de la unidad
+function docsAplican(){ const uso=($('[data-k="uso"]').value||''); const arr=MODO==='ocupante'||/arrend|prestada/i.test(uso);
+  return ['dominio','ci_dueno'].concat(arr?['contrato','ci_arrendatario']:[]); }
+function docsVista(){ const ap=docsAplican();
+  $$('[data-doc]').forEach(f=>f.style.display=ap.includes(f.dataset.doc)?'':'none');
+  const falt=ap.filter(t=>!docsExist.includes(t) && !($('#doc_'+t).files||[]).length);
+  const m=$('#docsFaltan'); m.style.display=falt.length?'block':'none';
+  m.innerHTML=falt.length?'Faltan: <b>'+falt.map(t=>NOMDOC[t]).join(', ')+'</b>. Puede enviar igual y subirlos después.':''; }
+function modoOcupante(email){ MODO='ocupante';
+  ['#sec2','#sec3','#igualBox'].forEach(q=>$(q).style.display='none');
+  $('#secRol').style.display='block'; $('#secDueno').style.display='block'; $('#rolTxt').textContent='arrendatario u ocupante';
+  $('#ocup_tipo').setAttribute('data-req',''); $('#t4').textContent='Tus datos (quien vive en la unidad)';
+  const rm=$('[data-k="res_mail"]'); rm.value=email; rm.readOnly=true;
+  $('#lblContrato').textContent='Contrato de arriendo vigente o declaración del propietario que autoriza la ocupación';
+  $('#lblCiArr').textContent='Tu cédula de identidad (arrendatario u ocupante)';
+  docsVista(); }
 
 function validate(){
   let bad=null;
   $$('.f').forEach(f=>f.classList.remove('bad'));
   const mark=el=>{ const f=el.closest('.f'); if(f) f.classList.add('bad'); if(!bad) bad=el; };
   const u=unitVal(); if(!u.direccion) mark($('#direccion')); if(!u.depto) mark($('#depto'));
+  $$('[data-oreq]').forEach(el=>{ if(oculto(el)) return; const v=el.value.trim();
+    if(!v) return mark(el); if(el.hasAttribute('data-tel')&&!telOk(v)) return mark(el); if(el.hasAttribute('data-mail')&&!mailOk(v)) return mark(el); });
   $$('[data-k]').forEach(el=>{
+    if(oculto(el)) return;
     if(el.closest('#sec6') && $('#mascota').value!=='Sí') return;
     const v=el.value.trim(); const req=el.hasAttribute('data-req')||(el.closest('#sec6'));
     if(req && !v) return mark(el);
@@ -208,7 +250,7 @@ function validate(){
   return !bad;
 }
 
-function leerArchivo(inp,tipo){ return new Promise((res,rej)=>{ const f=inp.files[0]; if(!f) return res(null);
+function leerArchivo(f,tipo){ return new Promise((res,rej)=>{ if(!f) return res(null);
   if(f.size>4*1024*1024) return rej(new Error('El archivo "'+f.name+'" supera 4 MB'));
   const r=new FileReader(); r.onload=()=>res({tipo,nombre:f.name,mime:f.type,b64:String(r.result).split(',')[1]}); r.onerror=()=>rej(new Error('No se pudo leer el archivo')); r.readAsDataURL(f); }); }
 
@@ -216,11 +258,18 @@ $('#frm').addEventListener('submit',async e=>{
   e.preventDefault(); if(!validate()) return;
   const btn=$('#btn'); btn.disabled=true; btn.textContent='Enviando…';
   try{
-    const documentos=(await Promise.all([leerArchivo($('#doc_cedula'),'cedula'),leerArchivo($('#doc_escritura'),'escritura')])).filter(Boolean);
+    const pend=[]; docsAplican().forEach(t=>[...($('#doc_'+t).files||[])].forEach(f=>pend.push(leerArchivo(f,t))));
+    const documentos=(await Promise.all(pend)).filter(Boolean);
     const u=unitVal();
-    const r=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({accion:'coprop_guardar',token:TOKEN,direccion:u.direccion,depto:u.depto,datos:readData(),documentos})});
-    const j=await r.json(); const res=j.ok===false?j:j; 
+    const r=await fetch(APPS_SCRIPT_URL,{method:'POST',body:JSON.stringify({accion:'coprop_guardar',token:TOKEN,rol:MODO,email:accEmail,sesion:accSesion,direccion:u.direccion,depto:u.depto,datos:readData(),documentos})});
+    const res=await r.json();
     if(!res.ok){ throw new Error(res.error||'No se pudo guardar'); }
+    if(res.token && !TOKEN){ TOKEN=res.token; }
+    let h='';
+    if(res.faltan&&res.faltan.length) h+='<div class="alert warn" style="margin-top:10px"><b>Quedó guardado con documentos pendientes:</b><br>• '+res.faltan.join('<br>• ')+'<br>Le enviaremos recordatorios por correo hasta completarlos.</div>';
+    if(MODO==='ocupante') h+='<p class="hint" style="margin-top:10px">Avisamos al propietario para que complete su parte.</p>';
+    if(res.aviso) h+='<div class="alert warn" style="margin-top:10px">'+res.aviso+'</div>';
+    $('#done').insertAdjacentHTML('beforeend',h);
     $('#frm').style.display='none'; $('#done').style.display='block'; window.scrollTo(0,0);
   }catch(err){ alert('Error: '+err.message); btn.disabled=false; btn.textContent='Enviar registro'; }
 });
@@ -240,27 +289,38 @@ async function cargarConToken(){
   else if(r.estado==='aprobado'&&r.anio===yr) h='<div class="alert okk">✅ Su registro '+yr+' ya está validado. Puede modificarlo si hubo cambios.</div>';
   else h='<div class="alert warn"><b>Actualización anual '+yr+'.</b> Sus datos anteriores están cargados: revíselos, corrija lo que cambió y envíe.</div>';
   $('#aviso').innerHTML=h;
-  if((r.docs||[]).length) $('#docsPrev').textContent='Documentos ya guardados: '+r.docs.map(d=>d.tipo).join(', ')+'. Suba uno nuevo solo si desea reemplazarlo.';
+  docsExist=[...new Set((r.docs||[]).map(d=>d.tipo))];
+  if(docsExist.length) $('#docsPrev').textContent='Ya guardados: '+docsExist.map(t=>NOMDOC[t]||t).join(', ')+'. Suba uno nuevo solo si desea reemplazarlo.';
+  docsVista();
   mostrarForm();
 }
 // ── Registro nuevo (correo ya verificado) ──
+async function registroOcupante(email){
+  await registroNuevo(email); modoOcupante(email);
+  $('#aviso').innerHTML='<div class="alert okk">Correo verificado. Completa los datos de quienes viven en la unidad y el contacto del propietario.</div>'; progreso(); }
+// Después de verificar el correo: ¿propietario u ocupante?
+function elegirRol(msg){
+  $('#acc2').style.display='none'; accMsg('okk',msg||'Correo verificado. ¿Cómo te relacionas con la unidad?');
+  $('#accUnidades').innerHTML='<button class="sec" id="rolProp">🏠 Soy propietario</button><button class="sec" id="rolOcup" style="margin-top:8px">🔑 Vivo aquí (arrendatario u ocupante)</button>';
+  $('#accUnidades').style.display='block';
+  $('#rolProp').onclick=()=>registroNuevo(accEmail); $('#rolOcup').onclick=()=>registroOcupante(accEmail); }
 async function registroNuevo(email){
   const j=await (await fetch(APPS_SCRIPT_URL+'?accion=coprop_unidades')).json();
   unidades=j.data||[]; fillUnits();
   const pm=$('[data-k="prop_mail"]'); if(email&&pm&&!pm.value) pm.value=email;
   $('#aviso').innerHTML='<div class="alert okk">Correo verificado. Completa el registro de tu unidad.</div>';
-  mostrarForm();
+  docsVista(); mostrarForm();
 }
 function mostrarForm(){ $('#loading').style.display='none'; $('#acceso').style.display='none'; $('#frm').style.display='block'; progreso(); window.scrollTo(0,0); }
 
 // ── Barra de progreso: campos obligatorios completos ──
 function progreso(){
-  const req=$$('[data-req]').filter(el=>!(el.closest('#sec6')&&$('#mascota').value!=='Sí')&&!el.disabled);
+  const req=$$('[data-req],[data-oreq]').filter(el=>!(el.closest('#sec6')&&$('#mascota').value!=='Sí')&&!el.disabled&&!oculto(el));
   const ok=req.filter(el=>el.value.trim()).length+(unitVal().direccion?1:0)+(unitVal().depto?1:0)+($('#acepto').checked?1:0);
   const tot=req.length+3; const p=Math.round(ok/tot*100);
   $('#progTxt').textContent=p+'%'; $('#progBar').style.width=p+'%';
 }
-document.addEventListener('input',progreso); document.addEventListener('change',progreso);
+document.addEventListener('input',progreso); document.addEventListener('change',e=>{ progreso(); if(e.target.matches('[type=file],[data-k="uso"]')) docsVista(); });
 
 // ── Ingreso con correo y código ──
 let accEmail='', accSesion='';
@@ -295,17 +355,18 @@ async function verificarCodigo(){
       $('#accUnidades').innerHTML=props.map((x,i)=>'<button class="sec" data-i="'+i+'">'+x.direccion+' · '+x.depto+'</button>').join('')+'<div class="sep">o</div><button class="link" id="accNueva">Registrar otra unidad</button>';
       $('#accUnidades').style.display='block';
       $$('#accUnidades [data-i]').forEach(b=>b.onclick=()=>abrirToken(props[+b.dataset.i].token));
-      $('#accNueva').onclick=()=>registroNuevo(accEmail);
+      $('#accNueva').onclick=()=>elegirRol();
       return;
     }
-    if(resid.length){
+    if(resid.length){ elegirRol('Tu correo figura como residente en '+resid.map(x=>x.direccion+' · '+x.depto).join(', ')+'. ¿Cómo completas el registro?'); return; }
+    if(false){
       $('#acc2').style.display='none';
       accMsg('warn','Tu correo figura como <b>residente</b> en '+resid.map(x=>x.direccion+' · '+x.depto).join(', ')+'. El registro de esa unidad lo actualiza su propietario. Si eres propietario de otra unidad, puedes registrarla.');
       $('#accUnidades').innerHTML='<button class="sec" id="accNueva">Registrar una unidad como propietario</button>'; $('#accUnidades').style.display='block';
       $('#accNueva').onclick=()=>registroNuevo(accEmail);
       return;
     }
-    await registroNuevo(accEmail);
+    elegirRol();
   }catch(err){ accMsg('err',err.message||'Ocurrió un error.'); btn.disabled=false; btn.textContent='Continuar'; }
 }
 async function abrirToken(t){
