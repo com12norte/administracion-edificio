@@ -50,6 +50,7 @@ input[type=file]{padding:10px;background:#fff;border-style:dashed}
 .sep{display:flex;align-items:center;gap:10px;color:#94a3b8;font-size:12px;margin:16px 0}.sep:before,.sep:after{content:"";flex:1;height:1px;background:var(--b)}
 .unidades button{margin-top:8px}
 .foot{text-align:center;font-size:12px;color:var(--m);margin-top:6px}
+.alert.est{margin:6px 0 0;font-size:12.5px;padding:7px 10px}.alert.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a}
 </style></head><body>
 <header><div class="logo">🏢</div><h1>Registro de Copropietarios</h1><p>Comunidad Edificio 12 Norte de Viña del Mar</p></header>
 <main>
@@ -208,16 +209,42 @@ function unitVal(){ const d=$('#direccion').value==='__otra'?$('#direccion_otra'
 
 function fillData(d){ $('#consSalud').checked=d.consent_salud==='Sí'; syncSalud(); $$('[data-k]').forEach(el=>{ if(d[el.dataset.k]!==undefined) el.value=d[el.dataset.k]; }); $('#mascota').dispatchEvent(new Event('change')); }
 function readData(){ const o={}; $$('[data-k]').forEach(el=>{ if(oculto(el)) return; o[el.dataset.k]=el.value.trim(); }); if(o.mascota!=='Sí'){o.masc_tipo=o.masc_det=o.masc_reg='';}
+  if(MODO!=='ocupante' && $('[data-k="uso"]').value==='Residencia principal del propietario'){ syncResid(); o.resid_principal=$('[data-k="resid_principal"]').value; }
   if(MODO==='ocupante'){ o.prop_nombre=$('#du_nombre').value.trim(); o.prop_tel=$('#du_tel').value.trim(); o.prop_mail=$('#du_mail').value.trim().toLowerCase(); }
   return o; }
 // Un campo está oculto si su tarjeta no se muestra (p. ej. datos del dueño cuando completa el ocupante)
+// Si el dueño vive en la unidad, su residencia principal es esta misma: no se pregunta
+function syncResid(){ const vive=$('[data-k="uso"]').value==='Residencia principal del propietario';
+  if(MODO==='ocupante') return; $('#sec3').style.display=vive?'none':'';
+  if(vive){ const u=unitVal(); $('[data-k="resid_principal"]').value=(u.direccion&&u.depto)?('La misma unidad: '+u.direccion+' depto '+u.depto):'La misma unidad'; } }
 function oculto(el){ const c=el.closest('.card'); return !!(c && c.style.display==='none'); }
 // Documentos que corresponden según quién completa y el uso de la unidad
 function docsAplican(){ const uso=($('[data-k="uso"]').value||''); const arr=MODO==='ocupante'||/arrend|prestada/i.test(uso);
   return ['dominio','ci_dueno'].concat(arr?['contrato','ci_arrendatario']:[]); }
+let DOCS=[], DOCEST={};
+const fmtF=f=>f?f.split('-').reverse().join('-'):'';
+// Estado de cada documento: qué hay guardado, si está validado, rechazado o hay que actualizarlo
+function estadoDoc(t){
+  const lista=DOCS.filter(d=>d.tipo===t), nuevo=($('#doc_'+t).files||[]).length;
+  if(nuevo) return {c:'okk',h:'📎 Se subirá con este envío ('+nuevo+' archivo'+(nuevo>1?'s':'')+')',ok:true};
+  const vivos=lista.filter(d=>d.estado!=='rechazado'&&!d.vencido);
+  const ver=d=>d.archivo?' · <a href="#" data-ver="'+d.i+'">Ver</a>':'';
+  if(vivos.length){
+    const h=vivos.map(d=>(d.estado==='validado'?'✅ Validado':'🕓 En revisión')+' · '+(d.nombre||'archivo')+(d.fecha?' ('+fmtF(d.fecha)+')':'')+ver(d)).join('<br>');
+    return {c:vivos.some(d=>d.estado==='validado')?'okk':'info',h:h+'<br><small>Suba uno nuevo solo si cambió.</small>',ok:true}; }
+  const venc=lista.find(d=>d.vencido);
+  if(venc) return {c:'warn',h:'🔄 Hay que actualizarlo: el que tenemos es de '+fmtF(venc.fecha)+' y debe ser del año en curso.'+ver(venc),ok:false};
+  const rech=lista.find(d=>d.estado==='rechazado');
+  if(rech) return {c:'err',h:'❌ Rechazado: '+(rech.motivo||'no es válido')+'. Suba uno nuevo.'+ver(rech),ok:false};
+  if(DOCEST[t]==='ok') return {c:'okk',h:'✅ Entregado en un registro anterior (en papel o por correo).',ok:true};
+  return {c:'warn',h:'⚠️ Falta',ok:false};
+}
 function docsVista(){ const ap=docsAplican();
-  $$('[data-doc]').forEach(f=>f.style.display=ap.includes(f.dataset.doc)?'':'none');
-  const falt=ap.filter(t=>!docsExist.includes(t) && !($('#doc_'+t).files||[]).length);
+  $$('[data-doc]').forEach(f=>{ f.style.display=ap.includes(f.dataset.doc)?'':'none';
+    let b=f.querySelector('.est'); if(!b){ b=document.createElement('div'); b.className='est'; f.appendChild(b); }
+    const e=estadoDoc(f.dataset.doc); b.className='est alert '+e.c; b.innerHTML=e.h; });
+  $$('[data-ver]').forEach(a=>a.onclick=verDoc);
+  const falt=ap.filter(t=>!estadoDoc(t).ok);
   const m=$('#docsFaltan'); m.style.display=falt.length?'block':'none';
   m.innerHTML=falt.length?'Faltan: <b>'+falt.map(t=>NOMDOC[t]).join(', ')+'</b>. Puede enviar igual y subirlos después.':''; }
 function modoOcupante(email){ MODO='ocupante';
@@ -250,6 +277,14 @@ function validate(){
   return !bad;
 }
 
+async function verDoc(e){ e.preventDefault(); const a=e.target, t0=a.textContent; a.textContent='Abriendo…';
+  const w=window.open('','_blank');
+  try{ const j=await (await fetch(APPS_SCRIPT_URL+'?accion=coprop_doc&t='+encodeURIComponent(TOKEN)+'&i='+a.dataset.ver)).json();
+    if(!j.ok) throw new Error(j.error);
+    const bin=atob(j.b64), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+    const url=URL.createObjectURL(new Blob([u8],{type:j.mime})); if(w) w.location=url; else location.href=url;
+  }catch(err){ if(w) w.close(); alert('No se pudo abrir: '+err.message); }
+  a.textContent=t0; }
 function leerArchivo(f,tipo){ return new Promise((res,rej)=>{ if(!f) return res(null);
   if(f.size>4*1024*1024) return rej(new Error('El archivo "'+f.name+'" supera 4 MB'));
   const r=new FileReader(); r.onload=()=>res({tipo,nombre:f.name,mime:f.type,b64:String(r.result).split(',')[1]}); r.onerror=()=>rej(new Error('No se pudo leer el archivo')); r.readAsDataURL(f); }); }
@@ -282,15 +317,14 @@ async function cargarConToken(){
   const r=j.registro; unidades=[{direccion:r.direccion,deptos:[r.depto]}]; fillUnits();
   $('#direccion').value=r.direccion; $('#direccion').dispatchEvent(new Event('change')); $('#depto').value=r.depto;
   $('#direccion').disabled=true; $('#depto').disabled=true;
-  fillData(r.datos||{});
+  fillData(r.datos||{}); syncResid();
   const yr=new Date().getFullYear();
   let h='';
   if(r.estado==='devuelto') h='<div class="alert warn"><b>Su registro fue devuelto.</b> Motivo: '+(r.motivo||'')+'</div>';
   else if(r.estado==='aprobado'&&r.anio===yr) h='<div class="alert okk">✅ Su registro '+yr+' ya está validado. Puede modificarlo si hubo cambios.</div>';
   else h='<div class="alert warn"><b>Actualización anual '+yr+'.</b> Sus datos anteriores están cargados: revíselos, corrija lo que cambió y envíe.</div>';
   $('#aviso').innerHTML=h;
-  docsExist=[...new Set((r.docs||[]).map(d=>d.tipo))];
-  if(docsExist.length) $('#docsPrev').textContent='Ya guardados: '+docsExist.map(t=>NOMDOC[t]||t).join(', ')+'. Suba uno nuevo solo si desea reemplazarlo.';
+  DOCS=r.docs||[]; DOCEST=r.docsEstado||{};
   docsVista();
   mostrarForm();
 }
@@ -320,7 +354,7 @@ function progreso(){
   const tot=req.length+3; const p=Math.round(ok/tot*100);
   $('#progTxt').textContent=p+'%'; $('#progBar').style.width=p+'%';
 }
-document.addEventListener('input',progreso); document.addEventListener('change',e=>{ progreso(); if(e.target.matches('[type=file],[data-k="uso"]')) docsVista(); });
+document.addEventListener('input',progreso); document.addEventListener('change',e=>{ progreso(); if(e.target.matches('[type=file],[data-k="uso"]')) docsVista(); if(e.target.matches('[data-k="uso"],#direccion,#depto')) syncResid(); });
 
 // ── Ingreso con correo y código ──
 let accEmail='', accSesion='';
