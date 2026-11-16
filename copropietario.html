@@ -4,46 +4,85 @@
 <title>Registro de Copropietarios - Edificio 12 Norte</title>
 <link rel="icon" href="favicon.svg">
 <style>
-:root{--bg:#F0F2F5;--s:#fff;--b:#E2E5EA;--t:#1A1D23;--m:#6B7280;--a:#1E3A5F;--a2:#2E5490;--ok:#059669;--err:#DC2626}
+:root{--bg:#eef2f7;--s:#fff;--b:#dfe5ee;--t:#16202e;--m:#64748b;--a:#1e3a5f;--a2:#2e5490;--a3:#e8eff8;--ok:#059669;--err:#dc2626;--warn:#b45309}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--t);line-height:1.45}
-header{background:var(--a);color:#fff;padding:18px 16px;text-align:center}
-header h1{font-size:18px}header p{font-size:12px;opacity:.75;margin-top:2px}
-main{max-width:720px;margin:0 auto;padding:16px}
-.card{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:18px;margin-bottom:16px}
-.card h2{font-size:15px;color:var(--a);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--b)}
-.g{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:560px){.g{grid-template-columns:1fr}}
-label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
+body{font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--t);line-height:1.5;-webkit-font-smoothing:antialiased}
+header{background:linear-gradient(135deg,#1e3a5f 0%,#2e5490 100%);color:#fff;padding:28px 16px 64px;text-align:center}
+header .logo{width:54px;height:54px;border-radius:16px;background:rgba(255,255,255,.14);display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:10px}
+header h1{font-size:22px;font-weight:700;letter-spacing:-.2px}header p{font-size:13px;opacity:.8;margin-top:4px}
+main{max-width:760px;margin:-44px auto 0;padding:0 14px 110px}
+.card{background:var(--s);border:1px solid var(--b);border-radius:16px;padding:20px 20px 18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 4px 14px rgba(16,24,40,.04)}
+.card h2{display:flex;align-items:center;gap:10px;font-size:16px;color:var(--a);margin-bottom:16px}
+.card h2 .n{flex:0 0 28px;height:28px;border-radius:50%;background:var(--a3);color:var(--a);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:14px 14px}
+@media(max-width:600px){.g{grid-template-columns:1fr}.card{padding:16px 14px;border-radius:14px}header h1{font-size:19px}}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:#334155}
 label i{color:var(--err);font-style:normal}
-input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--b);border-radius:7px;font-size:14px;font-family:inherit;background:#fff;color:var(--t)}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--a2);border-color:var(--a2)}
-.f{margin-bottom:2px}.f.bad input,.f.bad select{border-color:var(--err)}
-.hint{font-size:11px;color:var(--m);margin-top:3px}.er{font-size:11px;color:var(--err);margin-top:3px;display:none}.f.bad .er{display:block}
+input,select,textarea{width:100%;padding:11px 12px;border:1.5px solid var(--b);border-radius:10px;font-size:16px;font-family:inherit;background:#fbfcfe;color:var(--t);transition:border-color .15s,box-shadow .15s,background .15s}
+input:hover,select:hover{border-color:#c7d2e0}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--a2);background:#fff;box-shadow:0 0 0 4px rgba(46,84,144,.13)}
+input:disabled,select:disabled{background:#f1f5f9;color:#94a3b8;cursor:not-allowed}
+.f{margin-bottom:0}.f.bad input,.f.bad select{border-color:var(--err);background:#fff7f7}
+.hint{font-size:12px;color:var(--m);margin-top:4px}.er{font-size:12px;color:var(--err);margin-top:4px;display:none;font-weight:600}.f.bad .er{display:block}
 .full{grid-column:1/-1}
-button{background:var(--a);color:#fff;border:0;border-radius:8px;padding:12px 22px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
-button:disabled{opacity:.5;cursor:not-allowed}
-.note{font-size:12px;color:var(--m);background:#F7F8FA;border:1px solid var(--b);border-radius:8px;padding:10px 12px;margin-bottom:16px}
-.alert{border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px}
-.alert.warn{background:#FEF3C7;border:1px solid #F59E0B}.alert.okk{background:#D1FAE5;border:1px solid var(--ok)}
-.chk{display:flex;gap:8px;align-items:flex-start;font-size:12px;font-weight:400}.chk input{width:auto;margin-top:2px}
-#done{display:none;text-align:center;padding:40px 16px}#done h2{border:0;font-size:20px;color:var(--ok)}
-.docs small{color:var(--m)}
+button{background:var(--a);color:#fff;border:0;border-radius:12px;padding:14px 22px;font-size:15px;font-weight:700;cursor:pointer;width:100%;transition:background .15s,transform .05s}
+button:hover{background:var(--a2)}button:active{transform:translateY(1px)}
+button:disabled{opacity:.55;cursor:not-allowed}
+button.sec{background:#fff;color:var(--a);border:1.5px solid var(--b)}button.sec:hover{background:var(--a3)}
+button.link{background:none;color:var(--a2);padding:6px;width:auto;font-weight:600;font-size:13px}button.link:hover{background:none;text-decoration:underline}
+.note{font-size:13px;color:#475569;background:#f8fafc;border:1px solid var(--b);border-radius:12px;padding:12px 14px;margin-bottom:14px;line-height:1.55}
+.note a{color:var(--a2)}
+.alert{border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px}
+.alert.warn{background:#fffbeb;border:1px solid #fcd34d;color:#78350f}.alert.okk{background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46}.alert.err{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:500;color:#334155;cursor:pointer;line-height:1.45}.chk input{width:20px;height:20px;flex:0 0 20px;margin-top:1px;accent-color:var(--a)}
+.salud-box{background:#f0f7ff;border:1px solid #c7dbf5;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#1e3a5f;line-height:1.55}
+#done{display:none;text-align:center;padding:44px 20px}#done h2{display:block;font-size:22px;color:var(--ok);margin-bottom:8px}
+.docs small{color:var(--m);font-size:12px}
+input[type=file]{padding:10px;background:#fff;border-style:dashed}
+.barra{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-top:1px solid var(--b);padding:12px 14px calc(12px + env(safe-area-inset-bottom));z-index:10}
+.barra .in{max-width:760px;margin:0 auto;display:flex;gap:12px;align-items:center}
+.barra .prog{flex:1;font-size:12px;color:var(--m)}.barra .prog b{color:var(--t)}
+.barra .pb{height:6px;background:#e2e8f0;border-radius:99px;margin-top:5px;overflow:hidden}.barra .pb div{height:100%;background:var(--ok);width:0;transition:width .3s}
+.barra button{width:auto;min-width:170px}
+#acceso{max-width:460px;margin:0 auto}
+#acceso h2{justify-content:center;font-size:18px}
+#acceso .code{font-size:26px;letter-spacing:10px;text-align:center;font-weight:700}
+.sep{display:flex;align-items:center;gap:10px;color:#94a3b8;font-size:12px;margin:16px 0}.sep:before,.sep:after{content:"";flex:1;height:1px;background:var(--b)}
+.unidades button{margin-top:8px}
+.foot{text-align:center;font-size:12px;color:var(--m);margin-top:6px}
 </style></head><body>
-<header><h1>Registro de Copropietarios</h1><p>Comunidad Edificio 12 Norte de Viña del Mar</p></header>
+<header><div class="logo">🏢</div><h1>Registro de Copropietarios</h1><p>Comunidad Edificio 12 Norte de Viña del Mar</p></header>
 <main>
 <div id="loading" class="card">Cargando…</div>
+<div id="acceso" class="card" style="display:none">
+  <h2>📧 Ingresa con tu correo</h2>
+  <p class="hint" style="text-align:center;margin:-6px 0 16px">Si ya estás registrado, cargamos tus datos para que solo actualices lo que cambió. Si no, empiezas un registro nuevo.</p>
+  <div id="accMsg"></div>
+  <div id="acc1">
+    <label for="accMail">Correo electrónico</label>
+    <input id="accMail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" placeholder="nombre@correo.com">
+    <button id="accEnviar" style="margin-top:12px">Enviarme un código</button>
+  </div>
+  <div id="acc2" style="display:none">
+    <label for="accCod">Código de 6 dígitos que te enviamos</label>
+    <input id="accCod" class="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······">
+    <button id="accVerif" style="margin-top:12px">Continuar</button>
+    <div style="display:flex;justify-content:space-between;margin-top:8px"><button class="link" id="accOtro">← Cambiar correo</button><button class="link" id="accReenv">Reenviar código</button></div>
+  </div>
+  <div id="accUnidades" class="unidades" style="display:none"></div>
+  <p class="foot">🔒 Tus datos se tratan según la Ley 21.719 · <a href="https://condoadmin-rouge.vercel.app/privacidad.html" target="_blank" rel="noopener">Política de privacidad</a></p>
+</div>
 <div id="done" class="card"><h2>✅ Registro enviado</h2><p>Gracias. La administración lo revisará y, si todo está correcto, quedará validado. Si hay algo que corregir le llegará un correo.</p><p class="hint" style="margin-top:12px">Ya puede cerrar esta ventana.</p></div>
 <form id="frm" style="display:none" novalidate>
 <div id="aviso"></div>
 <div class="note">🔒 <b>Responsable:</b> Comunidad Edificio 12 Norte de Viña del Mar. Este registro es obligatorio según la Ley 21.442 (arts. 5, 9 y 16) y sus datos se tratan conforme a la <b>Ley 21.719</b> de protección de datos personales. Son de uso exclusivo de la administración y el comité, y solo se usan para mantener el registro de copropietarios, comunicarnos con usted, el plan de emergencia y evacuación (Ley 21.442, art. 40) y emergencias o ingreso forzoso a la unidad. No se venden ni se ceden. Debe actualizarse <b>cada año</b>.<br>Puede pedir acceso, corrección o eliminación de sus datos escribiendo a <a href="mailto:com12norte@gmail.com?subject=Datos%20personales">com12norte@gmail.com</a>. <a href="https://condoadmin-rouge.vercel.app/privacidad.html" target="_blank" rel="noopener">Política de privacidad</a></div>
 
-<div class="card"><h2>1. Unidad</h2><div class="g">
+<div class="card"><h2><span class="n">1</span>Unidad</h2><div class="g">
  <div class="f"><label>Dirección <i>*</i></label><select id="direccion"></select><input id="direccion_otra" placeholder="Escriba la dirección" style="display:none;margin-top:6px"><div class="er">Obligatorio</div></div>
  <div class="f"><label>Letra y número de la unidad <i>*</i></label><select id="depto"></select><input id="depto_otro" placeholder="Ej: 305" style="display:none;margin-top:6px"><div class="er">Obligatorio</div></div>
 </div></div>
 
-<div class="card"><h2>2. Datos del propietario</h2><div class="g">
+<div class="card"><h2><span class="n">2</span>Datos del propietario</h2><div class="g">
  <div class="f full"><label>Nombre completo <i>*</i></label><input data-k="prop_nombre" data-req placeholder="Ej: Pedro Pablo Pérez Poblete"><div class="er">Obligatorio</div></div>
  <div class="f"><label>RUT / DNI <i>*</i></label><input data-k="prop_rut" data-req data-rut placeholder="15254365-8"><div class="er">RUT inválido</div></div>
  <div class="f"><label>Fecha de nacimiento <i>*</i></label><input type="date" data-k="prop_fnac" data-req><div class="er">Obligatorio</div></div>
@@ -55,9 +94,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
  <div class="f full"><label>Uso de la residencia del propietario <i>*</i></label><select data-k="uso" data-req><option value="">Seleccione…</option><option>Residencia principal del propietario</option><option>Arrendada</option><option>Segunda vivienda / uso esporádico</option><option>Prestada a familiar</option><option>Desocupada</option><option>Otro</option></select><div class="er">Obligatorio</div></div>
 </div></div>
 
-<div class="card"><h2>3. Residencia principal del dueño</h2><div class="g"><div class="f full"><label>Dirección (calle, número, depto, comuna, región) <i>*</i></label><input data-k="resid_principal" data-req placeholder="Ej: Olga Salas 7000, Recoleta, Región Metropolitana"><div class="er">Obligatorio</div></div></div></div>
+<div class="card"><h2><span class="n">3</span>Residencia principal del dueño</h2><div class="g"><div class="f full"><label>Dirección (calle, número, depto, comuna, región) <i>*</i></label><input data-k="resid_principal" data-req placeholder="Ej: Olga Salas 7000, Recoleta, Región Metropolitana"><div class="er">Obligatorio</div></div></div></div>
 
-<div class="card"><h2>4. Copropietario o residente principal del departamento</h2>
+<div class="card"><h2><span class="n">4</span>Copropietario o residente principal del departamento</h2>
 <label class="chk full" style="margin-bottom:10px"><input type="checkbox" id="igual"> Es el mismo propietario (copiar datos)</label>
 <div class="g">
  <div class="f full"><label>Nombre completo <i>*</i></label><input data-k="res_nombre" data-req><div class="er">Obligatorio</div></div>
@@ -68,8 +107,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
  <div class="f full"><label>Correo electrónico</label><input type="email" data-k="res_mail" data-mail><div class="er">Correo inválido</div></div>
 </div></div>
 
-<div class="card"><h2>5. Descripción de la unidad</h2>
-<div class="note" style="margin-bottom:12px">♿ <b>Datos de salud (datos sensibles).</b> El número de ocupantes con discapacidad, movilidad reducida o electrodependencia se usa <b>solo</b> para el plan de evacuación (Ley 21.442, art. 40), para que en una emergencia se les ayude primero. Lo ven únicamente la administración, el comité, las brigadas de emergencia y, dentro del plan de evacuación, Bomberos y Carabineros. Entregarlos es voluntario y puede retirar su autorización cuando quiera.
+<div class="card"><h2><span class="n">5</span>Descripción de la unidad</h2>
+<div class="salud-box">♿ <b>Datos de salud (datos sensibles).</b> El número de ocupantes con discapacidad, movilidad reducida o electrodependencia se usa <b>solo</b> para el plan de evacuación (Ley 21.442, art. 40), para que en una emergencia se les ayude primero. Lo ven únicamente la administración, el comité, las brigadas de emergencia y, dentro del plan de evacuación, Bomberos y Carabineros. Entregarlos es voluntario y puede retirar su autorización cuando quiera.
 <label class="chk" style="margin-top:8px"><input type="checkbox" id="consSalud"> Autorizo expresamente el uso de estos datos de salud para el plan de evacuación (Ley 21.719, art. 16).</label></div>
 <input type="hidden" data-k="consent_salud" id="consent_salud"><input type="hidden" data-k="consent_salud_fecha" id="consent_salud_fecha">
 <div class="g">
@@ -83,19 +122,19 @@ button:disabled{opacity:.5;cursor:not-allowed}
  <div class="f"><label>¿Tiene mascota? <i>*</i></label><select data-k="mascota" data-req id="mascota"><option value="">Seleccione…</option><option>No</option><option>Sí</option></select><div class="er">Obligatorio</div></div>
 </div></div>
 
-<div class="card" id="sec6" style="display:none"><h2>6. Mascotas</h2><div class="g">
+<div class="card" id="sec6" style="display:none"><h2><span class="n">6</span>Mascotas</h2><div class="g">
  <div class="f"><label>Tipo de mascota <i>*</i></label><select data-k="masc_tipo" id="masc_tipo"><option value="">Seleccione…</option><option>Perro</option><option>Gato</option><option>Perro y gato</option><option>Otro</option></select><div class="er">Obligatorio</div></div>
  <div class="f"><label>Nombre(s) y color <i>*</i></label><input data-k="masc_det" id="masc_det"><div class="er">Obligatorio</div></div>
  <div class="f full"><label>¿Registrada en el Registro Nacional de Mascotas? <i>*</i></label><select data-k="masc_reg" id="masc_reg"><option value="">Seleccione…</option><option>Sí</option><option>No</option><option>En trámite</option></select><div class="er">Obligatorio</div></div>
 </div></div>
 
-<div class="card"><h2>7. Contacto en caso de emergencia</h2><div class="g">
+<div class="card"><h2><span class="n">7</span>Contacto en caso de emergencia</h2><div class="g">
  <div class="f full"><label>Nombre de la persona a contactar <i>*</i></label><input data-k="em_nombre" data-req><div class="er">Obligatorio</div></div>
  <div class="f"><label>Parentesco <i>*</i></label><select data-k="em_par" data-req><option value="">Seleccione…</option><option>Cónyuge / pareja</option><option>Padre / madre</option><option>Hijo(a)</option><option>Hermano(a)</option><option>Otro familiar</option><option>Amigo(a)</option><option>Otro</option></select><div class="er">Obligatorio</div></div>
  <div class="f"><label>Teléfono <i>*</i></label><input data-k="em_tel" data-req data-tel><div class="er">Teléfono inválido</div></div>
 </div></div>
 
-<div class="card docs"><h2>8. Documentos (opcional)</h2>
+<div class="card docs"><h2><span class="n">8</span>Documentos (opcional)</h2>
  <div class="g">
   <div class="f"><label>Cédula de identidad del propietario</label><input type="file" id="doc_cedula" accept=".pdf,.jpg,.jpeg,.png"><small>PDF o imagen, máx. 4 MB</small></div>
   <div class="f"><label>Escritura / contrato de arriendo</label><input type="file" id="doc_escritura" accept=".pdf,.jpg,.jpeg,.png"><small>PDF o imagen, máx. 4 MB</small></div>
@@ -104,13 +143,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </div>
 
 <div class="card"><label class="chk"><input type="checkbox" id="acepto"> Declaro que los datos son verdaderos y que leí cómo se usarán (<a href="https://condoadmin-rouge.vercel.app/privacidad.html" target="_blank" rel="noopener">política de privacidad</a>).</label><div class="er" id="erAcepto" style="display:block;visibility:hidden">Debe aceptar para enviar</div></div>
-<button type="submit" id="btn">Enviar registro</button>
+<div class="barra"><div class="in"><div class="prog"><b id="progTxt">0%</b> completado<div class="pb"><div id="progBar"></div></div></div><button type="submit" id="btn">Enviar registro</button></div></div>
 <p class="hint" style="text-align:center;margin:10px 0 30px" id="foot"></p>
 </form>
 </main>
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyokAPmufPZdlJU-WfMg9952mCWqlmbzU-vT_8ero8lYXAIsiHmJo85KQRsPA3pxnv_/exec';
-const TOKEN = new URLSearchParams(location.search).get('t') || '';
+let TOKEN = new URLSearchParams(location.search).get('t') || '';
+const API = 'https://condoadmin-rouge.vercel.app/api/residente-codigo';
 const NAC = ['Chilena','Argentina','Boliviana','Brasileña','Colombiana','Cubana','Ecuatoriana','Española','Estadounidense','Haitiana','Peruana','Uruguaya','Venezolana','Otra'];
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 let unidades = [], docsExist = [];
@@ -186,28 +226,103 @@ $('#frm').addEventListener('submit',async e=>{
 });
 
 syncSalud();
+// ── Carga con enlace personal (token) ──
+async function cargarConToken(){
+  const j=await (await fetch(APPS_SCRIPT_URL+'?accion=coprop_obtener&t='+encodeURIComponent(TOKEN))).json();
+  if(!j.ok) throw new Error(j.error);
+  const r=j.registro; unidades=[{direccion:r.direccion,deptos:[r.depto]}]; fillUnits();
+  $('#direccion').value=r.direccion; $('#direccion').dispatchEvent(new Event('change')); $('#depto').value=r.depto;
+  $('#direccion').disabled=true; $('#depto').disabled=true;
+  fillData(r.datos||{});
+  const yr=new Date().getFullYear();
+  let h='';
+  if(r.estado==='devuelto') h='<div class="alert warn"><b>Su registro fue devuelto.</b> Motivo: '+(r.motivo||'')+'</div>';
+  else if(r.estado==='aprobado'&&r.anio===yr) h='<div class="alert okk">✅ Su registro '+yr+' ya está validado. Puede modificarlo si hubo cambios.</div>';
+  else h='<div class="alert warn"><b>Actualización anual '+yr+'.</b> Sus datos anteriores están cargados: revíselos, corrija lo que cambió y envíe.</div>';
+  $('#aviso').innerHTML=h;
+  if((r.docs||[]).length) $('#docsPrev').textContent='Documentos ya guardados: '+r.docs.map(d=>d.tipo).join(', ')+'. Suba uno nuevo solo si desea reemplazarlo.';
+  mostrarForm();
+}
+// ── Registro nuevo (correo ya verificado) ──
+async function registroNuevo(email){
+  const j=await (await fetch(APPS_SCRIPT_URL+'?accion=coprop_unidades')).json();
+  unidades=j.data||[]; fillUnits();
+  const pm=$('[data-k="prop_mail"]'); if(email&&pm&&!pm.value) pm.value=email;
+  $('#aviso').innerHTML='<div class="alert okk">Correo verificado. Completa el registro de tu unidad.</div>';
+  mostrarForm();
+}
+function mostrarForm(){ $('#loading').style.display='none'; $('#acceso').style.display='none'; $('#frm').style.display='block'; progreso(); window.scrollTo(0,0); }
+
+// ── Barra de progreso: campos obligatorios completos ──
+function progreso(){
+  const req=$$('[data-req]').filter(el=>!(el.closest('#sec6')&&$('#mascota').value!=='Sí')&&!el.disabled);
+  const ok=req.filter(el=>el.value.trim()).length+(unitVal().direccion?1:0)+(unitVal().depto?1:0)+($('#acepto').checked?1:0);
+  const tot=req.length+3; const p=Math.round(ok/tot*100);
+  $('#progTxt').textContent=p+'%'; $('#progBar').style.width=p+'%';
+}
+document.addEventListener('input',progreso); document.addEventListener('change',progreso);
+
+// ── Ingreso con correo y código ──
+let accEmail='', accSesion='';
+const accMsg=(t,m)=>{ $('#accMsg').innerHTML=m?'<div class="alert '+t+'">'+m+'</div>':''; };
+async function api(body){ const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); let j={}; try{j=await r.json();}catch(_){} return {...j,ok:r.ok&&j.ok}; }
+async function enviarCodigo(){
+  const e=$('#accMail').value.trim().toLowerCase();
+  if(!/^\S+@\S+\.\S+$/.test(e)){ accMsg('err','Escribe un correo válido.'); return; }
+  const btn=$('#accEnviar'); btn.disabled=true; btn.textContent='Enviando…';
+  try{
+    const r=await api({accion:'enviar',email:e,para:'registro'});
+    if(r.ok){ accEmail=e; $('#acc1').style.display='none'; $('#acc2').style.display='block'; $('#accCod').value=''; $('#accCod').focus(); accMsg('okk','Te enviamos un código a <b>'+e+'</b>. Revisa también spam.'); }
+    else accMsg('err',r.error||'No se pudo enviar el código.');
+  }catch(_){ accMsg('err','No se pudo enviar el código. Revisa tu conexión.'); }
+  btn.disabled=false; btn.textContent='Enviarme un código';
+}
+async function verificarCodigo(){
+  const c=$('#accCod').value.replace(/\D/g,'');
+  if(c.length!==6){ accMsg('err','El código tiene 6 dígitos.'); return; }
+  const btn=$('#accVerif'); btn.disabled=true; btn.textContent='Verificando…';
+  try{
+    const r=await api({accion:'verificar',email:accEmail,codigo:c});
+    if(!r.ok){ accMsg('err',r.error||'Código incorrecto.'); btn.disabled=false; btn.textContent='Continuar'; return; }
+    accSesion=r.sesion;
+    const q=await api({accion:'registro',email:accEmail,sesion:accSesion});
+    if(!q.ok) throw new Error(q.error||'No se pudo revisar el registro');
+    const props=(q.registros||[]).filter(x=>x.token);
+    const resid=(q.registros||[]).filter(x=>!x.token);
+    if(props.length===1){ abrirToken(props[0].token); return; }
+    if(props.length>1){
+      $('#acc2').style.display='none'; accMsg('okk','Encontramos '+props.length+' unidades registradas con tu correo. Elige cuál actualizar:');
+      $('#accUnidades').innerHTML=props.map((x,i)=>'<button class="sec" data-i="'+i+'">'+x.direccion+' · '+x.depto+'</button>').join('')+'<div class="sep">o</div><button class="link" id="accNueva">Registrar otra unidad</button>';
+      $('#accUnidades').style.display='block';
+      $$('#accUnidades [data-i]').forEach(b=>b.onclick=()=>abrirToken(props[+b.dataset.i].token));
+      $('#accNueva').onclick=()=>registroNuevo(accEmail);
+      return;
+    }
+    if(resid.length){
+      $('#acc2').style.display='none';
+      accMsg('warn','Tu correo figura como <b>residente</b> en '+resid.map(x=>x.direccion+' · '+x.depto).join(', ')+'. El registro de esa unidad lo actualiza su propietario. Si eres propietario de otra unidad, puedes registrarla.');
+      $('#accUnidades').innerHTML='<button class="sec" id="accNueva">Registrar una unidad como propietario</button>'; $('#accUnidades').style.display='block';
+      $('#accNueva').onclick=()=>registroNuevo(accEmail);
+      return;
+    }
+    await registroNuevo(accEmail);
+  }catch(err){ accMsg('err',err.message||'Ocurrió un error.'); btn.disabled=false; btn.textContent='Continuar'; }
+}
+async function abrirToken(t){
+  TOKEN=t; try{ history.replaceState(null,'','?t='+encodeURIComponent(t)); }catch(_){}
+  $('#acceso').style.display='none'; $('#loading').style.display='block';
+  try{ await cargarConToken(); }catch(err){ $('#loading').innerHTML='⚠️ '+err.message; }
+}
+$('#accEnviar').onclick=enviarCodigo; $('#accMail').addEventListener('keydown',e=>{if(e.key==='Enter')enviarCodigo();});
+$('#accVerif').onclick=verificarCodigo; $('#accCod').addEventListener('keydown',e=>{if(e.key==='Enter')verificarCodigo();});
+$('#accCod').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,6);});
+$('#accOtro').onclick=()=>{ $('#acc2').style.display='none'; $('#acc1').style.display='block'; accMsg(); };
+$('#accReenv').onclick=()=>{ $('#accMail').value=accEmail; enviarCodigo(); };
+
 (async function init(){
   try{
-    if(TOKEN){
-      const j=await (await fetch(APPS_SCRIPT_URL+'?accion=coprop_obtener&t='+encodeURIComponent(TOKEN))).json();
-      if(!j.ok) throw new Error(j.error);
-      const r=j.registro; unidades=[{direccion:r.direccion,deptos:[r.depto]}]; fillUnits();
-      $('#direccion').value=r.direccion; $('#direccion').dispatchEvent(new Event('change')); $('#depto').value=r.depto;
-      $('#direccion').disabled=true; $('#depto').disabled=true;
-      fillData(r.datos||{});
-      const yr=new Date().getFullYear();
-      let h='';
-      if(r.estado==='devuelto') h='<div class="alert warn"><b>Su registro fue devuelto.</b> Motivo: '+(r.motivo||'')+'</div>';
-      else if(r.estado==='aprobado'&&r.anio===yr) h='<div class="alert okk">Su registro '+yr+' ya está validado. Puede modificarlo si hubo cambios.</div>';
-      else h='<div class="alert warn"><b>Actualización anual '+yr+'.</b> Sus datos del año anterior están cargados: revíselos, corrija lo que cambió y envíe.</div>';
-      $('#aviso').innerHTML=h;
-      if((r.docs||[]).length) $('#docsPrev').textContent='Documentos ya guardados: '+r.docs.map(d=>d.tipo).join(', ')+'. Suba uno nuevo solo si desea reemplazarlo.';
-    } else {
-      const j=await (await fetch(APPS_SCRIPT_URL+'?accion=coprop_unidades')).json();
-      unidades=j.data||[]; fillUnits();
-      $('#aviso').innerHTML='<div class="alert warn">Si su unidad ya está registrada, use el <b>enlace personal</b> que le llegó por correo (trae sus datos cargados). Si usa este enlace general, deberá escribir el mismo RUT del propietario registrado.</div>';
-    }
-    $('#loading').style.display='none'; $('#frm').style.display='block';
+    if(TOKEN) await cargarConToken();
+    else { $('#loading').style.display='none'; $('#acceso').style.display='block'; }
   }catch(err){ $('#loading').innerHTML='⚠️ '+err.message+'<br><small>Si el problema persiste escriba a com12norte@gmail.com</small>'; }
 })();
 </script></body></html>
