@@ -701,7 +701,40 @@ textarea{resize:vertical;min-height:76px}
 const ADMIN_EMAIL      = 'com12norte@gmail.com';
 const NOMBRE_COMUNIDAD = 'Comunidad Edificio 12 Norte de Vina del Mar';
 const RUT_COMUNIDAD    = '56.028.260-5';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyokAPmufPZdlJU-WfMg9952mCWqlmbzU-vT_8ero8lYXAIsiHmJo85KQRsPA3pxnv_/exec'; // ← Pega aquí la URL tras implementar
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxKRCFQItt75ZYhqNVhY4y691BYD62uV8wSOxfC3RFN8KJvdNJS_1TbvP-72GXpIAUV/exec'; // ← Pega aquí la URL tras implementar
+// ── Acceso con clave de administración (Ley 21.719: recibos, pagos y controles tienen datos personales) ──
+const _claveAdm = () => { try { return sessionStorage.getItem('cpk') || ''; } catch(e) { return window._cpk || ''; } };
+(function(){
+  const _f = window.fetch.bind(window);
+  window.fetch = (u, o) => {
+    if (typeof u === 'string' && u.indexOf(APPS_SCRIPT_URL) === 0) {
+      const k = _claveAdm();
+      if (o && o.method === 'POST' && typeof o.body === 'string') {
+        try { const b = JSON.parse(o.body); if (!b.clave) b.clave = k; o = Object.assign({}, o, { body: JSON.stringify(b) }); } catch(_) {}
+      } else if (u.indexOf('clave=') < 0) { u += (u.indexOf('?') >= 0 ? '&' : '?') + 'clave=' + encodeURIComponent(k); }
+    }
+    return _f(u, o);
+  };
+  async function ok(k){ try { const j = await (await _f(APPS_SCRIPT_URL + '?accion=admin_ok&clave=' + encodeURIComponent(k))).json(); return j.ok === true; } catch(e){ return null; } }
+  async function puerta(){
+    const k = _claveAdm();
+    if (k && (await ok(k)) !== false) return;
+    const d = document.createElement('div');
+    d.id = 'puertaAdm';
+    d.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.92);display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,sans-serif';
+    d.innerHTML = '<form style="background:#fff;border-radius:14px;padding:22px;max-width:340px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3)"><div style="font-size:30px;text-align:center">🔒</div><h3 style="margin:6px 0 4px;text-align:center;font-size:17px">Administración</h3><p style="margin:0 0 14px;text-align:center;font-size:13px;color:#64748b">Ingresa la clave de administración</p><input type="password" id="puertaClave" autocomplete="current-password" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px"><div id="puertaErr" style="color:#dc2626;font-size:12px;min-height:16px;margin:6px 0"></div><button style="width:100%;padding:11px;border:0;border-radius:8px;background:#1e3a5f;color:#fff;font-weight:700;font-size:15px;cursor:pointer">Entrar</button></form>';
+    document.body.appendChild(d);
+    const inp = d.querySelector('#puertaClave'); inp.focus();
+    d.querySelector('form').onsubmit = async ev => {
+      ev.preventDefault(); const v = inp.value.trim(); if (!v) return;
+      const r = await ok(v);
+      if (r === true) { try { sessionStorage.setItem('cpk', v); } catch(e) { window._cpk = v; } location.reload(); }
+      else d.querySelector('#puertaErr').textContent = r === null ? 'Sin conexión. Intenta de nuevo.' : 'Clave incorrecta';
+    };
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', puerta); else puerta();
+})();
+
 
 async function enviarAlScript(payload) {
   try {

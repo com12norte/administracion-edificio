@@ -355,7 +355,7 @@ textarea{resize:vertical;min-height:80px}
 const ADMIN_EMAIL      = 'com12norte@gmail.com';
 const NOMBRE_COMUNIDAD = 'Comunidad de Edificios 12 Norte de Viña del Mar';
 const RUT_COMUNIDAD    = '56.028.260-5';
-const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbyokAPmufPZdlJU-WfMg9952mCWqlmbzU-vT_8ero8lYXAIsiHmJo85KQRsPA3pxnv_/exec';
+const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbxKRCFQItt75ZYhqNVhY4y691BYD62uV8wSOxfC3RFN8KJvdNJS_1TbvP-72GXpIAUV/exec';
 
 const DIRECCIONES = ['3 Oriente 1080','3 Oriente 1060','12 Norte 1054','12 Norte 1052','12 Norte 1036','12 Norte 1038','4 Oriente 1061','4 Oriente 1081'];
 const DEPTOS      = ['A1','B2','C3','D4','E5','E6','F5','F6','G7','H8'];
@@ -443,11 +443,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ══════════════════════════════════════════════
 async function cargarSolicitud() {
   try {
-    const url  = APPS_SCRIPT_URL + '?accion=listar&hoja=Controles';
+    const url  = APPS_SCRIPT_URL + '?accion=ctrl_obtener&id=' + encodeURIComponent(solId);
     const res  = await fetch(url);
     const json = await res.json();
-    const data = json.ok ? json.data : [];
-    solicitud  = data.find(s => s.id === solId);
+    solicitud  = json.ok ? json.data : null;
 
     if (!solicitud) {
       showView('paso1');
@@ -622,10 +621,9 @@ async function enviarDatos() {
   // Preservar ID si ya viene de la URL (link enviado por el admin), si no generar correlativo
   if (!solId) {
     try {
-      const r    = await fetch(APPS_SCRIPT_URL + '?accion=listar&hoja=Controles');
+      const r    = await fetch(APPS_SCRIPT_URL + '?accion=ctrl_siguiente');
       const json = await r.json();
-      const n    = json.ok && json.data ? json.data.length + 1 : Math.floor(Math.random()*9000)+1000;
-      solId = 'SOL-' + String(n).padStart(4, '0');
+      solId = json.ok && json.id ? json.id : 'SOL-' + String(Math.floor(Math.random()*9000)+1000);
     } catch(e) {
       solId = 'SOL-' + String(Math.floor(Math.random()*9000)+1000);
     }
