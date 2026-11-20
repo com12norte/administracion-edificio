@@ -716,8 +716,20 @@ const _claveAdm = () => { try { return sessionStorage.getItem('cpk') || ''; } ca
     return _f(u, o);
   };
   async function ok(k){ try { const j = await (await _f(APPS_SCRIPT_URL + '?accion=admin_ok&clave=' + encodeURIComponent(k))).json(); return j.ok === true; } catch(e){ return null; } }
+  // Dentro de CondoAdmin: la sesión del usuario llega por mensaje y reemplaza a la clave
+  const enCondo = window.self !== window.top;
+  let esperando = null;
+  window.addEventListener('message', ev => {
+    if (ev.origin !== 'https://condoadmin-rouge.vercel.app' || !ev.data || ev.data.tipo !== 'condoadmin-sesion' || !ev.data.token) return;
+    const nuevo = !_claveAdm();
+    try { sessionStorage.setItem('cpk', ev.data.token); } catch(e) { window._cpk = ev.data.token; }
+    if (esperando) { esperando(); esperando = null; }
+    else if (nuevo) location.reload();
+  });
+  if (enCondo) try { window.parent.postMessage({ tipo: 'listo-para-sesion' }, 'https://condoadmin-rouge.vercel.app'); } catch(e) {}
   async function puerta(){
-    const k = _claveAdm();
+    let k = _claveAdm();
+    if (!k && enCondo) { await new Promise(r => { esperando = r; setTimeout(r, 4000); }); k = _claveAdm(); if (k) { location.reload(); return; } }
     if (k && (await ok(k)) !== false) return;
     const d = document.createElement('div');
     d.id = 'puertaAdm';
