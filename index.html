@@ -8,18 +8,17 @@
 <title>Administración — Edificio Calle 12 Norte</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap');
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:#F0F2F5;--surface:#fff;--surface2:#F7F8FA;--border:#E2E5EA;
-  --text:#1A1D23;--muted:#6B7280;--accent:#1E3A5F;--accent2:#2E5490;--accent-bg:#EBF0F8;
-  --success:#059669;--warning:#D97706;--danger:#DC2626;--info:#0284C7;
+  --bg:#f1f5f9;--surface:#fff;--surface2:#f8fafc;--border:#e2e8f0;
+  --text:#0f172a;--muted:#64748b;--accent:#1e3a5f;--accent2:#2563eb;--accent-bg:#eff6ff;
+  --success:#16a34a;--warning:#d97706;--danger:#dc2626;--info:#0284C7;
   --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.07);--shadow-md:0 4px 24px rgba(0,0,0,.10);
 }
 
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
 /* ── HEADER ── */
 header{
@@ -29,13 +28,13 @@ header{
 }
 .hbrand{display:flex;align-items:center;gap:12px;flex-shrink:0}
 .hicon{width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
-.hbrand h1{font-family:'Playfair Display',serif;font-size:17px;font-weight:600}
+.hbrand h1{font-family:inherit;font-size:17px;font-weight:600}
 .hbrand span{font-size:11px;opacity:.6;display:block;margin-top:-2px}
 .hnav{display:flex;gap:3px;flex-wrap:wrap}
 .hnav button{
   background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.75);
   padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
-  transition:all .15s;font-family:'Inter',sans-serif;white-space:nowrap;
+  transition:all .15s;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;white-space:nowrap;
 }
 .hnav button.active,.hnav button:hover{background:rgba(255,255,255,.22);color:#fff}
 .hnav .sep{width:1px;background:rgba(255,255,255,.2);margin:8px 4px}
@@ -75,7 +74,7 @@ html.embebido .container{padding:18px 12px}
 label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 input,select,textarea{
   border:1.5px solid var(--border);border-radius:7px;padding:10px 13px;font-size:14px;
-  font-family:'Inter',sans-serif;color:var(--text);background:var(--surface);
+  font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--text);background:var(--surface);
   transition:border-color .15s;outline:none;width:100%;
 }
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
@@ -118,7 +117,7 @@ textarea{resize:vertical;min-height:76px}
 .sig-hint{position:absolute;top:11px;left:14px;font-size:11px;color:#CBD0D8;font-weight:500;pointer-events:none;transition:opacity .2s}
 .sig-hint.hidden{opacity:0}
 .sig-foot{display:flex;justify-content:flex-end;padding:7px 11px;border-top:1px solid var(--border);background:var(--surface2)}
-.btn-clr{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 11px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-clr{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 11px;font-size:11px;color:var(--muted);cursor:pointer;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;transition:all .15s}
 .btn-clr:hover{border-color:var(--danger);color:var(--danger)}
 .sig-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .sig-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
@@ -133,7 +132,7 @@ textarea{resize:vertical;min-height:76px}
 
 /* ── BUTTONS ── */
 .btn-row{display:flex;gap:10px;margin-top:24px;justify-content:flex-end}
-.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;gap:7px}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;transition:all .15s;display:flex;align-items:center;gap:7px}
 .btn-primary{background:var(--accent);color:#fff}
 .btn-primary:hover{background:var(--accent2)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
@@ -150,7 +149,7 @@ textarea{resize:vertical;min-height:76px}
 .hist-top h2{font-size:17px;font-weight:700}
 .hcount{background:var(--accent);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
 .filter-row{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
-.fbtn{padding:6px 13px;border-radius:20px;border:1px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;background:var(--surface);transition:all .15s;font-family:'Inter',sans-serif;color:var(--muted)}
+.fbtn{padding:6px 13px;border-radius:20px;border:1px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;background:var(--surface);transition:all .15s;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--muted)}
 .fbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .item-list{display:flex;flex-direction:column;gap:10px}
 .item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:border-color .15s}
@@ -460,7 +459,7 @@ textarea{resize:vertical;min-height:76px}
       </div>
       <div class="card-body">
         <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-          <input type="text" id="ctrl-search" placeholder="🔍 Buscar N°, depto, dirección..." oninput="renderCtrls()" style="border:1.5px solid var(--border);border-radius:7px;padding:8px 13px;font-size:13px;font-family:Inter,sans-serif;outline:none;min-width:220px">
+          <input type="text" id="ctrl-search" placeholder="🔍 Buscar N°, depto, dirección..." oninput="renderCtrls()" style="border:1.5px solid var(--border);border-radius:7px;padding:8px 13px;font-size:13px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;outline:none;min-width:220px">
           <button class="fbtn active" data-cf="todos" onclick="setCF(this)">Todos</button>
           <button class="fbtn" data-cf="Vigente" onclick="setCF(this)">Vigentes</button>
           <button class="fbtn" data-cf="Bloqueado" onclick="setCF(this)">Bloqueados</button>
@@ -2489,7 +2488,7 @@ function generarPDFReciboCtrl(d) {
     <html><head><meta charset="UTF-8">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <style>
-      body{font-family:Georgia,serif;font-size:13px;color:#111;padding:20mm 22mm;line-height:1.85}
+      body{font-family:inherit;font-size:13px;color:#111;padding:20mm 22mm;line-height:1.85}
       .hdr{border-bottom:2.5px solid #1E3A5F;padding-bottom:10px;margin-bottom:20px}
       h1{font-size:13px;font-weight:700;color:#1E3A5F;margin:0}
       p.rut{font-size:11px;color:#555;margin:3px 0 0}
