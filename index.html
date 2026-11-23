@@ -228,6 +228,17 @@ textarea{resize:vertical;min-height:76px}
 </style>
 </head>
 <body>
+<!-- La administración se trasladó a CondoAdmin. Esta página queda solo como respaldo (?antiguo=1). -->
+<div id="aviso-traslado" style="display:none;position:fixed;inset:0;z-index:99999;background:#f1f5f9;font-family:system-ui,sans-serif;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;max-width:440px;width:100%;padding:28px;text-align:center;color:#0f172a">
+    <div style="font-size:34px">🏢</div>
+    <h2 style="margin:8px 0 6px;font-size:20px">Esto ahora está en CondoAdmin</h2>
+    <p style="margin:0 0 18px;color:#64748b;font-size:14px;line-height:1.5">Recibos, pagos a proveedores, controles remotos y el registro de copropietarios se administran desde CondoAdmin, con tu usuario.</p>
+    <a href="https://condoadmin-rouge.vercel.app/" style="display:block;background:#1e3a5f;color:#fff;text-decoration:none;font-weight:700;padding:12px;border-radius:10px">Ir a CondoAdmin →</a>
+    <p style="margin:16px 0 0;font-size:12px"><a href="?antiguo=1" style="color:#94a3b8">Usar la versión antigua (solo consulta de respaldo)</a></p>
+  </div>
+</div>
+<script>(function(){var p=new URLSearchParams(location.search);if(!p.has('antiguo')&&!p.has('embed')){document.getElementById('aviso-traslado').style.display='flex';}})();</script>
 
 <script>if(window.self!==window.top||/[?&]embed=1/.test(location.search))document.documentElement.classList.add('embebido');</script>
 <header>
