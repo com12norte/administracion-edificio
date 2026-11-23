@@ -40,6 +40,17 @@ header{
 .hnav button.active,.hnav button:hover{background:rgba(255,255,255,.22);color:#fff}
 .hnav .sep{width:1px;background:rgba(255,255,255,.2);margin:8px 4px}
 
+/* ── Dentro de CondoAdmin: mismo estilo claro, sin encabezado propio ── */
+html.embebido body{background:#f1f5f9}
+html.embebido header{background:#fff;color:#0f172a;height:auto;padding:10px 16px;box-shadow:none;border-bottom:1px solid #e2e8f0;border-radius:10px 10px 0 0}
+html.embebido .hbrand,html.embebido #btn-dark{display:none}
+html.embebido .hnav{gap:6px}
+html.embebido .hnav button{background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;padding:8px 14px;font-size:13px}
+html.embebido .hnav button:hover{background:#e2e8f0;color:#0f172a}
+html.embebido .hnav button.active{background:#1e3a5f;color:#fff;border-color:#1e3a5f}
+html.embebido .hnav .sep{background:#e2e8f0;margin:6px 2px}
+html.embebido .container{padding:18px 12px}
+
 /* ── LAYOUT ── */
 .container{max-width:900px;margin:0 auto;padding:28px 16px}
 .view{display:none}.view.active{display:block}
@@ -219,6 +230,7 @@ textarea{resize:vertical;min-height:76px}
 </head>
 <body>
 
+<script>if(window.self!==window.top||/[?&]embed=1/.test(location.search))document.documentElement.classList.add('embebido');</script>
 <header>
   <div class="hbrand">
     <div class="hicon">🏢</div>
@@ -825,6 +837,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (localStorage.getItem('dark_mode') === '1') { document.documentElement.classList.add('dark'); document.getElementById('btn-dark').textContent = '☀️'; }
   // No cargar controles al inicio — se carga al entrar a la pestaña
   calcularTotales();
+  // Abrir directo una pestaña: …/?embed=1#coprop, #controles, #recibo-hist, #pago-hist…
+  const ir = (location.hash || '').slice(1);
+  if (ir && document.getElementById('view-' + ir)) setTimeout(() => nav(ir), 0);
+  if (document.documentElement.classList.contains('embebido')) document.documentElement.classList.remove('dark');
 });
 
 // ════════════════════════════════════════
